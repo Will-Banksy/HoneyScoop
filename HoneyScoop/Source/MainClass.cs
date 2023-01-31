@@ -16,5 +16,6 @@ internal class MainClass {
 		// Might be an idea to spread the argument handling across different files or use a library for it (NuGet)
 		//hello will this is a change that is being pushed
 		// Hello Adam!
+		Console.WriteLine("Hello, The Hive");
 	}
 }

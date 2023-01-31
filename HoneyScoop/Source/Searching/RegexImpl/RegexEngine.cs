@@ -1,6 +1,6 @@
-namespace HoneyScoop.Searching; 
+namespace HoneyScoop.Searching.RegexImpl; 
 
-public static class RegexEngine {
+internal static class RegexEngine {
 	/// <summary>
 	/// Parses a regex string into a Finite State Machine that is capable of being used to match the regex pattern.<br /><br />
 	///
@@ -14,17 +14,32 @@ public static class RegexEngine {
 	/// </summary>
 	/// <param name="regex"></param>
 	/// <returns></returns>
-	public static FiniteStateMachine ParseRegex(string regex) {
+	internal static FiniteStateMachine<byte> ParseRegex(string regex) {
 		var postfix = ConvertToPostfix(regex);
-		return new FiniteStateMachine();
+		return new FiniteStateMachine<byte>();
 	}
 
 	/// <summary>
-	/// Convert a regex string to postfix notation for easier parsing and NFA/Finite State Machine construction
+	/// Convert a regex string to postfix notation for easier parsing and NFA/Finite State Machine construction<br /><br />
+	///
+	/// Postfix notation:<br />
+	///     a*  => a*<br />
+	///     a+  => a+<br />
+	///	    a?  => a?<br />
+	///     a|b => ab|<br />
+	///	    ab  => ab'
+	///     (ab)c => ab'c'
 	/// </summary>
 	/// <param name="regex"></param>
 	/// <returns></returns>
 	private static string ConvertToPostfix(string regex) {
+		// Each postfix operator produces 1 NFA. Operators | and ' take 2 NFAs the rest take 1
+		// Inputs => Outputs
+		// ((ab*)|c)+def => ab*'c|+d'e'f'
+
+		// Step 1: Build syntax tree
+		// Step 2: Parse syntax tree and build postfix expression
+
 		return regex;
 	}
 }

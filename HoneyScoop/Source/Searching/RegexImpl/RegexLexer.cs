@@ -14,14 +14,17 @@ internal class RegexLexer {
 		internal record struct CloseParen();
 	}
 
-	internal List<IToken> Tokenize(string src) {
+	/// <summary>
+	/// Operators in input: <c>(), +, ?, *, |</c>
+	/// </summary>
+	/// <param name="src">The regex string</param>
+	/// <returns>A list of tokens that represents the regex string</returns>
+	internal static List<IToken> Tokenize(string src) {
 		var tokens = new List<IToken>();
 
 		for (int i = 0; i < src.Length; i++) {
 			switch (src[i]) {
 				case '|':
-				case '\'':
-					// tokens.Add(IToken.BinaryOp(BinaryOpType.Concat));
 					break;
 			}
 		}

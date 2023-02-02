@@ -16,6 +16,9 @@ internal static class RegexEngine {
 	/// <returns></returns>
 	internal static FiniteStateMachine<byte> ParseRegex(string regex) {
 		var postfix = ConvertToPostfix(regex);
+		
+		// TODO: Use stack to iterate through postfix expression and incrementally create the NFA
+		
 		return new FiniteStateMachine<byte>();
 	}
 
@@ -27,8 +30,10 @@ internal static class RegexEngine {
 	///     a+  => a+<br />
 	///	    a?  => a?<br />
 	///     a|b => ab|<br />
-	///	    ab  => ab'
-	///     (ab)c => ab'c'
+	///	    ab  => ab'<br />
+	///     (ab)c => ab'c'<br /><br />
+	///
+	/// Operator precedence (Highest to lowest): () -> *, +, ? -> ' -> |
 	/// </summary>
 	/// <param name="regex"></param>
 	/// <returns></returns>
@@ -37,8 +42,12 @@ internal static class RegexEngine {
 		// Inputs => Outputs
 		// ((ab*)|c)+def => ab*'c|+d'e'f'
 
-		// Step 1: Build syntax tree
-		// Step 2: Parse syntax tree and build postfix expression
+		// Step 1: Use lexer to create token stream TODO implement lexer
+		var tokens = RegexLexer.Tokenize(regex);
+		
+		// TODO Step 2: Parse token stream to create syntax tree
+		
+		// TODO Step 3: Somehow turn that into a postfix expression of tokens...
 
 		return regex;
 	}

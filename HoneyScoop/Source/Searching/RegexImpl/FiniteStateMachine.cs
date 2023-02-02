@@ -7,7 +7,7 @@ namespace HoneyScoop.Searching.RegexImpl;
 /// Also known as NFA (Nondeterministic Finite Automata) and referred to as such in the codebase
 /// </summary>
 /// <typeparam name="T">The type of data that the NFA is matching</typeparam>
-internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make this capable of matching the '.' metacharacter. Hang on you can just do "a?" right? no
+internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make this capable of matching the '.' metacharacter. Hang on you can just do "a?" right? no?
 	/// <summary>
 	/// Reference type so that instances of State can be referenced all over
 	/// <br /><br />

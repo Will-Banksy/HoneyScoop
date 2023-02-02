@@ -11,17 +11,18 @@ internal class RegexLexer {
 		AlternateLoop, // *
 		AlternateLoopOnce // +
 	}
-	
+
 	internal interface IToken {
 		internal record struct Literal(byte val) : IToken;
 		internal record struct BinaryOp(BinaryOpType type) : IToken;
 		internal record struct UnaryOp(UnaryOpType type) : IToken;
 		internal record struct OpenParen() : IToken;
 		internal record struct CloseParen() : IToken;
+		internal record struct Empty() : IToken;
 	}
 
 	/// <summary>
-	/// Operators in input: <c>(,), +, ?, *, |</c>
+	/// Operators in input: <c>(, ), +, ?, *, |</c>
 	/// </summary>
 	/// <param name="src">The regex string</param>
 	/// <returns>A list of tokens that represents the regex string</returns>
@@ -70,8 +71,7 @@ internal class RegexLexer {
 						}
 					}
 					break;
-
-		}
+			}
 		}
 		
 		return tokens;

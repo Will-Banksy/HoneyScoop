@@ -11,5 +11,9 @@
         <Nullable>enable</Nullable>
         <LangVersion>10</LangVersion>
     </PropertyGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="TreeCollections" Version="1.0.4" />
+    </ItemGroup>
 
 </Project>

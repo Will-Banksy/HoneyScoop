@@ -41,7 +41,7 @@ internal static class RegexEngine {
 		// Each postfix operator produces 1 NFA. Operators | and ' take 2 NFAs the rest take 1
 		// Inputs => Outputs
 		// ((ab*)|c)+def => ab*'c|+d'e'f'
-
+		
 		// Step 1: Use lexer to create token stream TODO implement lexer
 		var tokens = RegexLexer.Tokenize(regex);
 		

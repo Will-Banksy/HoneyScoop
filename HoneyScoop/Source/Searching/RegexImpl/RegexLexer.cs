@@ -2,10 +2,15 @@ namespace HoneyScoop.Searching.RegexImpl;
 
 internal class RegexLexer {
 	internal enum BinaryOpType {
-		Concat,
-		Union
+		Concat, // ' 
+		Alternate // | 
 	}
 
+	internal enum UnaryOpType {
+		AlternateEmpty, // ?
+		AlternateLoop // *
+	}
+	
 	internal interface IToken {
 		internal record struct Literal(byte val) : IToken;
 		internal record struct BinaryOp(BinaryOpType type) : IToken;

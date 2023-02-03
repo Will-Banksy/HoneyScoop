@@ -8,17 +8,20 @@
 
 // For notes on writing performant C# and for C# resources: https://willbanksy-pkb.notion.site/C-edef060a627f4f2babe13346a11e5962
 
+using System.Runtime.InteropServices;
 using HoneyScoop.Searching.RegexImpl;
 
 namespace HoneyScoop;
 
-internal class MainClass {
+internal static class MainClass {
 	public static void Main(string[] args) {
 		// Handle arguments, create HoneyScoop instance to perform work
 		// Might be an idea to spread the argument handling across different files or use a library for it (NuGet, e.g. https://www.nuget.org/packages/CommandLineParser#readme-body-tab)
 		//hello will this is a change that is being pushed
 		// Hello Adam!
-		RegexLexer.Tokenize("()?\\x67*+|");
+		var tokens = RegexLexer.Tokenize("()?\\x67*+|");
+		var tokenSpan = CollectionsMarshal.AsSpan(tokens); // Getting list as span, which is potentially unsafe, but allows RegexParser to not worry about it
+		RegexParser.ParseTokenStream(tokenSpan);
 		Console.WriteLine("Hello, The Hive");
 	}
 }

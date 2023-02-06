@@ -5,7 +5,7 @@ namespace HoneyScoop;
 ///     and informed by them, uses various parts of the codebase to produce the appropriate output
 /// </summary>
 
-// I am Viktor
+// Please help, Will is overworking us, we need medical attention
 internal class HoneyScoop {
 	internal HoneyScoop() {
 	}

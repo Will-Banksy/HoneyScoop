@@ -1,18 +1,17 @@
-using System.Diagnostics.CodeAnalysis;
 using TreeCollections;
 
-namespace HoneyScoop.Searching.RegexImpl; 
+namespace HoneyScoop.Searching.RegexImpl;
 
 internal static class RegexParser {
-	internal class RegexAST : SerialTreeNode<RegexAST> {
+	internal class RegexAST : SerialTreeNode<RegexAST> { // TODO: Is SerialTreeNode the correct class to derive from?
 		internal RegexLexer.Token Token;
 
-		public RegexAST() { // public cause SerialTreeNode requires it
+		public RegexAST() { // public cause SerialTreeNode requires it. Actually not true C# requires it
 			Token = new RegexLexer.Token();
 		}
 		
-		internal RegexAST(RegexLexer.Token token, RegexAST[] children) : base(children) {
-			Token = token;
+		internal RegexAST(RegexLexer.Token rootToken, RegexAST[] children) : base(children) {
+			Token = rootToken;
 		}
 	}
 
@@ -24,7 +23,7 @@ internal static class RegexParser {
 		// Aight so how we doing this
 		// Step 1: Scan the tokens stream, collecting top level tokens
 		//     (literals and expressions, where an expression is basically an operator. Basically, a TLT is anything that should be concatenated together at the highest level)
-		// Step 2: 
+		// Step 2: TODO
 
 		var tlts = new List<RegexLexer.Token>(); // Top level tokens
 		bool opWantsArg = false;

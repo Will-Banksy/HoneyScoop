@@ -4,11 +4,11 @@ internal static class RegexLexer {
 	[Flags]
 	internal enum OperatorType {
 		/// <summary>
-		/// Concatenation operator <c>a'b</c> (infix) matches <c>a</c> followed by <c>b</c>
+		/// Concatenation operator <c>a'b</c> (infix)/<c>ab'</c> (postfix) matches <c>a</c> followed by <c>b</c>
 		/// </summary>
 		Concat,
 		/// <summary>
-		/// Alternation operator <c>a|b</c> (infix) matches <c>a</c> or <c>b</c>
+		/// Alternation operator <c>a|b</c> (infix)/<c>ab|</c> (postfix) matches <c>a</c> or <c>b</c>
 		/// </summary>
 		Alternate,
 		/// <summary>
@@ -23,6 +23,9 @@ internal static class RegexLexer {
 		/// Match-once loop alternation operator <c>+</c> matches <c>a</c> one or more times
 		/// </summary>
 		AlternateLoopOnce,
+		/// <summary>
+		/// For where anything else doesn't make sense
+		/// </summary>
 		None
 	}
 
@@ -33,6 +36,9 @@ internal static class RegexLexer {
 		OpenParenthesis,
 		CloseParenthesis,
 		Literal,
+		/// <summary>
+		/// For where anything else doesn't make sense
+		/// </summary>
 		None
 	}
 
@@ -130,7 +136,7 @@ internal static class RegexLexer {
 							if(src[i + 3] >= '0' && src[i + 3] <= '9' || src[i + 3] >= 'a' && src[i + 3] <= 'f') {
 								ReadOnlySpan<char> hexChars = src.AsSpan(i + 2, 2); // Using a span avoids unnecessarily allocating memory (which is slow)
 								string hex = new string(hexChars);
-								byte hexToByte = Convert.ToByte(hex, 16);
+								byte hexToByte = Convert.ToByte(hex, 16); // Corrected conversion of string to byte
 								tokens.Add(new Token(hexToByte));
 								i += 3;
 							}

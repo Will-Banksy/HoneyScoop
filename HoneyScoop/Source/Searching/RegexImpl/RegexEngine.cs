@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices.JavaScript;
+
 namespace HoneyScoop.Searching.RegexImpl; 
 
 internal static class RegexEngine {
@@ -42,7 +44,7 @@ internal static class RegexEngine {
 		// Inputs => Outputs
 		// ((ab*)|c)+def => ab*'c|+d'e'f'
 		
-		// Step 1: Use lexer to create token stream TODO implement lexer
+		// Step 1: Use lexer to create token stream
 		var tokens = RegexLexer.Tokenize(regex);
 		
 		// TODO Step 2: Parse token stream to create syntax tree
@@ -51,4 +53,11 @@ internal static class RegexEngine {
 
 		return regex;
 	}
+
+	private static List<RegexLexer.Token> ASTToPostfix(RegexParser.RegexAST ast) {
+		
+		
+		
+	} 
 }
+

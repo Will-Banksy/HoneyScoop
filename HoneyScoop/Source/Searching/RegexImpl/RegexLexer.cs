@@ -29,6 +29,18 @@ internal static class RegexLexer {
 		None
 	}
 
+	/// <summary>
+	/// An array of the operators in precedence order
+	/// </summary>
+	internal static int OperatorPrecedence(OperatorType type) {
+		return type switch {
+			OperatorType.AlternateLoop | OperatorType.AlternateLoopOnce | OperatorType.AlternateEmpty => 1,
+			OperatorType.Alternate => 2,
+			OperatorType.Concat => 3,
+			_ => 4
+		};
+	}
+
 	[Flags]
 	internal enum TokenType {
 		UnaryOperator,

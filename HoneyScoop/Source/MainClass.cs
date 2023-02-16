@@ -18,9 +18,9 @@ internal static class MainClass {
 		// Handle arguments, create HoneyScoop instance to perform work
 		// Might be an idea to spread the argument handling across different files or use a library for it (NuGet, e.g. https://www.nuget.org/packages/CommandLineParser#readme-body-tab)
 
-		var tokens = RegexLexer.Tokenize("()?\\x67*+|");
+		var tokens = RegexLexer.Tokenize(@"()?\x67*+|");
 		var tokenSpan = CollectionsMarshal.AsSpan(tokens); // Getting list as span, which is potentially unsafe, but allows RegexParser to not worry about it
-		RegexParser.ParseTokenStream(tokenSpan);
+		Console.WriteLine(string.Join(",", RegexParser.ParseTokenStream(tokenSpan)));
 		Console.WriteLine("Hello, The Hive");
 	}
 }

@@ -6,6 +6,8 @@
 // Explicit access modifiers for everything
 //     Everything is `internal` unless it is `private`
 
+// asdf
+
 // For notes on writing performant C# and for C# resources: https://willbanksy-pkb.notion.site/C-edef060a627f4f2babe13346a11e5962
 
 using System.Runtime.InteropServices;

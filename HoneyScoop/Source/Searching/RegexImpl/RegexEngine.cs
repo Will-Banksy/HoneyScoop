@@ -19,7 +19,28 @@ internal static class RegexEngine {
 	/// <returns></returns>
 	internal static FiniteStateMachine<byte> ParseRegex(string regex) {
 		var postfix = ConvertToPostfix(regex);
-		
+		Stack<FiniteStateMachine<byte>> finiteStack;
+
+		foreach (RegexLexer.Token token in postfix)
+		{
+			switch (token.Type)
+			{
+				case RegexLexer.TokenType.Literal:
+
+//TODO Push onto stack
+					break;
+				case RegexLexer.TokenType.UnaryOperator:
+//TODO pop once operate on finite state machine with operator with  another switch ()
+					break;
+				case RegexLexer.TokenType.BinaryOperator:
+					//TODO pop twice "" another switch
+					
+					break;
+			}
+			
+			
+		}
+
 		// TODO: Use stack to iterate through postfix expression and incrementally create the NFA
 		
 		return new FiniteStateMachine<byte>();

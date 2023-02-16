@@ -1,19 +1,19 @@
-using TreeCollections;
+// using TreeCollections;
 
 namespace HoneyScoop.Searching.RegexImpl;
 
 internal static class RegexParser {
-	internal class RegexAST : SerialTreeNode<RegexAST> { // TODO: Is SerialTreeNode the correct class to derive from?
-		internal RegexLexer.Token Token;
-
-		public RegexAST() { // public cause SerialTreeNode requires it. Actually not true C# requires it
-			Token = new RegexLexer.Token();
-		}
-		
-		internal RegexAST(RegexLexer.Token rootToken, RegexAST[] children) : base(children) {
-			Token = rootToken;
-		}
-	}
+	// internal class RegexAST : SerialTreeNode<RegexAST> { // TODO: Is SerialTreeNode the correct class to derive from?
+	// 	internal RegexLexer.Token Token;
+	//
+	// 	public RegexAST() { // public cause SerialTreeNode requires it. Actually not true C# requires it
+	// 		Token = new RegexLexer.Token();
+	// 	}
+	// 	
+	// 	internal RegexAST(RegexLexer.Token rootToken, RegexAST[] children) : base(children) {
+	// 		Token = rootToken;
+	// 	}
+	// }
 
 	/// <summary>
 	/// Produces an Abstract Syntax Tree for a regex from a token stream. This method assumes all binary operators are infix, while all unary operators are postfix
@@ -26,7 +26,7 @@ internal static class RegexParser {
 
 		List<RegexLexer.Token> postfix = new List<RegexLexer.Token>();
 
-		Stack<RegexLexer.Token> stack = new Stack<RegexLexer.Token>();
+		Stack<RegexLexer.Token> opStack = new Stack<RegexLexer.Token>();
 		
 		for(int i = 0; i < tokens.Length; i++) {
 			switch(tokens[i].Type) {
@@ -35,26 +35,44 @@ internal static class RegexParser {
 					break;
 				
 				case RegexLexer.TokenType.OpenParenthesis:
-					stack.Push(tokens[i]);
+					opStack.Push(tokens[i]);
 					break;
 				
 				case RegexLexer.TokenType.CloseParenthesis:
-					while(stack.Peek().Type != RegexLexer.TokenType.OpenParenthesis) {
-						postfix.Add(stack.Pop());
+					if(opStack.Count == 0) {
+						// If no matching '(' preceded this ')', throw exception
+						throw new ArgumentException("Unexpected ')'");
+					}
+					
+					while(opStack.Peek().Type != RegexLexer.TokenType.OpenParenthesis) {
+						postfix.Add(opStack.Pop());
 					}
 
-					stack.Pop();
+					opStack.Pop();
 					break;
 				
 				case RegexLexer.TokenType.UnaryOperator:
 				case RegexLexer.TokenType.BinaryOperator:
-					// Push tokens on to the stack in precedence order - Highest first
-					if(stack.Count != 0) {
-						if(RegexLexer.OperatorPrecedence(tokens[i].OpType) > RegexLexer.OperatorPrecedence(stack.Peek().OpType)) {
-						}
+					if(opStack.Count == 0) {
+						opStack.Push(tokens[i]);
+					} else if(tokens[i].OpType.Precedence() > opStack.Peek().OpType.Precedence()) {
+						opStack.Push(tokens[i]);
 					} else {
-						
+						while(opStack.Count != 0 && tokens[i].OpType.Precedence() <= opStack.Peek().OpType.Precedence()) {
+							postfix.Add(opStack.Pop());
+						}
+						opStack.Push(tokens[i]);
 					}
+					
+					// Push tokens on to the opStack in precedence order - Highest first
+					// if(opStack.Count != 0 && RegexLexer.OperatorPrecedence(tokens[i].OpType) > RegexLexer.OperatorPrecedence(opStack.Peek().OpType)) {
+					// 	opStack.Push(tokens[i]);
+					// } else {
+					// 	while(opStack.Count != 0 && RegexLexer.OperatorPrecedence(tokens[i].OpType) <= RegexLexer.OperatorPrecedence(opStack.Peek().OpType)) {
+					// 		postfix.Add(opStack.Pop());
+					// 	}
+					// 	opStack.Push(tokens[i]);
+					// }
 					break;
 			}
 		}

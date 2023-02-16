@@ -1,7 +1,6 @@
 namespace HoneyScoop.Searching.RegexImpl;
 
 internal static class RegexLexer {
-	[Flags]
 	internal enum OperatorType {
 		/// <summary>
 		/// Concatenation operator <c>a'b</c> (infix)/<c>ab'</c> (postfix) matches <c>a</c> followed by <c>b</c>
@@ -30,18 +29,17 @@ internal static class RegexLexer {
 	}
 
 	/// <summary>
-	/// An array of the operators in precedence order
+	/// Returns the precedence of the operator, where 0 is lowest and 3 is highest
 	/// </summary>
-	internal static int OperatorPrecedence(OperatorType type) {
+	internal static int Precedence(this OperatorType type) {
 		return type switch {
-			OperatorType.AlternateLoop | OperatorType.AlternateLoopOnce | OperatorType.AlternateEmpty => 1,
+			OperatorType.Concat => 1,
 			OperatorType.Alternate => 2,
-			OperatorType.Concat => 3,
-			_ => 4
+			OperatorType.AlternateLoop or OperatorType.AlternateLoopOnce or OperatorType.AlternateEmpty => 3,
+			_ => 0
 		};
 	}
 
-	[Flags]
 	internal enum TokenType {
 		UnaryOperator,
 		BinaryOperator,
@@ -97,7 +95,7 @@ internal static class RegexLexer {
 		/// <param name="opType"></param>
 		internal Token(OperatorType opType) {
 			Type = opType switch {
-				OperatorType.Concat | OperatorType.Alternate => TokenType.BinaryOperator,
+				OperatorType.Concat or OperatorType.Alternate => TokenType.BinaryOperator,
 				OperatorType.None => TokenType.None,
 				_ => TokenType.UnaryOperator
 			};
@@ -111,6 +109,27 @@ internal static class RegexLexer {
 		internal Token(byte literalValue) {
 			Type = TokenType.Literal;
 			LiteralValue = literalValue;
+		}
+
+		public string ToDebugString() {
+			return $"Token(Type={Type},OpType={OpType},LiteralValue={LiteralValue})";
+		}
+
+		public override string ToString() {
+			return Type switch {
+				TokenType.Literal => $"\\x{Convert.ToString(LiteralValue, 16)}",
+				TokenType.OpenParenthesis => "(",
+				TokenType.CloseParenthesis => ")",
+				TokenType.UnaryOperator or TokenType.BinaryOperator => OpType switch {
+					OperatorType.AlternateEmpty => "?",
+					OperatorType.AlternateLoop => "*",
+					OperatorType.AlternateLoopOnce => "+",
+					OperatorType.Alternate => "|",
+					OperatorType.Concat => "'",
+					_ => " "
+				},
+				_ => " "
+			};
 		}
 	}
 

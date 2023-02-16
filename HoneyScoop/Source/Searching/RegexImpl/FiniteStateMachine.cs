@@ -94,7 +94,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// Empty Alternation: <c>a.AlternateEmpty() => a?</c>
 	/// </summary>
 	/// <returns></returns>
-	private FiniteStateMachine<T> AlternateEmpty() {
+	internal FiniteStateMachine<T> AlternateEmpty() {
 		this.Start.AddEpsilonConnection(this.End);
 		
 		return this;

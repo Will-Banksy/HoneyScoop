@@ -19,7 +19,7 @@ internal static class RegexEngine {
 	/// <returns></returns>
 	internal static FiniteStateMachine<byte> ParseRegex(string regex) {
 		var postfix = ConvertToPostfix(regex);
-		Stack<FiniteStateMachine<byte>> finiteStack;
+		Stack<FiniteStateMachine<byte>> finiteStack = new Stack<FiniteStateMachine<byte>>();
 
 		foreach (RegexLexer.Token token in postfix)
 		{
@@ -31,6 +31,9 @@ internal static class RegexEngine {
 					break;
 				case RegexLexer.TokenType.UnaryOperator:
 //TODO pop once operate on finite state machine with operator with  another switch ()
+					var nfa0 = finiteStack.Pop();
+					nfa0.AlternateEmpty();
+					finiteStack.Push(nfa0);
 					break;
 				case RegexLexer.TokenType.BinaryOperator:
 					//TODO pop twice "" another switch

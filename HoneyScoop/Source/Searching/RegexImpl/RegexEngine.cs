@@ -26,19 +26,56 @@ internal static class RegexEngine {
 			switch (token.Type)
 			{
 				case RegexLexer.TokenType.Literal:
-
+					finiteStack.Push(token.LiteralValue);
 //TODO Push onto stack
 					break;
 				case RegexLexer.TokenType.UnaryOperator:
+					switch (token.OpType)
+					{
+						case RegexLexer.OperatorType.AlternateEmpty: 
+							var nfaAltEmp = finiteStack.Pop();
+							nfaAltEmp.AlternateEmpty();
+							finiteStack.Push(nfaAltEmp);
+							break;
+						case RegexLexer.OperatorType.AlternateLoop:
+							var nfaAltLoop = finiteStack.Pop();
+							nfaAltLoop.AlternateLoop();
+								finiteStack.Push(nfaAltLoop);
+							break;
+						case RegexLexer.OperatorType.AlternateLoopOnce:
+							var nfaAltLoopOnce = finiteStack.Pop();
+							nfaAltLoopOnce.AlternateLoopOnce();
+							finiteStack.Push(nfaAltLoopOnce);
+					}
 //TODO pop once operate on finite state machine with operator with  another switch ()
-					var nfa0 = finiteStack.Pop();
-					nfa0.AlternateEmpty();
-					finiteStack.Push(nfa0);
-					break;
-				case RegexLexer.TokenType.BinaryOperator:
-					//TODO pop twice "" another switch
+					
+					
+					
 					
 					break;
+				case RegexLexer.TokenType.BinaryOperator:
+					switch (token.OpType)
+					{
+						case RegexLexer.OperatorType.Alternate:
+							var firstPopAlt = finiteStack.Pop();
+							var nfaAlt = finiteStack.Pop();
+							nfaAlt.Alternate(nfaAlt);
+							finiteStack.Push(nfaAlt);
+							finiteStack.Push(firstPopAlt);
+							break;
+						case RegexLexer.OperatorType.Concat:
+							var firstPopCon = finiteStack.Pop();
+							var nfaCon = finiteStack.Pop();
+							nfaCon.Concatenate(nfaCon);
+							finiteStack.Push(nfaCon);
+							finiteStack.Push(firstPopCon);
+							break;
+					}
+					//TODO pop twice "" another switch
+					
+					
+					break;
+				
 			}
 			
 			

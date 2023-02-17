@@ -67,7 +67,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// </summary>
 	/// <param name="other"></param>
 	/// <returns></returns>
-	private FiniteStateMachine<T> Concatenate(FiniteStateMachine<T> other) {
+	internal FiniteStateMachine<T> Concatenate(FiniteStateMachine<T> other) {
 		this.End.AddConnection(new StateConnection(other.Start, default, true));
 		return new FiniteStateMachine<T>(this.Start, other.End);
 	}
@@ -77,7 +77,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// </summary>
 	/// <param name="other"></param>
 	/// <returns></returns>
-	private FiniteStateMachine<T> Alternate(FiniteStateMachine<T> other) {
+	internal FiniteStateMachine<T> Alternate(FiniteStateMachine<T> other) {
 		// Slight optimisation: Use this.Start instead of creating new start state. Should be functionally identical
 		// TODO: Could optimise out the endState too actually and just have the end state be the end state of `this` or `other`
 		var endState = new State();
@@ -104,7 +104,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// Loop Alternation: <c>a.AlternateLoop() => a*</c>
 	/// </summary>
 	/// <returns></returns>
-	private FiniteStateMachine<T> AlternateLoop() {
+	internal FiniteStateMachine<T> AlternateLoop() {
 		// TODO: Test - This is different to implementations I've come across in research - But as far as I can think it is functionally identical?
 		this.Start.AddEpsilonConnection(this.End);
 		this.End.AddEpsilonConnection(this.Start);
@@ -116,7 +116,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// Once-Mandatory Loop Alternation: <c>a.AlternateLoopOnce() => a+</c>
 	/// </summary>
 	/// <returns></returns>
-	private FiniteStateMachine<T> AlternateLoopOnce() {
+	internal FiniteStateMachine<T> AlternateLoopOnce() {
 		this.End.AddEpsilonConnection(this.Start);
 		
 		return this;

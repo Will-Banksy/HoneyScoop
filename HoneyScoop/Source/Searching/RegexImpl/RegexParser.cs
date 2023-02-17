@@ -16,14 +16,13 @@ internal static class RegexParser {
 	// }
 
 	/// <summary>
-	/// Produces an Abstract Syntax Tree for a regex from a token stream. This method assumes all binary operators are infix, while all unary operators are postfix
+	/// Rearranges an infix stream of tokens to postfix.
+	/// This method assumes all binary operators are infix, while all unary operators are postfix.
+	/// Error handling is minimal.<br /><br />
+	/// See <a href="https://www.web4college.com/converters/infix-to-postfix-prefix.php">https://www.web4college.com/converters/infix-to-postfix-prefix.php</a>
 	/// </summary>
 	/// <param name="tokens"></param>
-	internal static List<RegexLexer.Token> ParseTokenStream(ReadOnlySpan<RegexLexer.Token> tokens) {
-		// Aight so how we doing this
-		// Step 1: Find each sub-expression, innermost to outermost
-		// Step 2: TODO
-
+	internal static List<RegexLexer.Token> RearrangeToPostfix(ReadOnlySpan<RegexLexer.Token> tokens) { // TODO: Complete this. With error handling?
 		List<RegexLexer.Token> postfix = new List<RegexLexer.Token>();
 
 		Stack<RegexLexer.Token> opStack = new Stack<RegexLexer.Token>();
@@ -63,16 +62,6 @@ internal static class RegexParser {
 						}
 						opStack.Push(tokens[i]);
 					}
-					
-					// Push tokens on to the opStack in precedence order - Highest first
-					// if(opStack.Count != 0 && RegexLexer.OperatorPrecedence(tokens[i].OpType) > RegexLexer.OperatorPrecedence(opStack.Peek().OpType)) {
-					// 	opStack.Push(tokens[i]);
-					// } else {
-					// 	while(opStack.Count != 0 && RegexLexer.OperatorPrecedence(tokens[i].OpType) <= RegexLexer.OperatorPrecedence(opStack.Peek().OpType)) {
-					// 		postfix.Add(opStack.Pop());
-					// 	}
-					// 	opStack.Push(tokens[i]);
-					// }
 					break;
 			}
 		}

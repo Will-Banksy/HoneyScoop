@@ -25,7 +25,7 @@ internal static class MainClass {
 		PrintTokens(tokens);
 		Console.WriteLine();
 		var tokenSpan = CollectionsMarshal.AsSpan(tokens); // Getting list as span, which is potentially unsafe, but allows RegexParser to not worry about it
-		var postfix = RegexParser.ParseTokenStream(tokenSpan);
+		var postfix = RegexParser.RearrangeToPostfix(tokenSpan);
 		Console.Write("Postfix: ");
 		PrintTokens(postfix);
 		Console.WriteLine();

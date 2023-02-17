@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 
-namespace HoneyScoop.Searching.RegexImpl; 
+namespace HoneyScoop.Searching.RegexImpl;
 
 internal static class RegexEngine {
 	/// <summary>
@@ -18,44 +18,39 @@ internal static class RegexEngine {
 	/// <param name="regex"></param>
 	/// <returns></returns>
 	internal static FiniteStateMachine<byte> ParseRegex(string regex) {
-		var postfix = ConvertToPostfix(regex);
+		var postfix = ParseToPostfix(regex);
 		Stack<FiniteStateMachine<byte>> finiteStack = new Stack<FiniteStateMachine<byte>>();
 
-		foreach (RegexLexer.Token token in postfix)
-		{
-			switch (token.Type)
-			{
+		foreach(RegexLexer.Token token in postfix) {
+			switch(token.Type) {
 				case RegexLexer.TokenType.Literal:
-					finiteStack.Push(token.LiteralValue);
-//TODO Push onto stack
+					finiteStack.Push(new FiniteStateMachine<byte>(token.LiteralValue));
 					break;
+				
 				case RegexLexer.TokenType.UnaryOperator:
-					switch (token.OpType)
-					{
-						case RegexLexer.OperatorType.AlternateEmpty: 
+					switch(token.OpType) {
+						case RegexLexer.OperatorType.AlternateEmpty:
 							var nfaAltEmp = finiteStack.Pop();
 							nfaAltEmp.AlternateEmpty();
 							finiteStack.Push(nfaAltEmp);
 							break;
+						
 						case RegexLexer.OperatorType.AlternateLoop:
 							var nfaAltLoop = finiteStack.Pop();
 							nfaAltLoop.AlternateLoop();
-								finiteStack.Push(nfaAltLoop);
+							finiteStack.Push(nfaAltLoop);
 							break;
+						
 						case RegexLexer.OperatorType.AlternateLoopOnce:
 							var nfaAltLoopOnce = finiteStack.Pop();
 							nfaAltLoopOnce.AlternateLoopOnce();
 							finiteStack.Push(nfaAltLoopOnce);
+							break;
 					}
-//TODO pop once operate on finite state machine with operator with  another switch ()
-					
-					
-					
-					
 					break;
+				
 				case RegexLexer.TokenType.BinaryOperator:
-					switch (token.OpType)
-					{
+					switch(token.OpType) {
 						case RegexLexer.OperatorType.Alternate:
 							var firstPopAlt = finiteStack.Pop();
 							var nfaAlt = finiteStack.Pop();
@@ -63,6 +58,7 @@ internal static class RegexEngine {
 							finiteStack.Push(nfaAlt);
 							finiteStack.Push(firstPopAlt);
 							break;
+						
 						case RegexLexer.OperatorType.Concat:
 							var firstPopCon = finiteStack.Pop();
 							var nfaCon = finiteStack.Pop();
@@ -71,19 +67,11 @@ internal static class RegexEngine {
 							finiteStack.Push(firstPopCon);
 							break;
 					}
-					//TODO pop twice "" another switch
-					
-					
 					break;
-				
 			}
-			
-			
 		}
-
-		// TODO: Use stack to iterate through postfix expression and incrementally create the NFA
 		
-		return new FiniteStateMachine<byte>();
+		return new FiniteStateMachine<byte>(); // TODO: Return something meaningful/correct
 	}
 
 	/// <summary>
@@ -101,18 +89,17 @@ internal static class RegexEngine {
 	/// </summary>
 	/// <param name="regex"></param>
 	/// <returns></returns>
-	private static List<RegexLexer.Token> ConvertToPostfix(string regex) {
+	private static List<RegexLexer.Token> ParseToPostfix(string regex) {
 		// Each postfix operator produces 1 NFA. Operators | and ' take 2 NFAs the rest take 1
 		// Inputs => Outputs
 		// ((ab*)|c)+def => ab*'c|+d'e'f'
-		
+
 		// Step 1: Use lexer to create token stream
 		var tokens = RegexLexer.Tokenize(regex);
 
 		// Use a stack to turn turn the infix token stream into a postfix one
-		var postfix = RegexParser.ParseTokenStream(CollectionsMarshal.AsSpan(tokens));
+		var postfix = RegexParser.RearrangeToPostfix(CollectionsMarshal.AsSpan(tokens));
 
 		return tokens;
 	}
 }
-

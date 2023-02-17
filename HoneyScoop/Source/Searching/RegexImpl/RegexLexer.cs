@@ -6,22 +6,27 @@ internal static class RegexLexer {
 		/// Concatenation operator <c>a'b</c> (infix)/<c>ab'</c> (postfix) matches <c>a</c> followed by <c>b</c>
 		/// </summary>
 		Concat,
+
 		/// <summary>
 		/// Alternation operator <c>a|b</c> (infix)/<c>ab|</c> (postfix) matches <c>a</c> or <c>b</c>
 		/// </summary>
 		Alternate,
+
 		/// <summary>
 		/// Empty alternation operator <c>a?</c> matches <c>a</c> or nothing
 		/// </summary>
 		AlternateEmpty,
+
 		/// <summary>
 		/// Loop alternation operator <c>a*</c> matches <c>a</c> none or more times
 		/// </summary>
 		AlternateLoop,
+
 		/// <summary>
 		/// Match-once loop alternation operator <c>+</c> matches <c>a</c> one or more times
 		/// </summary>
 		AlternateLoopOnce,
+
 		/// <summary>
 		/// For where anything else doesn't make sense
 		/// </summary>
@@ -46,6 +51,7 @@ internal static class RegexLexer {
 		OpenParenthesis,
 		CloseParenthesis,
 		Literal,
+
 		/// <summary>
 		/// For where anything else doesn't make sense
 		/// </summary>
@@ -54,12 +60,12 @@ internal static class RegexLexer {
 
 	internal readonly struct Token {
 		internal readonly TokenType Type = TokenType.None;
-		
+
 		/// <summary>
 		/// Only really has meaning if the Type is TokenType.UnaryOperator or TokenType.BinaryOperator
 		/// </summary>
 		internal readonly OperatorType OpType = OperatorType.None;
-		
+
 		/// <summary>
 		/// Only really has meaning if the Type is TokenType.Literal
 		/// </summary>
@@ -111,10 +117,14 @@ internal static class RegexLexer {
 			LiteralValue = literalValue;
 		}
 
-		public string ToDebugString() {
+		public string ToDebugString() { // TODO: This might be the sort of thing that should be in ToString so maybe need to rethink this not that it particularly matters
 			return $"Token(Type={Type},OpType={OpType},LiteralValue={LiteralValue})";
 		}
 
+		/// <summary>
+		/// Very much does not return the fully qualified type name of this class/instance but returns a string representation of the Token
+		/// </summary>
+		/// <returns></returns>
 		public override string ToString() {
 			return Type switch {
 				TokenType.Literal => $"\\x{Convert.ToString(LiteralValue, 16)}",
@@ -146,21 +156,27 @@ internal static class RegexLexer {
 				case '|':
 					tokens.Add(new Token(OperatorType.Alternate));
 					break;
+
 				case '(':
 					tokens.Add(new Token(TokenType.OpenParenthesis));
 					break;
+
 				case ')':
 					tokens.Add(new Token(TokenType.CloseParenthesis));
 					break;
+				
 				case '+':
 					tokens.Add(new Token(OperatorType.AlternateLoopOnce));
 					break;
+				
 				case '*':
 					tokens.Add(new Token(OperatorType.AlternateLoop));
 					break;
+				
 				case '?':
 					tokens.Add(new Token(OperatorType.AlternateEmpty));
 					break;
+				
 				case '\\':
 					if(src[i + 1] == 'x') {
 						if(src[i + 2] >= '0' && src[i + 2] <= '9' || src[i + 2] >= 'a' && src[i + 2] <= 'f') {
@@ -173,7 +189,6 @@ internal static class RegexLexer {
 							}
 						}
 					}
-
 					break;
 			}
 		}

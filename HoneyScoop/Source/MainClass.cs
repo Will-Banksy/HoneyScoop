@@ -16,28 +16,31 @@ using HoneyScoop.Searching.RegexImpl;
 namespace HoneyScoop;
 
 internal static class MainClass {
+	/// <summary>
+	/// Just using the Main function for testing rn
+	/// </summary>
+	/// <param name="args"></param>
 	public static void Main(string[] args) {
 		// Handle arguments, create HoneyScoop instance to perform work
 		// Might be an idea to spread the argument handling across different files or use a library for it (NuGet, e.g. https://www.nuget.org/packages/CommandLineParser#readme-body-tab)
 		
-		var tokens = RegexLexer.Tokenize(@"((\x0a\x0b*)|\x0c?)+\x0d\x0e\x0f");
-		Console.Write("Infix: ");
-		PrintTokens(tokens);
-		Console.WriteLine();
-		var tokenSpan = CollectionsMarshal.AsSpan(tokens); // Getting list as span, which is potentially unsafe, but allows RegexParser to not worry about it
-		var postfix = RegexParser.RearrangeToPostfix(tokenSpan);
+		var infix = @"((\x0a\x0b*)|\x0c?)+\x0d\x0e\x0f";
+		Console.WriteLine($"Infix: {infix}");
+		var postfix = RegexEngine.ParseToPostfix(infix);
 		Console.Write("Postfix: ");
-		PrintTokens(postfix);
+		PrintTokens(postfix); // Works
 		Console.WriteLine();
+		
 		Console.WriteLine("Hello, The Hive");
 	}
 
+	/// <summary>
+	/// Could be generic tbf but just loops through a token list and prints each item (no separators or newlines)
+	/// </summary>
+	/// <param name="tokens"></param>
 	private static void PrintTokens(List<RegexLexer.Token> tokens) {
-		// Console.Write("[");
 		foreach(var t in tokens) {
 			Console.Write(t);
-			// Console.Write(",");
 		}
-		// Console.WriteLine("]");
 	}
 }

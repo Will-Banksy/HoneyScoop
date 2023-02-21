@@ -1,55 +1,45 @@
-// using TreeCollections;
-
 namespace HoneyScoop.Searching.RegexImpl;
 
 internal static class RegexParser {
-	// internal class RegexAST : SerialTreeNode<RegexAST> { // TODO: Is SerialTreeNode the correct class to derive from?
-	// 	internal RegexLexer.Token Token;
-	//
-	// 	public RegexAST() { // public cause SerialTreeNode requires it. Actually not true C# requires it
-	// 		Token = new RegexLexer.Token();
-	// 	}
-	// 	
-	// 	internal RegexAST(RegexLexer.Token rootToken, RegexAST[] children) : base(children) {
-	// 		Token = rootToken;
-	// 	}
-	// }
-
 	/// <summary>
-	/// Rearranges an infix stream of tokens to postfix.
+	/// Rearranges an infix stream of tokens to postfix using the Shunting-Yard algorithm
 	/// This method assumes all binary operators are infix, while all unary operators are postfix.
 	/// Error handling is minimal.<br /><br />
-	/// See <a href="https://www.web4college.com/converters/infix-to-postfix-prefix.php">https://www.web4college.com/converters/infix-to-postfix-prefix.php</a>
+	/// See <a href="https://www.web4college.com/converters/infix-to-postfix-prefix.php">https://www.web4college.com/converters/infix-to-postfix-prefix.php</a> and <a href="https://blog.cernera.me/converting-regular-expressions-to-postfix-notation-with-the-shunting-yard-algorithm/">https://blog.cernera.me/converting-regular-expressions-to-postfix-notation-with-the-shunting-yard-algorithm/</a>
 	/// </summary>
 	/// <param name="tokens"></param>
-	internal static List<RegexLexer.Token> RearrangeToPostfix(ReadOnlySpan<RegexLexer.Token> tokens) { // TODO: Complete this. With error handling?
-		List<RegexLexer.Token> postfix = new List<RegexLexer.Token>();
+	internal static List<RegexLexer.Token> RearrangeToPostfix(List<RegexLexer.Token> tokens) { // TODO: Comments and perhaps error handling?
+		// Preprocess the list to insert explicit concatenation operators
+		InsertExplicitConcats(tokens);
 
-		Stack<RegexLexer.Token> opStack = new Stack<RegexLexer.Token>();
+		// The following code will correctly turn infix into postfix using the Shunting-Yard algorithm
 		
-		for(int i = 0; i < tokens.Length; i++) {
+		List<RegexLexer.Token> postfix = new List<RegexLexer.Token>();
+		Stack<RegexLexer.Token> opStack = new Stack<RegexLexer.Token>();
+
+		for(int i = 0; i < tokens.Count; i++) {
 			switch(tokens[i].Type) {
 				case RegexLexer.TokenType.Literal:
 					postfix.Add(tokens[i]);
 					break;
-				
+
 				case RegexLexer.TokenType.OpenParenthesis:
 					opStack.Push(tokens[i]);
 					break;
-				
+
 				case RegexLexer.TokenType.CloseParenthesis:
 					if(opStack.Count == 0) {
 						// If no matching '(' preceded this ')', throw exception
 						throw new ArgumentException("Unexpected ')'");
 					}
-					
+
 					while(opStack.Peek().Type != RegexLexer.TokenType.OpenParenthesis) {
 						postfix.Add(opStack.Pop());
 					}
 
 					opStack.Pop();
 					break;
-				
+
 				case RegexLexer.TokenType.UnaryOperator:
 				case RegexLexer.TokenType.BinaryOperator:
 					if(opStack.Count == 0) {
@@ -60,62 +50,34 @@ internal static class RegexParser {
 						while(opStack.Count != 0 && tokens[i].OpType.Precedence() <= opStack.Peek().OpType.Precedence()) {
 							postfix.Add(opStack.Pop());
 						}
+
 						opStack.Push(tokens[i]);
 					}
+
 					break;
 			}
 		}
 
-		// var tlts = new List<RegexLexer.Token>(); // Top level tokens
-		// bool opWantsArg = false;
-		//
-		// for(int i = 0; i < tokens.Length; i++) {
-		// 	if(i < tokens.Length - 1) {
-		// 		switch(tokens[i + 1].Type) {
-		// 			case RegexLexer.TokenType.UnaryOperator:
-		// 			case RegexLexer.TokenType.BinaryOperator: {
-		// 				opWantsArg = true;
-		// 				break;
-		// 			}
-		// 		}
-		// 	}
-		// 	switch(tokens[i].Type) {
-		// 		case RegexLexer.TokenType.Literal: {
-		// 			Console.WriteLine("Literal (" + tokens[i].LiteralValue + ")");
-		// 			if(!opWantsArg) {
-		// 				tlts.Add(tokens[i]);
-		// 			}
-		// 			opWantsArg = false;
-		// 			break;
-		// 		}
-		// 		case RegexLexer.TokenType.BinaryOperator: {
-		// 			Console.WriteLine("BinaryOp");
-		// 			opWantsArg = true;
-		// 			break;
-		// 		}
-		// 		case RegexLexer.TokenType.UnaryOperator: {
-		// 			Console.WriteLine("UnaryOp");
-		// 			opWantsArg = false;
-		// 			break;
-		// 		}
-		// 		case RegexLexer.TokenType.OpenParenthesis: {
-		// 			Console.WriteLine("OpenParen");
-		// 			var j = i;
-		// 			for(; j < tokens.Length; j++) {
-		// 				// TODO: Skip until matching closing parenthesis (which is not necessarily the next one)
-		// 				break;
-		// 			}
-		// 			i = j;
-		// 			break;
-		// 		}
-		// 		case RegexLexer.TokenType.CloseParenthesis: {
-		// 			Console.WriteLine("CloseParen");
-		// 			break;
-		// 		}
-		// 	};
-		// }
+		// Pop any remaining operators off the operator stack and add them to the postfix expression
+		while(opStack.Count > 0) {
+			postfix.Add(opStack.Pop());
+		}
 
-		// return new RegexAST(); // TODO: Actually return something meaningful
 		return postfix;
+	}
+
+	/// <summary>
+	/// This function inserts explicit concatenation operators into an infix token stream where needed. The token stream is modified in-place<br />
+	/// Concatenation operators (') are inserted between adjacent subexpressions, e.g. ab => a'b, a(b|c) => a'(b|c), (a+b)(c|de) => (a+'b)'(c|d'e)
+	/// </summary>
+	/// <param name="tokens"></param>
+	private static void InsertExplicitConcats(List<RegexLexer.Token> tokens) {
+		for(int i = 1; i < tokens.Count; i++) {
+			if((tokens[i - 1].Type == RegexLexer.TokenType.Literal || tokens[i - 1].Type == RegexLexer.TokenType.CloseParenthesis) && (tokens[i].Type == RegexLexer.TokenType.Literal || tokens[i].Type == RegexLexer.TokenType.OpenParenthesis)) { // Handle case ab => a'b, )( => )'(, )a => )'a, a( => a'(
+				tokens.Insert(i, new RegexLexer.Token(RegexLexer.OperatorType.Concat));
+			} else if(tokens[i - 1].Type == RegexLexer.TokenType.UnaryOperator && (tokens[i].Type == RegexLexer.TokenType.Literal || tokens[i].Type == RegexLexer.TokenType.OpenParenthesis)) { // Handle case +a => +'a, +( => +'(
+				tokens.Insert(i, new RegexLexer.Token(RegexLexer.OperatorType.Concat));
+			}
+		}
 	}
 }

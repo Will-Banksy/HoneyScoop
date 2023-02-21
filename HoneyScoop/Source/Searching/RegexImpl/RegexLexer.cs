@@ -127,7 +127,7 @@ internal static class RegexLexer {
 		/// <returns></returns>
 		public override string ToString() {
 			return Type switch {
-				TokenType.Literal => $"\\x{Convert.ToString(LiteralValue, 16)}",
+				TokenType.Literal => $"\\x{Convert.ToString(LiteralValue, 16).PadLeft(2, '0')}",
 				TokenType.OpenParenthesis => "(",
 				TokenType.CloseParenthesis => ")",
 				TokenType.UnaryOperator or TokenType.BinaryOperator => OpType switch {
@@ -175,6 +175,10 @@ internal static class RegexLexer {
 				
 				case '?':
 					tokens.Add(new Token(OperatorType.AlternateEmpty));
+					break;
+				
+				case '\'': // Strictly speaking this isn't necessary but it might be like an idea to have just in case
+					tokens.Add(new Token(OperatorType.Concat));
 					break;
 				
 				case '\\':

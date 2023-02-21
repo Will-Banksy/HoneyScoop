@@ -1,6 +1,3 @@
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.JavaScript;
-
 namespace HoneyScoop.Searching.RegexImpl;
 
 internal static class RegexEngine {
@@ -89,7 +86,7 @@ internal static class RegexEngine {
 	/// </summary>
 	/// <param name="regex"></param>
 	/// <returns></returns>
-	private static List<RegexLexer.Token> ParseToPostfix(string regex) {
+	internal static List<RegexLexer.Token> ParseToPostfix(string regex) { // TODO Make private. Internal for testing
 		// Each postfix operator produces 1 NFA. Operators | and ' take 2 NFAs the rest take 1
 		// Inputs => Outputs
 		// ((ab*)|c)+def => ab*'c|+d'e'f'
@@ -97,9 +94,9 @@ internal static class RegexEngine {
 		// Step 1: Use lexer to create token stream
 		var tokens = RegexLexer.Tokenize(regex);
 
-		// Use a stack to turn turn the infix token stream into a postfix one
-		var postfix = RegexParser.RearrangeToPostfix(CollectionsMarshal.AsSpan(tokens));
+		// Rearrange that token stream to postfix
+		var postfix = RegexParser.RearrangeToPostfix(tokens);
 
-		return tokens;
+		return postfix;
 	}
 }

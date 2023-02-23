@@ -8,6 +8,7 @@ namespace HoneyScoop.Searching.RegexImpl;
 /// </summary>
 /// <typeparam name="T">The type of data that the NFA is matching</typeparam>
 internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make this capable of matching the '.' metacharacter. Hang on you can just do "a?" right? no?
+	// TODO: Restructure into a State Transition Table (STT) (if appropriate which I think it is). Try and keep the API similar to how it currently is without harming the efficiency of the implementation of the STT. The API might require some changes lmao
 	/// <summary>
 	/// Reference type so that instances of State can be referenced all over
 	/// <br /><br />
@@ -42,19 +43,8 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 			return this;
 		}
 
-		public bool Equals(State other) {
-			return _connections.Except(other._connections).Any();
-		}
-
-		public override bool Equals(object? obj) {
-			if(ReferenceEquals(null, obj)) return false;
-			if(ReferenceEquals(this, obj)) return true;
-			if(obj.GetType() != this.GetType()) return false;
-			return Equals((State)obj);
-		}
-
-		public override int GetHashCode() {
-			return _connections.GetHashCode();
+		internal List<StateConnection> Connections() {
+			return _connections;
 		}
 	}
 
@@ -64,17 +54,17 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// </summary>
 	internal readonly record struct StateConnection(State Next, T Symbol, bool Transparent);
 
-	internal readonly State Start;
-	internal readonly State End;
+	private readonly State _start;
+	private readonly State _end;
 	
 	internal FiniteStateMachine(T? symbol) {
-		End = new State();
-		Start = new State().AddConnection(new StateConnection(End, symbol ?? default(T), !symbol.HasValue));
+		_end = new State();
+		_start = new State().AddConnection(new StateConnection(_end, symbol ?? default(T), !symbol.HasValue));
 	}
 
 	private FiniteStateMachine(State start, State end) {
-		Start = start;
-		End = end;
+		_start = start;
+		_end = end;
 	}
 
 	/// <summary>
@@ -83,8 +73,8 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// <param name="other"></param>
 	/// <returns></returns>
 	internal FiniteStateMachine<T> Concatenate(FiniteStateMachine<T> other) {
-		this.End.AddConnection(new StateConnection(other.Start, default, true));
-		return new FiniteStateMachine<T>(this.Start, other.End);
+		this._end.AddConnection(new StateConnection(other._start, default, true));
+		return new FiniteStateMachine<T>(this._start, other._end);
 	}
 
 	/// <summary>
@@ -97,12 +87,12 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 		// TODO: Could optimise out the endState too actually and just have the end state be the end state of `this` or `other`
 		var endState = new State();
 
-		this.Start.AddEpsilonConnection(other.Start);
+		this._start.AddEpsilonConnection(other._start);
 		
-		this.End.AddEpsilonConnection(endState);
-		other.End.AddEpsilonConnection(endState);
+		this._end.AddEpsilonConnection(endState);
+		other._end.AddEpsilonConnection(endState);
 		
-		return new FiniteStateMachine<T>(this.Start, endState);
+		return new FiniteStateMachine<T>(this._start, endState);
 	}
 
 	/// <summary>
@@ -110,7 +100,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// </summary>
 	/// <returns></returns>
 	internal FiniteStateMachine<T> AlternateEmpty() {
-		this.Start.AddEpsilonConnection(this.End);
+		this._start.AddEpsilonConnection(this._end);
 		
 		return this;
 	}
@@ -121,8 +111,8 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// <returns></returns>
 	internal FiniteStateMachine<T> AlternateLoop() {
 		// TODO: Test - This is different to implementations I've come across in research - But as far as I can think it is functionally identical?
-		this.Start.AddEpsilonConnection(this.End);
-		this.End.AddEpsilonConnection(this.Start);
+		this._start.AddEpsilonConnection(this._end);
+		this._end.AddEpsilonConnection(this._start);
 		
 		return this;
 	}
@@ -132,20 +122,29 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// </summary>
 	/// <returns></returns>
 	internal FiniteStateMachine<T> AlternateLoopOnce() {
-		this.End.AddEpsilonConnection(this.Start);
+		this._end.AddEpsilonConnection(this._start);
 		
 		return this;
 	}
 
-	public bool Equals(FiniteStateMachine<T> other) {
-		return Equals(Start, other.Start) && Equals(End, other.End);
+	/// <summary>
+	/// Ah shit this is actually quite complex... Deep object comparison
+	/// </summary>
+	/// <param name="other"></param>
+	/// <returns></returns>
+	internal bool Equals(FiniteStateMachine<T> other) {
+		// return Equals(Start, other.Start) && Equals(End, other.End);
+
+		return false;
+	}
+
+	internal bool CompareState(State state) {
+		var conns = state.Connections();
+		
+		return false;
 	}
 
 	public override bool Equals(object? obj) {
 		return obj is FiniteStateMachine<T> other && Equals(other);
-	}
-
-	public override int GetHashCode() {
-		return HashCode.Combine(Start, End);
 	}
 }

@@ -9,9 +9,7 @@
 // For notes on writing performant C# and for C# resources: https://willbanksy-pkb.notion.site/C-edef060a627f4f2babe13346a11e5962
 
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using HoneyScoop.Searching.RegexImpl;
-using CommandLine;
 
 namespace HoneyScoop;
 
@@ -24,20 +22,29 @@ internal static class MainClass {
 		// Handle arguments, create HoneyScoop instance to perform work
 		// Might be an idea to spread the argument handling across different files or use a library for it (NuGet, e.g. https://www.nuget.org/packages/CommandLineParser#readme-body-tab)
 		
+		#region Testing
+		
 		var infix = @"((\x0a\x0b*)|\x0c?)+\x0d\x0e\x0f";
 		Console.WriteLine($"Infix: {infix}");
 		var postfix = RegexEngine.ParseToPostfix(infix);
 		Console.Write("Postfix: ");
 		PrintTokens(postfix); // Works
 		Console.WriteLine();
-
 		
+		var regex = @"\x0a";
+		var expected = new FiniteStateMachine<byte>(0x0a);
+		var got = RegexEngine.ParseRegex(regex);
+		Debug.Assert(got.Equals(expected), "Test Failed: ParseRegex doesn't work :(");
+
+		Console.WriteLine("Hello, The Hive");
+		
+		#endregion
 		
 		// Taking in Command line arguments
 		// Works only after running ParseArgs, which sets the CLI arguments as required
 		
-		Helpers TakenArguments = new Helpers();
-		List<string> DefinedArguments = TakenArguments.ParseArgs(args);
+		Helpers takenArguments = new Helpers();
+		List<string> definedArguments = takenArguments.ParseArgs(args);
 		
 		// Accessible arguments:
 		// Pattern: TakenArguments.COMMAND_LINE_ARGUMENT
@@ -48,16 +55,6 @@ internal static class MainClass {
 		// TakenArguments.Timestamp Boolean if the output directories are to be timestamped, false by default
 		// TakenArguments.NoOrganise Boolean if organising by filetype is not needed, false by default(or organised by default)
 		// DefinedArguments a List of the filetypes needed to search for.
-
-		
-		
-
-		var regex = @"\x0a";
-		var expected = new FiniteStateMachine<byte>(0x0a);
-		var got = RegexEngine.ParseRegex(regex);
-		Debug.Assert(got.Equals(expected), "Test Failed: ParseRegex doesn't work :(");
-
-		Console.WriteLine("Hello, The Hive");
 	}
 
 	/// <summary>

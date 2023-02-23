@@ -152,8 +152,8 @@ internal static class RegexLexer {
 		var tokens = new List<Token>();
 
 		for(int i = 0; i < src.Length; i++) {
-			//adds the tokens into the list once the matching regex operator has been found
-			switch(src[i]) {
+			
+			switch(src[i]) { //adds the tokens into the list once the matching regex operator has been found
 				case '|':
 					tokens.Add(new Token(OperatorType.Alternate));
 					break;

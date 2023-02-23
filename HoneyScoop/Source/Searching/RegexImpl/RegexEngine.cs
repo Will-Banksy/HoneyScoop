@@ -17,31 +17,31 @@ internal static class RegexEngine {
 	internal static FiniteStateMachine<byte> ParseRegex(string regex) {
 		var postfix = ParseToPostfix(regex);
 		Stack<FiniteStateMachine<byte>> finiteStack = new Stack<FiniteStateMachine<byte>>();
-
-		foreach(RegexLexer.Token token in postfix) {
+		
+		foreach(RegexLexer.Token token in postfix) {//Goes through the list of tokens and does an action based on what operator it is
 			switch(token.Type) {
-				case RegexLexer.TokenType.Literal:
+				case RegexLexer.TokenType.Literal://pushes the literal straight onto the stack
 					finiteStack.Push(new FiniteStateMachine<byte>(token.LiteralValue));
 					Console.WriteLine(" Lit ");
 					break;
 				
-				case RegexLexer.TokenType.UnaryOperator:
+				case RegexLexer.TokenType.UnaryOperator://operator that only takes one input
 					switch(token.OpType) {
-						case RegexLexer.OperatorType.AlternateEmpty:
+						case RegexLexer.OperatorType.AlternateEmpty://pops once then does the AlternateEmpty function and pushes it onto the stack
 							var nfaAltEmp = finiteStack.Pop();
 							nfaAltEmp.AlternateEmpty();
 							finiteStack.Push(nfaAltEmp);
 							Console.WriteLine(" AltEmp ");
 							break;
 						
-						case RegexLexer.OperatorType.AlternateLoop:
+						case RegexLexer.OperatorType.AlternateLoop://pops once then does the AlternateLoop function and pushes it onto the stack
 							var nfaAltLoop = finiteStack.Pop();
 							nfaAltLoop.AlternateLoop();
 							finiteStack.Push(nfaAltLoop);
 							Console.WriteLine(" AltLoop ");
 							break;
 						
-						case RegexLexer.OperatorType.AlternateLoopOnce:
+						case RegexLexer.OperatorType.AlternateLoopOnce://pops once then does the AlternateLoopOnce function and pushes it onto the stack
 							var nfaAltLoopOnce = finiteStack.Pop();
 							nfaAltLoopOnce.AlternateLoopOnce();
 							finiteStack.Push(nfaAltLoopOnce);
@@ -50,9 +50,9 @@ internal static class RegexEngine {
 					}
 					break;
 				
-				case RegexLexer.TokenType.BinaryOperator:
+				case RegexLexer.TokenType.BinaryOperator://Operator that takes two inputs
 					switch(token.OpType) {
-						case RegexLexer.OperatorType.Alternate:
+						case RegexLexer.OperatorType.Alternate://Pops twice and does the Alternate function on the second pop and then pushes the two pops back in order of second then first pop
 							var firstPopAlt = finiteStack.Pop();
 							var nfaAlt = finiteStack.Pop();
 							nfaAlt.Alternate(nfaAlt);
@@ -61,7 +61,7 @@ internal static class RegexEngine {
 							Console.WriteLine(" Alt ");
 							break;
 						
-						case RegexLexer.OperatorType.Concat:
+						case RegexLexer.OperatorType.Concat://Pops twice and does the Concatenate function on the second pop and then pushes the two pops back in order of second then first pop
 							var firstPopCon = finiteStack.Pop();
 							var nfaCon = finiteStack.Pop();
 							nfaCon.Concatenate(nfaCon);

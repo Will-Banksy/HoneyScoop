@@ -2,46 +2,44 @@ using CommandLine;
 
 namespace HoneyScoop;
 
-public class Helpers
+internal class Helpers
 {
     /// List of supported filetypes
-
-    public List<string> supportedFormats = new List<string> { "jpg", "png", "gif", "mp4", "mp3", "wav", "xlsx", "pdf", "docx", "pptx", "zip" };
+    internal readonly List<string> SupportedFormats = new List<string> { "jpg", "png", "gif", "mp4", "mp3", "wav", "xlsx", "pdf", "docx", "pptx", "zip" };
 
     /// The commandlineparser library does not take a list of strings in
     /// Converting it to a string makes handling them easier
-
-    public Helpers()
+    internal Helpers()
     {
-        FileTypes = string.Join(",", supportedFormats);
+        FileTypes = string.Join(",", SupportedFormats);
     }
 
     /// Accepted arguments
 
     [Option('v', "verbose", Required = false, HelpText = "Set output to verbose messages.")]
-    public bool Verbose { get; set; }
+    internal bool Verbose { get; set; }
 
     [Option('q', "quiet", Required = false, HelpText = "Set whether to view output.")]
-    public bool QuietMode { get; set; }
+    internal bool QuietMode { get; set; }
 
     [Option('O', "no_organise", Required = false, HelpText = "Don't organise carved files by type. By default files will be organised into subdirectories by type.")]
-    public bool NoOrganise { get; set; }
+    internal bool NoOrganise { get; set; }
 
     [Option('T', "timestamp", Required = false, HelpText = "Timestamp the output directories, disabled by default.")]
-    public bool Timestamp { get; set; }
+    internal bool Timestamp { get; set; }
 
     [Option('t', "threads", Required = false, HelpText = "The number of threads to use for processing, by default its 40.")]
-    public int NumThreads { get; set; } = 40;
+    internal int NumThreads { get; set; } = 40;
 
     [Option('o', "output", Required = false, HelpText = "The output directory path, by default its the current directory.")]
-    public string OutputDirectory { get; set; } = Environment.CurrentDirectory;
+    internal string OutputDirectory { get; set; } = Environment.CurrentDirectory;
 
     [Option('c', "types", Required = false, HelpText = "The types of files to process")]
-    public string FileTypes { get; set; }
+    internal string FileTypes { get; set; }
 
 
 
-    public List<string> ParseArgs(string[] arguments)
+    internal List<string> ParseArgs(string[] arguments)
     {
         List<string> definedFileTypes = new List<string> ();
         Parser.Default.ParseArguments<Helpers>(arguments)
@@ -78,14 +76,14 @@ public class Helpers
                     Console.WriteLine("[+] The timestamps will be displayed.");
                 } 
 
-                /// String formatting magic because the commandLineParser does not like Lists
+                // String formatting magic because the commandLineParser does not like Lists
 
                 var fileTypes = o.FileTypes.Split(',');
 
 
                 foreach (string fileType in fileTypes)
                 {
-                    if(o.supportedFormats.Contains(fileType))
+                    if(o.SupportedFormats.Contains(fileType))
                     {
                         Console.WriteLine($"[+] Reconstruction will be conducted on {fileType} files...");
                         definedFileTypes.Add(fileType);
@@ -97,11 +95,11 @@ public class Helpers
                     }
                 }
 
-                /// If there is no supported types supplied in.
+                // If there is no supported types supplied in.
 
                 if(!definedFileTypes.Any())
                 {
-                    Console.WriteLine($"[-] Please provide filetypes accepted by the tool. ({string.Join(", ", o.supportedFormats)}) ");
+                    Console.WriteLine($"[-] Please provide filetypes accepted by the tool. ({string.Join(", ", o.SupportedFormats)}) ");
                     System.Environment.Exit(0);
                     
                 }                           

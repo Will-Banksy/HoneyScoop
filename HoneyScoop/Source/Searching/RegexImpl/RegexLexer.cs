@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace HoneyScoop.Searching.RegexImpl;
 
 internal static class RegexLexer {
@@ -117,7 +119,7 @@ internal static class RegexLexer {
 			LiteralValue = literalValue;
 		}
 
-		public string ToDebugString() { // TODO: This might be the sort of thing that should be in ToString so maybe need to rethink this not that it particularly matters
+		internal string ToDebugString() { // TODO: This might be the sort of thing that should be in ToString so maybe need to rethink this not that it particularly matters
 			return $"Token(Type={Type},OpType={OpType},LiteralValue={LiteralValue})";
 		}
 
@@ -140,6 +142,19 @@ internal static class RegexLexer {
 				},
 				_ => " "
 			};
+		}
+
+		/// <summary>
+		/// Returns the string representation of the list of tokens
+		/// </summary>
+		/// <param name="tokens"></param>
+		/// <returns></returns>
+		internal static string TokensToString(IEnumerable<Token> tokens) {
+			var sb = new StringBuilder();
+			foreach(var t in tokens) {
+				sb.Append(t.ToString());
+			}
+			return sb.ToString();
 		}
 	}
 

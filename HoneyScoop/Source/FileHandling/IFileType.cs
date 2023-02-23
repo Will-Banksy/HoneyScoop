@@ -1,8 +1,8 @@
 namespace HoneyScoop.FileHandling;
 
-internal interface IFileType { // TODO: For some reason, it is an error to make members Header, Footer and Analyse anything but public
-	internal Signature Header { get; }
-	internal Signature Footer { get; }
+internal interface IFileType {
+	internal string Header { get; }
+	internal string Footer { get; }
 
 	/// <summary>
 	/// This method should analyse the data in fstream starting at headerSignature

@@ -2,6 +2,11 @@ namespace HoneyScoop.Searching.RegexImpl;
 
 internal static class RegexEngine {
 	/// <summary>
+	/// Cache to avoid constructing the same FiniteStateMachine multiple times
+	/// </summary>
+	private static Dictionary<string, FiniteStateMachine<byte>> _parseCache = new();
+
+	/// <summary>
 	/// Parses a regex string into a Finite State Machine that is capable of being used to match the regex pattern.<br /><br />
 	///
 	/// Supported metacharacters:<br />
@@ -15,6 +20,10 @@ internal static class RegexEngine {
 	/// <param name="regex"></param>
 	/// <returns></returns>
 	internal static FiniteStateMachine<byte> ParseRegex(string regex) {
+		if(_parseCache.ContainsKey(regex)) {
+			return _parseCache[regex];
+		}
+		
 		var postfix = ParseToPostfix(regex);
 		Stack<FiniteStateMachine<byte>> finiteStack = new Stack<FiniteStateMachine<byte>>();
 		
@@ -73,6 +82,8 @@ internal static class RegexEngine {
 					break;
 			}
 		}
+
+		_parseCache[regex] = finiteStack.Peek();
 		
 		return finiteStack.Peek();
 	}

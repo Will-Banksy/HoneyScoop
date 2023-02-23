@@ -31,60 +31,26 @@ internal static class MainClass {
 		PrintTokens(postfix); // Works
 		Console.WriteLine();
 
+		
+		
 		// Taking in Command line arguments
-		Parser.Default.ParseArguments<Helpers>(args)
-            .WithParsed<Helpers>(o =>
-            {
-                Console.WriteLine($"[+] The output directory is {o.OutputDirectory}.");
-                Console.WriteLine($"[+] The program will use {o.NumThreads} threads for processing.");                                
-                if (o.Verbose && !o.QuietMode)
-                {
-                    Console.WriteLine("[+] Verbose output enabled.");
-                }
-                if (o.QuietMode && !o.Verbose)
-                {
-                    Console.WriteLine("[+] Quiet mode enabled.");
-                }
-                if (o.NoOrganise)
-                {
-                    Console.WriteLine("[+] The results will not be organised into directories by filetype.");
-                }
-                if (o.Timestamp)
-                {
-                    Console.WriteLine("[+] The timestamps will be displayed.");
-                } 
+		// Works only after running ParseArgs, which sets the CLI arguments as required
+		
+		Helpers TakenArguments = new Helpers();
+		List<string> DefinedArguments = TakenArguments.ParseArgs(args);
+		
+		// Accessible arguments:
+		// Pattern: TakenArguments.COMMAND_LINE_ARGUMENT
+		// TakenArguments.OutputDirectory String path, which is the place the directories, files should be made, current directory path by default
+		// TakenArguments.NumThreads Integer number of threads to be used 40 by default
+		// TakenArguments.Verbose Boolean if everything should be in CL, false by default
+		// TakenArguments.QuietMode Boolean if no CL output wanted, false by default
+		// TakenArguments.Timestamp Boolean if the output directories are to be timestamped, false by default
+		// TakenArguments.NoOrganise Boolean if organising by filetype is not needed, false by default(or organised by default)
+		// DefinedArguments a List of the filetypes needed to search for.
 
-                /// String formatting magic because the commandLineParser does not like Lists
-
-                var fileTypes = o.FileTypes.Split(',');
-                List<string> definedFileTypes = new List<string> ();
-
-
-                foreach (string fileType in fileTypes)
-                {
-                    if(o.supportedFormats.Contains(fileType))
-                    {
-                        Console.WriteLine($"[+] Reconstruction will be conducted on {fileType} files...");
-                        definedFileTypes.Add(fileType);
-
-                    }
-                    else
-                    {
-                        Console.WriteLine($"[-] Filetype: {fileType} is not supported.");
-                    }
-                }
-
-                /// If there is no supported types supplied in.
-
-                if(!definedFileTypes.Any())
-                {
-                    Console.WriteLine($"[-] Please provide filetypes accepted by the tool. ({string.Join(", ", o.supportedFormats)}) ");
-                    System.Environment.Exit(0);
-                    
-                }                           
-            }
-        );
-
+		
+		
 
 		var regex = @"\x0a";
 		var expected = new FiniteStateMachine<byte>(0x0a);

@@ -38,4 +38,75 @@ public class Helpers
 
     [Option('c', "types", Required = false, HelpText = "The types of files to process")]
     public string FileTypes { get; set; }
+
+
+
+    public List<string> ParseArgs(string[] arguments)
+    {
+        List<string> definedFileTypes = new List<string> ();
+        Parser.Default.ParseArguments<Helpers>(arguments)
+            .WithParsed<Helpers>(o =>
+            {
+                if (!string.IsNullOrEmpty(o.OutputDirectory))
+                {
+                    OutputDirectory = o.OutputDirectory;
+                }
+                Console.WriteLine($"[+] The output directory is {o.OutputDirectory}.");
+                if (o.NumThreads != 40)
+                {
+                    NumThreads = o.NumThreads;
+                }
+                Console.WriteLine($"[+] The program will use {o.NumThreads} threads for processing.");                                
+                if (o.Verbose && !o.QuietMode)
+                {
+                    Verbose = true;
+                    Console.WriteLine("[+] Verbose output enabled.");
+                }
+                if (o.QuietMode && !o.Verbose)
+                {
+                    QuietMode = true;
+                    Console.WriteLine("[+] Quiet mode enabled.");
+                }
+                if (o.NoOrganise)
+                {
+                    NoOrganise = true;
+                    Console.WriteLine("[+] The results will not be organised into directories by filetype.");
+                }
+                if (o.Timestamp)
+                {
+                    Timestamp = true;
+                    Console.WriteLine("[+] The timestamps will be displayed.");
+                } 
+
+                /// String formatting magic because the commandLineParser does not like Lists
+
+                var fileTypes = o.FileTypes.Split(',');
+
+
+                foreach (string fileType in fileTypes)
+                {
+                    if(o.supportedFormats.Contains(fileType))
+                    {
+                        Console.WriteLine($"[+] Reconstruction will be conducted on {fileType} files...");
+                        definedFileTypes.Add(fileType);
+
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[-] Filetype: {fileType} is not supported.");
+                    }
+                }
+
+                /// If there is no supported types supplied in.
+
+                if(!definedFileTypes.Any())
+                {
+                    Console.WriteLine($"[-] Please provide filetypes accepted by the tool. ({string.Join(", ", o.supportedFormats)}) ");
+                    System.Environment.Exit(0);
+                    
+                }                           
+            }
+        );
+        return definedFileTypes;
+    }
 }

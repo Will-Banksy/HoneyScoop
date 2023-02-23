@@ -22,6 +22,7 @@ internal static class RegexEngine {
 			switch(token.Type) {
 				case RegexLexer.TokenType.Literal:
 					finiteStack.Push(new FiniteStateMachine<byte>(token.LiteralValue));
+					Console.WriteLine(" Lit ");
 					break;
 				
 				case RegexLexer.TokenType.UnaryOperator:
@@ -30,18 +31,21 @@ internal static class RegexEngine {
 							var nfaAltEmp = finiteStack.Pop();
 							nfaAltEmp.AlternateEmpty();
 							finiteStack.Push(nfaAltEmp);
+							Console.WriteLine(" AltEmp ");
 							break;
 						
 						case RegexLexer.OperatorType.AlternateLoop:
 							var nfaAltLoop = finiteStack.Pop();
 							nfaAltLoop.AlternateLoop();
 							finiteStack.Push(nfaAltLoop);
+							Console.WriteLine(" AltLoop ");
 							break;
 						
 						case RegexLexer.OperatorType.AlternateLoopOnce:
 							var nfaAltLoopOnce = finiteStack.Pop();
 							nfaAltLoopOnce.AlternateLoopOnce();
 							finiteStack.Push(nfaAltLoopOnce);
+							Console.WriteLine(" AltLoopOnce ");
 							break;
 					}
 					break;
@@ -54,6 +58,7 @@ internal static class RegexEngine {
 							nfaAlt.Alternate(nfaAlt);
 							finiteStack.Push(nfaAlt);
 							finiteStack.Push(firstPopAlt);
+							Console.WriteLine(" Alt ");
 							break;
 						
 						case RegexLexer.OperatorType.Concat:
@@ -62,6 +67,7 @@ internal static class RegexEngine {
 							nfaCon.Concatenate(nfaCon);
 							finiteStack.Push(nfaCon);
 							finiteStack.Push(firstPopCon);
+							Console.WriteLine(" Con ");
 							break;
 					}
 					break;

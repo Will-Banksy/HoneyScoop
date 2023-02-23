@@ -41,6 +41,21 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 			this._connections.Add(new StateConnection(other, symbol, false));
 			return this;
 		}
+
+		public bool Equals(State other) {
+			return _connections.Except(other._connections).Any();
+		}
+
+		public override bool Equals(object? obj) {
+			if(ReferenceEquals(null, obj)) return false;
+			if(ReferenceEquals(this, obj)) return true;
+			if(obj.GetType() != this.GetType()) return false;
+			return Equals((State)obj);
+		}
+
+		public override int GetHashCode() {
+			return _connections.GetHashCode();
+		}
 	}
 
 	/// <summary>
@@ -120,5 +135,17 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 		this.End.AddEpsilonConnection(this.Start);
 		
 		return this;
+	}
+
+	public bool Equals(FiniteStateMachine<T> other) {
+		return Equals(Start, other.Start) && Equals(End, other.End);
+	}
+
+	public override bool Equals(object? obj) {
+		return obj is FiniteStateMachine<T> other && Equals(other);
+	}
+
+	public override int GetHashCode() {
+		return HashCode.Combine(Start, End);
 	}
 }

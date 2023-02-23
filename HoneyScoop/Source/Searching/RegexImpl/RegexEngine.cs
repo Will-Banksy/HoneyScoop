@@ -68,7 +68,7 @@ internal static class RegexEngine {
 			}
 		}
 		
-		return new FiniteStateMachine<byte>(); // TODO: Return something meaningful/correct
+		return finiteStack.Peek();
 	}
 
 	/// <summary>

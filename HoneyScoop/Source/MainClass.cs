@@ -10,6 +10,7 @@
 
 // For notes on writing performant C# and for C# resources: https://willbanksy-pkb.notion.site/C-edef060a627f4f2babe13346a11e5962
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using HoneyScoop.Searching.RegexImpl;
 
@@ -30,7 +31,12 @@ internal static class MainClass {
 		Console.Write("Postfix: ");
 		PrintTokens(postfix); // Works
 		Console.WriteLine();
-		
+
+		var regex = @"\x0a";
+		var expected = new FiniteStateMachine<byte>(0x0a);
+		var got = RegexEngine.ParseRegex(regex);
+		Debug.Assert(expected.Equals(got), "Test Failed: ParseRegex doesn't work :(");
+
 		Console.WriteLine("Hello, The Hive");
 	}
 

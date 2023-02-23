@@ -152,6 +152,7 @@ internal static class RegexLexer {
 		var tokens = new List<Token>();
 
 		for(int i = 0; i < src.Length; i++) {
+			//adds the tokens into the list once the matching regex operator has been found
 			switch(src[i]) {
 				case '|':
 					tokens.Add(new Token(OperatorType.Alternate));
@@ -180,7 +181,8 @@ internal static class RegexLexer {
 				case '\'': // Strictly speaking this isn't necessary but it might be like an idea to have just in case
 					tokens.Add(new Token(OperatorType.Concat));
 					break;
-				
+				//Different process for literals, literals are stored in hex so it needs to check the next 4 characters for the hex format
+				//and then convert to bytes for adding it into the list of tokens
 				case '\\':
 					if(src[i + 1] == 'x') {
 						if(src[i + 2] >= '0' && src[i + 2] <= '9' || src[i + 2] >= 'a' && src[i + 2] <= 'f') {

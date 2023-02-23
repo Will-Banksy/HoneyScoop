@@ -89,7 +89,7 @@ internal static class MainClass {
 		var regex = @"\x0a";
 		var expected = new FiniteStateMachine<byte>(0x0a);
 		var got = RegexEngine.ParseRegex(regex);
-		Debug.Assert(expected.Equals(got), "Test Failed: ParseRegex doesn't work :(");
+		Debug.Assert(got.Equals(expected), "Test Failed: ParseRegex doesn't work :(");
 
 		Console.WriteLine("Hello, The Hive");
 	}

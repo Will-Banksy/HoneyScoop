@@ -6,13 +6,12 @@
 // Explicit access modifiers for everything
 //     Everything is `internal` unless it is `private`
 
-// asdf
-
 // For notes on writing performant C# and for C# resources: https://willbanksy-pkb.notion.site/C-edef060a627f4f2babe13346a11e5962
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using HoneyScoop.Searching.RegexImpl;
+using CommandLine;
 
 namespace HoneyScoop;
 
@@ -31,6 +30,61 @@ internal static class MainClass {
 		Console.Write("Postfix: ");
 		PrintTokens(postfix); // Works
 		Console.WriteLine();
+
+		// Taking in Command line arguments
+		Parser.Default.ParseArguments<Helpers>(args)
+            .WithParsed<Helpers>(o =>
+            {
+                Console.WriteLine($"[+] The output directory is {o.OutputDirectory}.");
+                Console.WriteLine($"[+] The program will use {o.NumThreads} threads for processing.");                                
+                if (o.Verbose && !o.QuietMode)
+                {
+                    Console.WriteLine("[+] Verbose output enabled.");
+                }
+                if (o.QuietMode && !o.Verbose)
+                {
+                    Console.WriteLine("[+] Quiet mode enabled.");
+                }
+                if (o.NoOrganise)
+                {
+                    Console.WriteLine("[+] The results will not be organised into directories by filetype.");
+                }
+                if (o.Timestamp)
+                {
+                    Console.WriteLine("[+] The timestamps will be displayed.");
+                } 
+
+                /// String formatting magic because the commandLineParser does not like Lists
+
+                var fileTypes = o.FileTypes.Split(',');
+                List<string> definedFileTypes = new List<string> ();
+
+
+                foreach (string fileType in fileTypes)
+                {
+                    if(o.supportedFormats.Contains(fileType))
+                    {
+                        Console.WriteLine($"[+] Reconstruction will be conducted on {fileType} files...");
+                        definedFileTypes.Add(fileType);
+
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[-] Filetype: {fileType} is not supported.");
+                    }
+                }
+
+                /// If there is no supported types supplied in.
+
+                if(!definedFileTypes.Any())
+                {
+                    Console.WriteLine($"[-] Please provide filetypes accepted by the tool. ({string.Join(", ", o.supportedFormats)}) ");
+                    System.Environment.Exit(0);
+                    
+                }                           
+            }
+        );
+
 
 		var regex = @"\x0a";
 		var expected = new FiniteStateMachine<byte>(0x0a);

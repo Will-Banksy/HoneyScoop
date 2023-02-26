@@ -23,6 +23,8 @@ internal class FileTypePng : IFileType {
 		internal byte InterlaceMethod = 0;
 		internal uint Crc = 0;
 
+		internal uint ExpectedCrc = 0;
+		
 		public Ihdr() {
 		}
 
@@ -42,11 +44,8 @@ internal class FileTypePng : IFileType {
 			ihdr.FilterMethod = data[19];
 			ihdr.InterlaceMethod = data[20];
 			ihdr.Crc = Helper.FromBigEndian(data[21..]);
+			// TODO: Calculate expected CRC
 			return ihdr;
-		}
-
-		private readonly uint CalcCrc() {
-			throw new NotImplementedException();
 		}
 
 		internal readonly bool IsAsExpected() {
@@ -61,7 +60,6 @@ internal class FileTypePng : IFileType {
 	}
 
 	private struct Idat {
-		
 	}
 
 	public float Analyse(ReadOnlySpan<byte> data) {

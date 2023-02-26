@@ -2,7 +2,7 @@ using CommandLine;
 
 namespace HoneyScoop;
 
-internal class Helpers
+internal class Helpers // TODO: Maybe rename this file/class to something more descriptive
 {
     /// List of supported filetypes
     internal readonly List<string> SupportedFormats = new List<string> { "jpg", "png", "gif", "mp4", "mp3", "wav", "xlsx", "pdf", "docx", "pptx", "zip" };

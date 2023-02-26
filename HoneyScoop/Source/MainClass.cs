@@ -31,7 +31,7 @@
 // For notes on writing performant C# and for C# resources: https://willbanksy-pkb.notion.site/C-edef060a627f4f2babe13346a11e5962
 
 using System.Diagnostics;
-using HoneyScoop.FileHandling;
+using HoneyScoop.FileHandling.FileTypes;
 using HoneyScoop.Searching.RegexImpl;
 
 namespace HoneyScoop;
@@ -45,10 +45,26 @@ internal static class MainClass {
 	/// <param name="args"></param>
 	public static void Main(string[] args) {
 		#region Testing
-
-		FileHandler fh = new FileHandler("/home/will/testdata.bin");
-		fh.HandleFile();
 		
+		byte[] testPngData = {
+			0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x16, 
+			0x04, 0x03, 0x00, 0x00, 0x00, 0x02, 0xE3, 0xB0, 0x14
+		};
+		var ihdr = FileTypePng.Ihdr.DeserializeFrom(testPngData);
+		Debug.Assert(
+			ihdr.ChunkSize == 13 &&
+			ihdr.ChunkType == 1229472850 &&
+			ihdr.Width == 14 &&
+			ihdr.Height == 22 &&
+			ihdr.BitDepth == 4 &&
+			ihdr.ColourType == 3 &&
+			ihdr.CompressionMethod == 0 &&
+			ihdr.FilterMethod == 0 &&
+			ihdr.InterlaceMethod == 0 &&
+			ihdr.Crc == 48476180,
+			"IHDR chunk was deserialized incorrectly"
+		);
+
 		var infix = @"((\x0a\x0b*)|\x0c?)+\x0d\x0e\x0f";
 		var expectedPostfix = @"\x0a\x0b*'\x0c?|+\x0d'\x0e'\x0f'";
 		Console.WriteLine($"Infix: {infix}");
@@ -56,7 +72,11 @@ internal static class MainClass {
 		Console.WriteLine($"Postfix: {postfix}");
 		Debug.Assert(postfix.Equals(expectedPostfix), "Test Failed: Infix regex was not converted to correct postfix expression");
 		
-		var regex = @"\x0a";
+		var regex = @"\x0a\x0b";
+
+		StateTransitionTable stt = StateTransitionTable.Build(RegexEngine.ParseToPostfix(regex));
+		Console.WriteLine($"stt({stt.ToString()})");
+
 		var expected = new FiniteStateMachine<byte>(0x0a);
 		FiniteStateMachine<byte> got = RegexEngine.ParseRegex(regex);
 		Debug.Assert(got.Equals(expected), "Test Failed: Postfix regex was not converted into a Finite State Machine/NFA correctly (or in this case the NFA comparison is broken while I work on a solution)");

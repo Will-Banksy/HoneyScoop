@@ -19,11 +19,4 @@ internal static class Helper {
 
 		return res;
 	}
-
-	internal static uint Crc32(ReadOnlySpan<byte> data) {
-		const uint divisor = 0x04c11db7;
-		List<byte> dividend = new List<byte>(data.Length + 32);
-		Span<byte> divSpan = CollectionsMarshal.AsSpan(dividend);
-		return (uint)divSpan.Length; // TODO: Continue. Maybe not by allocating a new array for data + 32 0s, maybe just an if or something idk. Maybe google C# CRC impls
-	}
 }

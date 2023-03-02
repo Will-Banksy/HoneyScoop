@@ -34,6 +34,7 @@ using System.Diagnostics;
 using HoneyScoop.FileHandling;
 using HoneyScoop.FileHandling.FileTypes;
 using HoneyScoop.Searching.RegexImpl;
+using HoneyScoop.Util;
 
 namespace HoneyScoop;
 
@@ -46,6 +47,14 @@ internal static class MainClass {
 	/// <param name="args"></param>
 	public static void Main(string[] args) {
 		#region Testing
+		
+		byte[] testCrc32Data = {
+			0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x16, 0x04, 0x03, 0x00, 0x00, 
+			0x00
+		};
+		uint expectedCrc32 = 0x02E3B014;
+		uint crc = Helper.Crc32(testCrc32Data);
+		Debug.Assert(crc == expectedCrc32, $"Calculated CRC does not match the actual CRC. The calculated CRC was: {Convert.ToString(crc, 16).PadLeft(8, '0')}");
 
 		byte[] testPngData = GetPngTestData();
 		FileTypePng png = new FileTypePng();

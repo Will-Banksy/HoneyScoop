@@ -1,46 +1,67 @@
-using System.Runtime.InteropServices;
-using Force.Crc32;
 using HoneyScoop.Util;
 
 namespace HoneyScoop.FileHandling.FileTypes;
 
 internal class FileTypePng : IFileType {
-	public string Header { get { return @"\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"; } } // PNG signature
-	public string Footer { get { return @"\x49\x45\x4e\x44\xae\x42\x60\x82"; } } // "IEND" + CRC32 of "IEND"
+	public string Header => @"\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"; // PNG signature
+	public string Footer => @"\x49\x45\x4e\x44\xae\x42\x60\x82"; // "IEND" + CRC32 of "IEND"
 
 	private const int HeaderSize = 8;
 	private const int FooterSize = 8;
-	private const int IhdrSize = 25;
+	private const int IhdrSizeTotal = 25;
 
-	internal readonly ref struct Chunk {
-		internal const uint TypeIhdr = 1229472850; // "IHDR" as uint
-		internal const uint TypeIdat = 1229209940; // "IDAT" as uint
-		internal const uint TypePlte = 1347179589; // "PLTE" as uint
-		internal const uint TypeIend = 1229278788; // "IEND" as uint
+	private readonly ref struct Chunk {
+		internal const uint TypeIhdr = 0x49484452; // "IHDR" as uint
+		internal const uint TypeIdat = 0x49444154; // "IDAT" as uint
+		internal const uint TypePlte = 0x504C5445; // "PLTE" as uint
+		internal const uint TypeIend = 0x49454E44; // "IEND" as uint
 
+		internal const uint TypeIhdrLength = 13;
 		private const uint TypeIendCrc = 0xAE426082; // CRC of "IEND"
 
-		private readonly uint _length;
+		internal readonly uint Length;
 		internal readonly uint Type;
 		private readonly ReadOnlySpan<byte> _data;
 		private readonly uint _crc;
 		
 		private readonly bool _isValid;
 		internal readonly int TotalLength;
+		internal readonly uint AdjustedLength;
 
-		private Chunk(uint length, uint type, ReadOnlySpan<byte> data, uint crc, uint calculatedCrc) {
-			_length = length;
+		/// <summary>
+		/// Construct a Chunk, giving it a reference to the chunk data + all the other decoded info & calculated CRC
+		/// </summary>
+		/// <param name="length"></param>
+		/// <param name="type"></param>
+		/// <param name="data"></param>
+		/// <param name="crc"></param>
+		/// <param name="calculatedCrc"></param>
+		/// <param name="adjustedLength">If the decoding process needed to shrink the chunk data, this will be set to the new value</param>
+		private Chunk(uint length, uint type, ReadOnlySpan<byte> data, uint crc, uint calculatedCrc, uint? adjustedLength = null) {
+			Length = length;
 			Type = type;
 			_data = data;
 			_crc = crc;
 			_isValid = crc == calculatedCrc;
-			TotalLength = (int)_length + 12;
+			TotalLength = (int)Length + 12;
+			AdjustedLength = adjustedLength ?? length;
 		}
 
-		internal AnalysisResult CheckDataValid(out bool ihdrRequiresPlte, out bool ihdrPlteForbidden) {
+		/// <summary>
+		/// Checks whether the chunk data matches what is expected of the chunk type.
+		/// The chunk type is taken from the <see cref="Type"/> field or assumedType argument (if not null)
+		/// </summary>
+		/// <param name="ihdrRequiresPlte">Returns whether this IHDR chunk data indicates that there should be a PLTE chunk</param>
+		/// <param name="ihdrPlteForbidden">Returns whether this IHDR chunk data indicates that there should <i>not</i> be a PLTE chunk</param>
+		/// <param name="assumedType">If not null, is used instead of the chunk type</param>
+		/// <returns>An <see cref="AnalysisResult"/> indicating how the chunk data matches it's expectations</returns>
+		internal AnalysisResult CheckDataValid(out bool ihdrRequiresPlte, out bool ihdrPlteForbidden, uint? assumedType = null) {
 			ihdrRequiresPlte = false;
 			ihdrPlteForbidden = false;
-			switch(Type) {
+			if(Length != AdjustedLength) {
+				return AnalysisResult.Corrupted;
+			}
+			switch(assumedType ?? Type) {
 				case TypeIhdr: {
 					// uint width = Helper.FromBigEndian(_data);
 					// uint height = Helper.FromBigEndian(_data[4..]);
@@ -79,7 +100,7 @@ internal class FileTypePng : IFileType {
 				}
 				
 				case TypePlte: {
-					bool correctLength = _length % 3 == 0;
+					bool correctLength = Length % 3 == 0;
 					if(correctLength && _isValid) {
 						return AnalysisResult.Correct;
 					} else if(_isValid) {
@@ -93,46 +114,68 @@ internal class FileTypePng : IFileType {
 			return _isValid ? AnalysisResult.Correct : AnalysisResult.Corrupted;
 		}
 
+		/// <summary>
+		/// Decodes/deserialises a <see cref="Chunk"/> from a raw byte stream, calculating a CRC of the chunk type and data as it does so
+		/// </summary>
+		/// <param name="data">The raw byte stream</param>
+		/// <returns>The decoded <see cref="Chunk"/> or null if the chunk data length requires more data than is provided</returns>
 		internal static Chunk Decode(ReadOnlySpan<byte> data) {
 			uint chunkLen = Helper.FromBigEndian(data);
 			uint chunkType = Helper.FromBigEndian(data[4..]);
+			uint? adjustedLen = chunkLen > data.Length - 12 ? (uint)data.Length - 12 : null;
 			// TODO: Optimise so as to avoid making copies - Perhaps fork Crc32.NET or take it's code and modify it to use spans, or derive my own Crc32 implementation
 			// BUG: Using the commented code seems to allocate a LOT of memory...
-			uint calcCrc = TypeIendCrc;// chunkType == TypeIend ? TypeIendCrc : Crc32Algorithm.Compute(data.Slice(4, ((int)chunkLen + 4)).ToArray());
+			uint calcCrc = chunkType == TypeIend ? TypeIendCrc : Helper.Crc32(data.Slice(4, ((int)chunkLen + 4)));//Crc32Algorithm.Compute(data.Slice(4, ((int)chunkLen + 4)).ToArray());
 			Chunk c = new Chunk(
 				length: chunkLen,
 				type: chunkType,
 				data: data.Slice(8, (int)chunkLen),
 				crc: Helper.FromBigEndian(data.Slice(8 + (int)chunkLen, 4)),
-				calculatedCrc: calcCrc
+				calculatedCrc: calcCrc,
+				adjustedLength: adjustedLen
 			);
 			return c;
 		}
 	}
 
 	public AnalysisResult Analyse(ReadOnlySpan<byte> data) {
-		if(data.Length < (HeaderSize + IhdrSize + FooterSize)) {
-			return AnalysisResult.Unrecognised;
+		if(data.Length < (HeaderSize + IhdrSizeTotal + FooterSize)) {
+			return AnalysisResult.Unrecognised; // If the data is too small, return Unrecognised
 		}
 
-		int offset = HeaderSize;
+		int offset = HeaderSize; // Initialise the offset to the header size
 
+		var ret = AnalysisResult.Correct;
+
+		// Decode the first chunk. This should be IHDR
 		Chunk ihdr = Chunk.Decode(data[offset..]);
-		AnalysisResult ihdrAnalysisResult = ihdr.CheckDataValid(out bool requiresPlte, out bool plteForbidden);
-		if(ihdr.Type != Chunk.TypeIhdr) {
-			return AnalysisResult.Unrecognised;
-		} else if(ihdrAnalysisResult == AnalysisResult.FormatError) {
-			return AnalysisResult.FormatError;
-		} else if(ihdrAnalysisResult == AnalysisResult.Corrupted) {
-			return AnalysisResult.Corrupted;
+		bool isIhdr = ihdr.Type == Chunk.TypeIhdr;
+		bool correctLength = ihdr.Length == Chunk.TypeIhdrLength;
+		
+		// Perform the chunk data analysis, forcing the chunk to be analysed as an IHDR chunk
+		AnalysisResult ihdrAnalysisResult = ihdr.CheckDataValid(out bool requiresPlte, out bool plteForbidden, assumedType: Chunk.TypeIhdr);
+		ret = ret.UpdateResultWith(ihdrAnalysisResult); // Update the analysis result
+		
+		// If the chunk is not an IHDR chunk, does not have the correct length, and the chunk data is evaluated to be either errored or corrupted,
+		// then it is most likely that this data is not a PNG image
+		if(!isIhdr && !correctLength && (ihdrAnalysisResult == AnalysisResult.FormatError || ihdrAnalysisResult == AnalysisResult.Corrupted)) {
+			return AnalysisResult.Unrecognised; // Return as no further updates can happen to ret
+		}
+
+		if(ret == AnalysisResult.Corrupted) {
+			return ret; // Return as no further updates can happen to ret
 		}
 
 		offset += ihdr.TotalLength;
 
 		bool hasIdat = false;
 		bool hasPlte = false;
+		uint prevChunkType = ihdr.Type;
 
 		while(true) {
+			if(data[offset..].Length <= 4) {
+				break;
+			}
 			uint nextChunkLength = Helper.FromBigEndian(data[offset..]);
 			if(data[offset..].Length < nextChunkLength + 12) {
 				break;
@@ -142,16 +185,38 @@ internal class FileTypePng : IFileType {
 			if(chunk.Type == Chunk.TypePlte) {
 				hasPlte = true;
 			} else if(chunk.Type == Chunk.TypeIdat) {
+				if(hasIdat && prevChunkType != Chunk.TypeIdat) {
+					ret = ret.UpdateResultWith(AnalysisResult.FormatError);
+				}
 				hasIdat = true;
+			}
+
+			var chunkRes = chunk.CheckDataValid(out bool _, out bool _);
+			switch(chunkRes) {
+				case AnalysisResult.FormatError:
+					ret = ret.UpdateResultWith(AnalysisResult.FormatError);
+					break;
+				case AnalysisResult.Corrupted:
+					ret = ret.UpdateResultWith(AnalysisResult.Corrupted);
+					break;
+			}
+
+			prevChunkType = chunk.Type;
+			offset += chunk.TotalLength;
+
+			// If ret is corrupted, then return, as no further updates are possible
+			if(ret == AnalysisResult.Corrupted) {
+				return ret;
 			}
 		}
 
 		if(!hasIdat || (requiresPlte && !hasPlte)) {
-			return AnalysisResult.Partial;
-		} else if(plteForbidden && hasPlte) {
-			return AnalysisResult.FormatError;
+			ret = ret.UpdateResultWith(AnalysisResult.Partial);
+		}
+		if(plteForbidden && hasPlte) {
+			ret = ret.UpdateResultWith(AnalysisResult.FormatError);
 		}
 
-		return AnalysisResult.Correct;
+		return ret;
 	}
 }

@@ -118,14 +118,12 @@ internal class FileTypePng : IFileType {
 		/// Decodes/deserialises a <see cref="Chunk"/> from a raw byte stream, calculating a CRC of the chunk type and data as it does so
 		/// </summary>
 		/// <param name="data">The raw byte stream</param>
-		/// <returns>The decoded <see cref="Chunk"/> or null if the chunk data length requires more data than is provided</returns>
+		/// <returns>The decoded <see cref="Chunk"/></returns>
 		internal static Chunk Decode(ReadOnlySpan<byte> data) {
 			uint chunkLen = Helper.FromBigEndian(data);
 			uint chunkType = Helper.FromBigEndian(data[4..]);
 			uint? adjustedLen = chunkLen > data.Length - 12 ? (uint)data.Length - 12 : null;
-			// TODO: Optimise so as to avoid making copies - Perhaps fork Crc32.NET or take it's code and modify it to use spans, or derive my own Crc32 implementation
-			// BUG: Using the commented code seems to allocate a LOT of memory...
-			uint calcCrc = chunkType == TypeIend ? TypeIendCrc : Helper.Crc32(data.Slice(4, ((int)chunkLen + 4)));//Crc32Algorithm.Compute(data.Slice(4, ((int)chunkLen + 4)).ToArray());
+			uint calcCrc = chunkType == TypeIend ? TypeIendCrc : Helper.Crc32(data.Slice(4, ((int)chunkLen + 4)));
 			Chunk c = new Chunk(
 				length: chunkLen,
 				type: chunkType,

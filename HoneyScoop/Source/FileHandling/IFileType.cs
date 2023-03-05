@@ -20,7 +20,7 @@ internal interface IFileType {
 	/// </summary>
 	/// <param name="data">The data to analyse, the first byte being the first byte of the header signature and the last byte the last byte of the footer signature</param>
 	/// <returns>An <see cref="AnalysisResult"/> enum variant that describes broadly how the data matches the expected format</returns>
-	internal AnalysisResult Analyse(ReadOnlySpan<byte> data);
+	internal AnalysisResult Analyse(ReadOnlySpan<byte> data); // TODO: Consider: What if the file needs data that is not inside the span? We could support filetypes without a footer... As long as they declare an explicit length...
 }
 
 /// <summary>

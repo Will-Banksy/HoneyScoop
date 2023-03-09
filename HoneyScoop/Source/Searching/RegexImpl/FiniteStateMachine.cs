@@ -17,35 +17,31 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// where the State is the connected state and the T? is the connection character or a null represents an ε-connection (empty/transparent connection)
 	/// </summary>
 	internal class State { // TODO: This is kinda expensive to construct - Maybe add a constructor that doesn't then also initialise `connections`
-		private List<StateConnection> _connections; // TODO: Array or List?
+		internal List<StateConnection> Connections; // TODO: Array or List?
 		
-		internal bool IsEnd => _connections.Count == 0;
+		internal bool IsEnd => Connections.Count == 0;
 		
 		/// <summary>
 		/// Specify a capacity to preallocate when creating the <c>List&lt;StateConnection&gt;</c> of connections (for optimisation purposes)
 		/// </summary>
 		/// <param name="preallocCapacity">Pre-allocated capacity of the internal list of connections</param>
 		internal State(int preallocCapacity = 4) {
-			this._connections = new List<StateConnection>(preallocCapacity);
+			this.Connections = new List<StateConnection>(preallocCapacity);
 		}
 
 		internal State AddConnection(StateConnection connection) {
-			this._connections.Add(connection);
+			this.Connections.Add(connection);
 			return this;
 		}
 
 		internal State AddEpsilonConnection(State other) {
-			this._connections.Add(new StateConnection(other, default, true));
+			this.Connections.Add(new StateConnection(other, default, true));
 			return this;
 		}
 		
 		internal State AddSymbolConnection(State other, T symbol) {
-			this._connections.Add(new StateConnection(other, symbol, false));
+			this.Connections.Add(new StateConnection(other, symbol, false));
 			return this;
-		}
-
-		internal List<StateConnection> Connections() {
-			return _connections;
 		}
 	}
 
@@ -145,7 +141,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	}
 
 	internal bool CompareState(State state) {
-		var conns = state.Connections();
+		var conns = state.Connections;
 		
 		return false;
 	}

@@ -15,7 +15,7 @@ internal class RegexMatcher {
 	/// <param name="regex"></param>
 	internal RegexMatcher(string regex) {
 		_nfa = RegexEngine.ParseRegex(regex);
-		_states = new List<FiniteStateMachine<byte>.State> { _nfa.Start };
+		_states = new List<FiniteStateMachine<byte>.State>{};
 	}
 
 	/// <summary>
@@ -32,7 +32,7 @@ internal class RegexMatcher {
 			_nfa = new FiniteStateMachine<byte>();
 		}
 		
-		_states = new List<FiniteStateMachine<byte>.State> { _nfa.Start };
+		_states = new List<FiniteStateMachine<byte>.State>{};
 	}
 
 	/// <summary>
@@ -41,6 +41,20 @@ internal class RegexMatcher {
 	/// <param name="bytes"></param>
 	/// <returns></returns>
 	internal List<int> Advance(ReadOnlySpan<byte> bytes) {
-		throw new NotImplementedException(); // TODO
+		for (int i = 0; i < bytes.Length; i++)
+		{
+			for (int j = 0; j < _states.Count; j++)
+			{
+				for (int k = 0; k < _states[j].Connections.Count; k++)
+				{
+					
+				}
+			}
+			
+			{
+				
+			}
+			
+		} // TODO
 	}
 }

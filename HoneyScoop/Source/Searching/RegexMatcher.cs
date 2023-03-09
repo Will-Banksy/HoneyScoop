@@ -1,5 +1,5 @@
 using HoneyScoop.Searching.RegexImpl;
-
+using HoneyScoop.Util;
 namespace HoneyScoop.Searching;
 
 /// <summary>
@@ -46,13 +46,14 @@ internal class RegexMatcher {
 		{
 			for (int j = 0; j < _states.Count; j++)
 			{
+				var connections = Helper.Flatten(_states[j]);
 				bool advanceExist = false;
 				{
 					
 				}
-				for (int k = 0; k < _states[j].Connections.Count; k++) {
-					if (bytes[i] == _states[j].Connections[k].Symbol) {
-						_states[j] = _states[j].Connections[k].Next;
+				for (int k = 0; k < connections.Count; k++) {
+					if (bytes[i] == connections[k].Symbol) {
+						_states[j] = connections[k].Next;
 						advanceExist = true;
 						if (_states[j] == _nfa.End) {
 							indexOfBytes.Add(i);
@@ -65,16 +66,18 @@ internal class RegexMatcher {
 				if (advanceExist == false) {_states.RemoveAt(j); }
 			}
 
-			for (int j = 0; j < _nfa.Start.Connections.Count; j++) {
-				if (bytes[i] == _nfa.Start.Connections[j].Symbol) {
-					if (_nfa.Start.Connections[j].Next == _nfa.End) {
+			var connectionsNfa = Helper.Flatten(_nfa.Start);
+			for (int j = 0; j < connectionsNfa.Count; j++) {
+				
+				if (bytes[i] == connectionsNfa[j].Symbol) {
+					if (connectionsNfa[j].Next == _nfa.End) {
 						indexOfBytes.Add(i);
 					}
 					else {
-						_states.Add(_nfa.Start.Connections[j].Next);
+						_states.Add(connectionsNfa[j].Next);
 					}
 
-					;
+					
 				}
 			}
 

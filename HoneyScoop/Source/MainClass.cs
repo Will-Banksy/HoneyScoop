@@ -46,8 +46,29 @@ internal static class MainClass {
 	/// </summary>
 	/// <param name="args"></param>
 	public static void Main(string[] args) {
-		#region Testing
+		// Taking in Command line arguments
+		// Works only after running ParseArgs, which sets the CLI arguments as required
 		
+		Helpers argParser = new Helpers();
+		List<string> specifiedFileTypes = argParser.ParseArgs(args);
+
+		HoneyScoop controller = HoneyScoop.Instance();
+		controller.Initialise(argParser, specifiedFileTypes);
+		
+		Console.WriteLine(controller.ToString());
+
+		// Accessible arguments:
+		// Pattern: TakenArguments.COMMAND_LINE_ARGUMENT
+		// TakenArguments.OutputDirectory String path, which is the place the directories, files should be made, current directory path by default
+		// TakenArguments.NumThreads Integer number of threads to be used 40 by default
+		// TakenArguments.Verbose Boolean if everything should be in CL, false by default
+		// TakenArguments.QuietMode Boolean if no CL output wanted, false by default
+		// TakenArguments.Timestamp Boolean if the output directories are to be timestamped, false by default
+		// TakenArguments.NoOrganise Boolean if organising by filetype is not needed, false by default(or organised by default)
+		// DefinedArguments a List of the filetypes needed to search for.
+	}
+
+	static void DoTesting() {
 		byte[] testCrc32Data = {
 			0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x16, 0x04, 0x03, 0x00, 0x00, 
 			0x00
@@ -76,26 +97,6 @@ internal static class MainClass {
 		var expected = new FiniteStateMachine<byte>(0x0a);
 		FiniteStateMachine<byte> got = RegexEngine.ParseRegex(regex);
 		Debug.Assert(got.Equals(expected), "Test Failed: Postfix regex was not converted into a Finite State Machine/NFA correctly (or in this case the NFA comparison is broken while I work on a solution)");
-
-		#endregion
-		
-		Console.WriteLine("Hello, The Hive");
-		
-		// Taking in Command line arguments
-		// Works only after running ParseArgs, which sets the CLI arguments as required
-		
-		Helpers takenArguments = new Helpers();
-		List<string> definedArguments = takenArguments.ParseArgs(args);
-		
-		// Accessible arguments:
-		// Pattern: TakenArguments.COMMAND_LINE_ARGUMENT
-		// TakenArguments.OutputDirectory String path, which is the place the directories, files should be made, current directory path by default
-		// TakenArguments.NumThreads Integer number of threads to be used 40 by default
-		// TakenArguments.Verbose Boolean if everything should be in CL, false by default
-		// TakenArguments.QuietMode Boolean if no CL output wanted, false by default
-		// TakenArguments.Timestamp Boolean if the output directories are to be timestamped, false by default
-		// TakenArguments.NoOrganise Boolean if organising by filetype is not needed, false by default(or organised by default)
-		// DefinedArguments a List of the filetypes needed to search for.
 	}
 
 	static byte[] GetPngTestData() { // Function for testing FileTypePng analysis

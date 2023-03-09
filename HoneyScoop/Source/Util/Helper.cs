@@ -1,10 +1,11 @@
 using HoneyScoop.FileHandling;
+using HoneyScoop.Searching.RegexImpl;
 
 namespace HoneyScoop.Util;
 
 internal static class Helper {
 	/// <summary>
-	/// Efficiently converts a byte span into a uint
+	/// Efficiently converts a byte span into a uint. If the span contains less than 4 bytes it will fail
 	/// </summary>
 	/// <param name="bytes"></param>
 	/// <returns></returns>
@@ -54,6 +55,29 @@ internal static class Helper {
 		return res;
 	}
 
+	private static readonly Dictionary<string, FileType> _fileTypeStrs;
+
+	private static Dictionary<string, FileType> InitFileTypeStrs() {
+		return new Dictionary<string, FileType> {
+			{ "png", FileType.Png },
+			{ "jpg", FileType.Jpg },
+			{ "gif", FileType.Gif },
+			{ "mp4", FileType.Mp4 },
+			{ "mp3", FileType.Mp3 },
+			{ "wav", FileType.Wav },
+			{ "xlsx", FileType.Xlsx },
+			{ "docx", FileType.Docx },
+			{ "pptx", FileType.Pptx },
+			{ "pdf", FileType.Pdf },
+			{ "zip", FileType.Zip }
+		};
+	}
+
+	internal static FileType FromString(string fileType) {
+		var lower = fileType.ToLower();
+		return _fileTypeStrs[lower];
+	}
+
 	private static readonly uint[] CrcTable = MakeCrc32Table();
 
 	/// <summary>
@@ -101,5 +125,25 @@ internal static class Helper {
 	/// <returns>The CRC32 of the provided buffer</returns>
 	internal static uint Crc32(ReadOnlySpan<byte> buffer) {
 		return UpdateCrc32(uint.MaxValue, buffer) ^ uint.MaxValue;
+	}
+
+	internal static List<FiniteStateMachine<byte>.StateConnection> Flatten(FiniteStateMachine<byte>.State startState) {
+		var connections = new List<FiniteStateMachine<byte>.StateConnection>();
+
+		Stack<FiniteStateMachine<byte>.State> stateStack = new Stack<FiniteStateMachine<byte>.State>();
+		stateStack.Push(startState);
+
+		while(stateStack.Count > 0) {
+			FiniteStateMachine<byte>.State state = stateStack.Pop();
+			for(int i = 0; i < state.Connections.Count; i++) {
+				if(state.Connections[i].Transparent) {
+					stateStack.Push(state.Connections[i].Next);
+				} else {
+					connections.Add(state.Connections[i]);
+				}
+			}
+		}
+
+		return connections;
 	}
 }

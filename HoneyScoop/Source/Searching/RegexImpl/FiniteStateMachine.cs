@@ -43,6 +43,10 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 			this.Connections.Add(new StateConnection(other, symbol, false));
 			return this;
 		}
+
+		public override string ToString() { // TODO: NEED THIS FOR REGEXMATCHER TO WORK
+			return $"{nameof(Connections)}: {Connections}, {nameof(IsEnd)}: {IsEnd}";
+		}
 	}
 
 	/// <summary>

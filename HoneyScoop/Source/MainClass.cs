@@ -33,6 +33,7 @@
 using System.Diagnostics;
 using HoneyScoop.FileHandling;
 using HoneyScoop.FileHandling.FileTypes;
+using HoneyScoop.Searching;
 using HoneyScoop.Searching.RegexImpl;
 using HoneyScoop.Util;
 
@@ -56,7 +57,6 @@ internal static class MainClass {
 		controller.Initialise(argParser, specifiedFileTypes);
 		
 		Console.WriteLine(controller.ToString());
-
 		// Accessible arguments:
 		// Pattern: TakenArguments.COMMAND_LINE_ARGUMENT
 		// TakenArguments.OutputDirectory String path, which is the place the directories, files should be made, current directory path by default
@@ -66,9 +66,23 @@ internal static class MainClass {
 		// TakenArguments.Timestamp Boolean if the output directories are to be timestamped, false by default
 		// TakenArguments.NoOrganise Boolean if organising by filetype is not needed, false by default(or organised by default)
 		// DefinedArguments a List of the filetypes needed to search for.
+		
+		DoTesting();
 	}
 
 	static void DoTesting() {
+		byte[] testNfaData = {
+			0x00, 0x00, 0x01, 0x00
+		};
+		var matcher = new RegexMatcher(@"\x01");
+		var matches = matcher.Advance(testNfaData);
+		Console.Write("[");
+		foreach(var m in matches) {
+			Console.Write($"{m}, ");
+		}
+		Console.WriteLine("]");
+		// Outputs: [2, ]
+
 		byte[] testCrc32Data = {
 			0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x16, 0x04, 0x03, 0x00, 0x00, 
 			0x00

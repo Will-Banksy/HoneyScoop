@@ -3,6 +3,7 @@ using HoneyScoop.FileHandling.FileTypes;
 namespace HoneyScoop.FileHandling; 
 
 public enum FileType {
+	None,
 	Png,
 	Jpg,
 	Gif,

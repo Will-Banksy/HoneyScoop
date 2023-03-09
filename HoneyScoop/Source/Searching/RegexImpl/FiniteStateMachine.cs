@@ -44,7 +44,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 			return this;
 		}
 
-		public override string ToString() { // TODO: NEED THIS FOR REGEXMATCHER TO WORK
+		public override string ToString() { // TODO: NEED THIS FOR REGEXMATCHER TO WORK. STATE UUIDs? UUIDs based on the structure of the NFA, like Xilem? A builder class that allocates them?
 			return $"{nameof(Connections)}: {Connections}, {nameof(IsEnd)}: {IsEnd}";
 		}
 	}

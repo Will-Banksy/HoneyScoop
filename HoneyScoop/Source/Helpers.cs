@@ -9,32 +9,32 @@ internal class Helpers // TODO: Maybe rename this file/class to something more d
 
 	/// The commandlineparser library does not take a list of strings in
 	/// Converting it to a string makes handling them easier
-	internal Helpers() {
+	public Helpers() {
 		FileTypes = string.Join(",", SupportedFormats);
 	}
 
 	/// Accepted arguments
 
 	[Option('v', "verbose", Required = false, HelpText = "Set output to verbose messages.")]
-	internal bool Verbose { get; set; }
+	public bool Verbose { get; set; }
 
 	[Option('q', "quiet", Required = false, HelpText = "Set whether to view output.")]
-	internal bool QuietMode { get; set; }
+	public bool QuietMode { get; set; }
 
 	[Option('O', "no_organise", Required = false, HelpText = "Don't organise carved files by type. By default files will be organised into subdirectories by type.")]
-	internal bool NoOrganise { get; set; }
+	public bool NoOrganise { get; set; }
 
 	[Option('T', "timestamp", Required = false, HelpText = "Timestamp the output directories, disabled by default.")]
-	internal bool Timestamp { get; set; }
+	public bool Timestamp { get; set; }
 
 	[Option('t', "threads", Required = false, HelpText = "The number of threads to use for processing, by default its 40.")]
-	internal int NumThreads { get; set; } = 40;
+	public int NumThreads { get; set; } = 40;
 
 	[Option('o', "output", Required = false, HelpText = "The output directory path, by default its the current directory.")]
-	internal string OutputDirectory { get; set; } = Environment.CurrentDirectory;
+	public string OutputDirectory { get; set; } = Environment.CurrentDirectory;
 
 	[Option('c', "types", Required = false, HelpText = "The types of files to process")]
-	internal string FileTypes { get; set; }
+	public string FileTypes { get; set; }
 
 
 	internal List<string> ParseArgs(string[] arguments) {

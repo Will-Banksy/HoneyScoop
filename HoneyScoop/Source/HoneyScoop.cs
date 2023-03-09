@@ -43,7 +43,10 @@ internal class HoneyScoop {
 
 	internal void Initialise(Helpers parsedArgs, List<string> fileTypes) {
 		for(int i = 0; i < fileTypes.Count; i++) {
-			FileTypes.Add(Helper.FromString(fileTypes[i]));
+			FileType type = Helper.FromString(fileTypes[i]);
+			if(type != FileType.None) {
+				FileTypes.Add(type);
+			}
 		}
 
 		Verbose = parsedArgs.Verbose;

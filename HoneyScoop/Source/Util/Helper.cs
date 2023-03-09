@@ -55,7 +55,7 @@ internal static class Helper {
 		return res;
 	}
 
-	private static readonly Dictionary<string, FileType> _fileTypeStrs;
+	private static readonly Dictionary<string, FileType> FileTypeStrs = InitFileTypeStrs();
 
 	private static Dictionary<string, FileType> InitFileTypeStrs() {
 		return new Dictionary<string, FileType> {
@@ -74,8 +74,8 @@ internal static class Helper {
 	}
 
 	internal static FileType FromString(string fileType) {
-		var lower = fileType.ToLower();
-		return _fileTypeStrs[lower];
+		string lower = fileType.ToLower();
+		return FileTypeStrs.GetValueOrDefault(lower, FileType.None);
 	}
 
 	private static readonly uint[] CrcTable = MakeCrc32Table();

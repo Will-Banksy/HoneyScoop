@@ -41,20 +41,45 @@ internal class RegexMatcher {
 	/// <param name="bytes"></param>
 	/// <returns></returns>
 	internal List<int> Advance(ReadOnlySpan<byte> bytes) {
+		List<int> indexOfBytes = new List<int>();
 		for (int i = 0; i < bytes.Length; i++)
 		{
 			for (int j = 0; j < _states.Count; j++)
 			{
-				for (int k = 0; k < _states[j].Connections.Count; k++)
+				bool advanceExist = false;
 				{
 					
 				}
+				for (int k = 0; k < _states[j].Connections.Count; k++) {
+					if (bytes[i] == _states[j].Connections[k].Symbol) {
+						_states[j] = _states[j].Connections[k].Next;
+						advanceExist = true;
+						if (_states[j] == _nfa.End) {
+							indexOfBytes.Add(i);
+							_states.RemoveAt(j);
+						}
+						break;
+					}
+				}
+
+				if (advanceExist == false) {_states.RemoveAt(j); }
 			}
-			
-			{
-				
+
+			for (int j = 0; j < _nfa.Start.Connections.Count; j++) {
+				if (bytes[i] == _nfa.Start.Connections[j].Symbol) {
+					if (_nfa.Start.Connections[j].Next == _nfa.End) {
+						indexOfBytes.Add(i);
+					}
+					else {
+						_states.Add(_nfa.Start.Connections[j].Next);
+					}
+
+					;
+				}
 			}
-			
-		} // TODO
+
+		}
+
+		return indexOfBytes;
 	}
 }

@@ -50,8 +50,8 @@ internal static class MainClass {
 		// Taking in Command line arguments
 		// Works only after running ParseArgs, which sets the CLI arguments as required
 		
-		Helpers argParser = new Helpers();
-		List<string> specifiedFileTypes = argParser.ParseArgs(args);
+		CommandLineArguments TakenArguments = new CommandLineArguments();
+		List<string> DefinedArguments = TakenArguments.ParseArgs(args);
 
 		HoneyScoop controller = HoneyScoop.Instance();
 		controller.Initialise(argParser, specifiedFileTypes);
@@ -66,6 +66,7 @@ internal static class MainClass {
 		// TakenArguments.Timestamp Boolean if the output directories are to be timestamped, false by default
 		// TakenArguments.NoOrganise Boolean if organising by filetype is not needed, false by default(or organised by default)
 		// DefinedArguments a List of the filetypes needed to search for.
+		// TakenArguments.InputFile a String of a path for the supplied file which the reconstruction will work on.
 		
 		DoTesting();
 	}

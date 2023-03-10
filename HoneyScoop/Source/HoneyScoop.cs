@@ -17,6 +17,7 @@ internal class HoneyScoop {
 	internal bool Timestamp;
 	internal int NumThreads;
 	internal string OutputDirectory;
+	internal string InputFile;
 
 	private HoneyScoop() {
 		FileTypes = new List<FileType>();
@@ -26,6 +27,7 @@ internal class HoneyScoop {
 		Timestamp = false;
 		NumThreads = 0;
 		OutputDirectory = "";
+		InputFile = "";
 	}
 
 	/// <summary>
@@ -41,7 +43,7 @@ internal class HoneyScoop {
 		return _instance;
 	}
 
-	internal void Initialise(Helpers parsedArgs, List<string> fileTypes) {
+	internal void Initialise(CommandLineArguments parsedArgs, List<string> fileTypes) {
 		for(int i = 0; i < fileTypes.Count; i++) {
 			FileType type = Helper.FromString(fileTypes[i]);
 			if(type != FileType.None) {
@@ -55,6 +57,7 @@ internal class HoneyScoop {
 		Timestamp = parsedArgs.Timestamp;
 		NumThreads = parsedArgs.NumThreads;
 		OutputDirectory = parsedArgs.OutputDirectory;
+		InputFile = parsedArgs.InputFile;
 	}
 
 	/// <summary>

@@ -25,8 +25,25 @@ internal class FileHandler {
 	/// </summary>
 	/// <returns></returns>
 	/// <exception cref="NotImplementedException">Always throws this until implemented</exception>
-	internal ReadOnlySpan<byte> Next() {
-		throw new NotImplementedException();
+	
+	
+	private long _currentPosition = 0;
+	internal ReadOnlySpan<byte> Next(string filepath)	//create ReadOnlySpan function	
+	{
+		byte[] buffer = new byte[_bufferSize];			//specify range of bytes 
+		int bytesRead;									
+    
+		using (var stream = new FileStream(filepath, FileMode.Open, FileAccess.Read)) //open file 
+		{
+			stream.Seek(_currentPosition, SeekOrigin.Begin);			// Set the stream position to the last position
+			bytesRead = stream.Read(buffer, 0, _bufferSize);	// read up to the set buffer position from the current position
+		}
+    
+		_currentPosition += bytesRead; // Update the current position
+		return new ReadOnlySpan<byte>(buffer, 0, bytesRead); //return the range of bytes as a read only span
+		
+		//throw new NotImplementedException();
+
 	}
 
 	/// <summary>

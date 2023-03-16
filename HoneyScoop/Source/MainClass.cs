@@ -73,9 +73,9 @@ internal static class MainClass {
 
 	static void DoTesting() {
 		byte[] testNfaData = {
-			0x00, 0x00, 0x01, 0x7F
+			0x00, 0x00, 0x01, 0x7F, 0xff
 		};
-		var matcher = new RegexMatcher(@"\x7F");
+		var matcher = new RegexMatcher(@"\xFF|\x01");
 		var matches = matcher.Advance(testNfaData);
 		Console.Write("[");
 		foreach(var m in matches) {
@@ -105,10 +105,6 @@ internal static class MainClass {
 		Debug.Assert(postfix.Equals(expectedPostfix), "Test Failed: Infix regex was not converted to correct postfix expression");
 		
 		var regex = @"\x0a\x0b";
-
-		StateTransitionTable stt = StateTransitionTable.Build(RegexEngine.ParseToPostfix(regex));
-		Console.WriteLine($"stt({stt.ToString()})");
-
 		var expected = new FiniteStateMachine<byte>(0x0a);
 		FiniteStateMachine<byte> got = RegexEngine.ParseRegex(regex);
 		Debug.Assert(got.Equals(expected), "Test Failed: Postfix regex was not converted into a Finite State Machine/NFA correctly (or in this case the NFA comparison is broken while I work on a solution)");

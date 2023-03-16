@@ -1,5 +1,6 @@
 using HoneyScoop.Searching.RegexImpl;
 using HoneyScoop.Util;
+
 namespace HoneyScoop.Searching;
 
 /// <summary>
@@ -8,14 +9,14 @@ namespace HoneyScoop.Searching;
 internal class RegexMatcher {
 	private FiniteStateMachine<byte> _nfa;
 	private List<FiniteStateMachine<byte>.State> _states;
-	
+
 	/// <summary>
 	/// Initialises a RegexMatcher that matches the regex
 	/// </summary>
 	/// <param name="regex"></param>
 	internal RegexMatcher(string regex) {
 		_nfa = RegexEngine.ParseRegex(regex);
-		_states = new List<FiniteStateMachine<byte>.State>{};
+		_states = new List<FiniteStateMachine<byte>.State> { };
 	}
 
 	/// <summary>
@@ -31,8 +32,8 @@ internal class RegexMatcher {
 		} else {
 			_nfa = new FiniteStateMachine<byte>();
 		}
-		
-		_states = new List<FiniteStateMachine<byte>.State>{};
+
+		_states = new List<FiniteStateMachine<byte>.State> { };
 	}
 
 	/// <summary>
@@ -42,45 +43,38 @@ internal class RegexMatcher {
 	/// <returns></returns>
 	internal List<int> Advance(ReadOnlySpan<byte> bytes) {
 		List<int> indexOfBytes = new List<int>();
-		for (int i = 0; i < bytes.Length; i++)
-		{
-			for (int j = 0; j < _states.Count; j++)
-			{
+		for(int i = 0; i < bytes.Length; i++) {
+			for(int j = 0; j < _states.Count; j++) {
 				var connections = Helper.Flatten(_states[j]);
 				bool advanceExist = false;
-				{
-					
-				}
-				for (int k = 0; k < connections.Count; k++) {
-					if (bytes[i] == connections[k].Symbol) {
+				for(int k = 0; k < connections.Count; k++) {
+					if(bytes[i] == connections[k].Symbol) {
 						_states[j] = connections[k].Next;
 						advanceExist = true;
-						if (_states[j] == _nfa.End) {
+						if(_states[j] == _nfa.End) {
 							indexOfBytes.Add(i);
 							_states.RemoveAt(j);
 						}
+
 						break;
 					}
 				}
 
-				if (advanceExist == false) {_states.RemoveAt(j); }
-			}
-
-			var connectionsNfa = Helper.Flatten(_nfa.Start);
-			for (int j = 0; j < connectionsNfa.Count; j++) {
-				
-				if (bytes[i] == connectionsNfa[j].Symbol) {
-					if (connectionsNfa[j].Next == _nfa.End) {
-						indexOfBytes.Add(i);
-					}
-					else {
-						_states.Add(connectionsNfa[j].Next);
-					}
-
-					
+				if(advanceExist == false) {
+					_states.RemoveAt(j);
 				}
 			}
 
+			var connectionsNfa = Helper.Flatten(_nfa.Start);
+			for(int j = 0; j < connectionsNfa.Count; j++) {
+				if(bytes[i] == connectionsNfa[j].Symbol) {
+					if(connectionsNfa[j].Next == _nfa.End) {
+						indexOfBytes.Add(i);
+					} else {
+						_states.Add(connectionsNfa[j].Next);
+					}
+				}
+			}
 		}
 
 		return indexOfBytes;

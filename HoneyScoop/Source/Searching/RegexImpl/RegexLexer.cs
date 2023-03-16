@@ -154,6 +154,7 @@ internal static class RegexLexer {
 			foreach(var t in tokens) {
 				sb.Append(t.ToString());
 			}
+
 			return sb.ToString();
 		}
 	}
@@ -167,7 +168,6 @@ internal static class RegexLexer {
 		var tokens = new List<Token>();
 
 		for(int i = 0; i < src.Length; i++) {
-			
 			switch(src[i]) { //adds the tokens into the list once the matching regex operator has been found
 				case '|':
 					tokens.Add(new Token(OperatorType.Alternate));
@@ -180,19 +180,19 @@ internal static class RegexLexer {
 				case ')':
 					tokens.Add(new Token(TokenType.CloseParenthesis));
 					break;
-				
+
 				case '+':
 					tokens.Add(new Token(OperatorType.AlternateLoopOnce));
 					break;
-				
+
 				case '*':
 					tokens.Add(new Token(OperatorType.AlternateLoop));
 					break;
-				
+
 				case '?':
 					tokens.Add(new Token(OperatorType.AlternateEmpty));
 					break;
-				
+
 				case '\'': // Strictly speaking this isn't necessary but it might be like an idea to have just in case
 					tokens.Add(new Token(OperatorType.Concat));
 					break;
@@ -200,8 +200,8 @@ internal static class RegexLexer {
 				//and then convert to bytes for adding it into the list of tokens
 				case '\\':
 					if(src[i + 1] == 'x') {
-						if((src[i + 2] >= '0' && src[i + 2] <= '9') || src[i + 2] >= 'a' && src[i + 2] <= 'f') {
-							if((src[i + 3] >= '0' && src[i + 3] <= '9') || src[i + 3] >= 'a' && src[i + 3] <= 'f') {
+						if((src[i + 2] >= '0' && src[i + 2] <= '9') || (src[i + 2] >= 'a' && src[i + 2] <= 'f') || (src[i + 2] >= 'A' && src[i + 2] <= 'F')) {
+							if((src[i + 3] >= '0' && src[i + 3] <= '9') || (src[i + 3] >= 'a' && src[i + 3] <= 'f') || (src[i + 3] >= 'A' && src[i + 3] <= 'F')) {
 								ReadOnlySpan<char> hexChars = src.AsSpan(i + 2, 2); // Using a span avoids unnecessarily allocating memory (which is slow)
 								string hex = new string(hexChars);
 								byte hexToByte = Convert.ToByte(hex, 16); // Corrected conversion of string to byte
@@ -210,6 +210,7 @@ internal static class RegexLexer {
 							}
 						}
 					}
+
 					break;
 			}
 		}

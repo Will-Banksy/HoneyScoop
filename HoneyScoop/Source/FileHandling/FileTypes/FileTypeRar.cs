@@ -1,6 +1,4 @@
-namespace HoneyScoop.Source.FileHandling.FileTypes;
+namespace HoneyScoop.FileHandling.FileTypes;
 
-public class FileTypeRar
-{
-    
+public class FileTypeRar {
 }

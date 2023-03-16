@@ -50,11 +50,11 @@ internal static class MainClass {
 		// Taking in Command line arguments
 		// Works only after running ParseArgs, which sets the CLI arguments as required
 		
-		CommandLineArguments takenArguments = new CommandLineArguments();
-		List<string> definedArguments = takenArguments.ParseArgs(args);
+		CommandLineArguments argParser = new CommandLineArguments();
+		List<string> specifiedFileTypes = argParser.ParseArgs(args);
 
 		HoneyScoop controller = HoneyScoop.Instance();
-		controller.Initialise(takenArguments, definedArguments);
+		controller.Initialise(argParser, specifiedFileTypes);
 		
 		Console.WriteLine(controller.ToString());
 		// Accessible arguments:
@@ -73,9 +73,9 @@ internal static class MainClass {
 
 	static void DoTesting() {
 		byte[] testNfaData = {
-			0x00, 0x00, 0x01, 0x00
+			0x00, 0x00, 0x01, 0x7E
 		};
-		var matcher = new RegexMatcher(@"\x01");
+		var matcher = new RegexMatcher(@"\xff");
 		var matches = matcher.Advance(testNfaData);
 		Console.Write("[");
 		foreach(var m in matches) {

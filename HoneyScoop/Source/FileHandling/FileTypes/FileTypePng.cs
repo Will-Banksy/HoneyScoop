@@ -123,7 +123,7 @@ internal class FileTypePng : IFileType {
 			uint chunkLen = Helper.FromBigEndian(data);
 			uint chunkType = Helper.FromBigEndian(data[4..]);
 			uint? adjustedLen = chunkLen > data.Length - 12 ? (uint)data.Length - 12 : null;
-			uint calcCrc = chunkType == TypeIend ? TypeIendCrc : Helper.Crc32(data.Slice(4, ((int)chunkLen + 4)));
+			uint calcCrc = chunkType == TypeIend ? TypeIendCrc : Crc32.CalculateCrc32(data.Slice(4, ((int)chunkLen + 4)));
 			Chunk c = new Chunk(
 				length: chunkLen,
 				type: chunkType,

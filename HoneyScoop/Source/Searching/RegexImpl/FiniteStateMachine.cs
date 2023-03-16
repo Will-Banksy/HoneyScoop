@@ -53,7 +53,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// A StateConnection object represents a directional connection from one State to another - The <c>Next</c> state.
 	/// If the connection is a ε-connection, <c>Transparent</c> is true, otherwise, <c>Symbol</c> is used
 	/// </summary>
-	internal readonly record struct StateConnection(State Next, T Symbol, bool Transparent);
+	internal readonly record struct StateConnection(State Next, T Symbol, bool Transparent, bool Visited = false);
 
 	internal readonly State Start;
 	internal readonly State End;

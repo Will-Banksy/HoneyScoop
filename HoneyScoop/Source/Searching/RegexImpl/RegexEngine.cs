@@ -23,6 +23,8 @@ internal static class RegexEngine {
 		if(_parseCache.ContainsKey(regex)) {
 			return _parseCache[regex];
 		}
+
+		// var regexHash = new CyclicPolynomialHash(Encoding.Default.GetBytes(regex));
 		
 		var postfix = ParseToPostfix(regex);
 		Stack<FiniteStateMachine<byte>> finiteStack = new Stack<FiniteStateMachine<byte>>();

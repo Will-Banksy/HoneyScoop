@@ -73,9 +73,9 @@ internal static class MainClass {
 
 	static void DoTesting() {
 		byte[] testNfaData = {
-			0x00, 0x00, 0x01, 0x7F, 0xff
+			0x00, 0x00, 0x01, 0x7f, 0xff
 		};
-		var matcher = new RegexMatcher(@"\xFF|\x01");
+		var matcher = new RegexMatcher(@"\x01|\xff");
 		var matches = matcher.Advance(testNfaData);
 		Console.Write("[");
 		foreach(var m in matches) {
@@ -89,7 +89,7 @@ internal static class MainClass {
 			0x00
 		};
 		uint expectedCrc32 = 0x02E3B014;
-		uint crc = Helper.Crc32(testCrc32Data);
+		uint crc = Crc32.CalculateCrc32(testCrc32Data);
 		Debug.Assert(crc == expectedCrc32, $"Calculated CRC does not match the actual CRC. The calculated CRC was: {Convert.ToString(crc, 16).PadLeft(8, '0')}");
 
 		byte[] testPngData = GetPngTestData();

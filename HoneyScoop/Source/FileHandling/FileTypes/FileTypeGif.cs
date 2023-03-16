@@ -1,6 +1,6 @@
 using HoneyScoop.FileHandling;
 
-namespace HoneyScoop.FileHandling.FileTypes;
+namespace HoneyScoop.Source.FileHandling.FileTypes;
 
 internal class FileTypeGif : IFileType {
 	public string Header => "GIF8"; // GIF signature

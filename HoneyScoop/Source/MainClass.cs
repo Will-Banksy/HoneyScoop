@@ -29,7 +29,7 @@
 // Also no space between keywords and any arguments in brackets after them e.e. `if(flag)` not `if (flag)` and `switch(thing)` not `switch (thing)`
 //
 // For notes on writing performant C# and for C# resources: https://willbanksy-pkb.notion.site/C-edef060a627f4f2babe13346a11e5962
-
+//DO NOT USE CAPITAL LETTERS IN ANY REGEX PROGRAMMING PLEASE
 using System.Diagnostics;
 using HoneyScoop.FileHandling;
 using HoneyScoop.FileHandling.FileTypes;
@@ -73,9 +73,9 @@ internal static class MainClass {
 
 	static void DoTesting() {
 		byte[] testNfaData = {
-			0x00, 0x00, 0x01, 0x7E
+			0x00, 0x00, 0x01, 0x7F
 		};
-		var matcher = new RegexMatcher(@"\xff");
+		var matcher = new RegexMatcher(@"\x7F");
 		var matches = matcher.Advance(testNfaData);
 		Console.Write("[");
 		foreach(var m in matches) {

@@ -200,8 +200,8 @@ internal static class RegexLexer {
 				//and then convert to bytes for adding it into the list of tokens
 				case '\\':
 					if(src[i + 1] == 'x') {
-						if(src[i + 2] >= '0' && src[i + 2] <= '9' || src[i + 2] >= 'a' && src[i + 2] <= 'f' || src[i + 2] >= 'A' && src[i + 2] <= 'F') {
-							if(src[i + 3] >= '0' && src[i + 3] <= '9' || src[i + 3] >= 'a' && src[i + 3] <= 'f' || src[i + 2] >= 'A' && src[i + 2] <= 'F') {
+						if((src[i + 2] >= '0' && src[i + 2] <= '9') || src[i + 2] >= 'a' && src[i + 2] <= 'f') {
+							if((src[i + 3] >= '0' && src[i + 3] <= '9') || src[i + 3] >= 'a' && src[i + 3] <= 'f') {
 								ReadOnlySpan<char> hexChars = src.AsSpan(i + 2, 2); // Using a span avoids unnecessarily allocating memory (which is slow)
 								string hex = new string(hexChars);
 								byte hexToByte = Convert.ToByte(hex, 16); // Corrected conversion of string to byte

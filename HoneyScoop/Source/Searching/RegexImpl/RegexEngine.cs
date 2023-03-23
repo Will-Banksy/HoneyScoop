@@ -28,11 +28,12 @@ internal static class RegexEngine {
 		
 		var postfix = ParseToPostfix(regex);
 		Stack<FiniteStateMachine<byte>> finiteStack = new Stack<FiniteStateMachine<byte>>();
+		int uuid = 0;
 		
 		foreach(RegexLexer.Token token in postfix) {//Goes through the list of tokens and does an action based on what operator it is
 			switch(token.Type) {
 				case RegexLexer.TokenType.Literal://pushes the literal straight onto the stack
-					finiteStack.Push(new FiniteStateMachine<byte>(token.LiteralValue));
+					finiteStack.Push(new FiniteStateMachine<byte>(ref uuid, token.LiteralValue));
 					Console.WriteLine(" Lit ");
 					break;
 				
@@ -66,18 +67,18 @@ internal static class RegexEngine {
 						case RegexLexer.OperatorType.Alternate://Pops twice and does the Alternate function on the second pop and then pushes the two pops back in order of second then first pop
 							var firstPopAlt = finiteStack.Pop();
 							var nfaAlt = finiteStack.Pop();
-							nfaAlt.Alternate(nfaAlt);
-							finiteStack.Push(nfaAlt);
+							firstPopAlt.Alternate(ref uuid, nfaAlt);
 							finiteStack.Push(firstPopAlt);
+							// finiteStack.Push(firstPopAlt);
 							Console.WriteLine(" Alt ");
 							break;
 						
 						case RegexLexer.OperatorType.Concat://Pops twice and does the Concatenate function on the second pop and then pushes the two pops back in order of second then first pop
 							var firstPopCon = finiteStack.Pop();
 							var nfaCon = finiteStack.Pop();
-							nfaCon.Concatenate(nfaCon);
-							finiteStack.Push(nfaCon);
+							firstPopCon.Concatenate(nfaCon);
 							finiteStack.Push(firstPopCon);
+							// finiteStack.Push(firstPopCon);
 							Console.WriteLine(" Con ");
 							break;
 					}

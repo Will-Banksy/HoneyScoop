@@ -17,6 +17,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// where the State is the connected state and the T? is the connection character or a null represents an ε-connection (empty/transparent connection)
 	/// </summary>
 	internal class State { // TODO: This is kinda expensive to construct - Maybe add a constructor that doesn't then also initialise `connections`
+		private readonly int _uuid;
 		internal List<StateConnection> Connections; // TODO: Array or List?
 		
 		internal bool IsEnd => Connections.Count == 0;
@@ -24,8 +25,12 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 		/// <summary>
 		/// Specify a capacity to preallocate when creating the <c>List&lt;StateConnection&gt;</c> of connections (for optimisation purposes)
 		/// </summary>
+		/// <param name="uuid">The UUID assigned to this State</param>
 		/// <param name="preallocCapacity">Pre-allocated capacity of the internal list of connections</param>
-		internal State(int preallocCapacity = 4) {
+		internal State(ref int uuid, int preallocCapacity = 4) {
+			_uuid = uuid;
+			uuid++;
+			Console.WriteLine(uuid);
 			this.Connections = new List<StateConnection>(preallocCapacity);
 		}
 
@@ -44,6 +49,21 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 			return this;
 		}
 
+		internal bool Equals(State other) {
+			return _uuid == other._uuid;
+		}
+
+		public override bool Equals(object? obj) {
+			if(ReferenceEquals(null, obj)) return false;
+			if(ReferenceEquals(this, obj)) return true;
+			if(obj.GetType() != this.GetType()) return false;
+			return Equals((State)obj);
+		}
+
+		public override int GetHashCode() {
+			return _uuid;
+		}
+
 		public override string ToString() { // TODO: NEED THIS FOR REGEXMATCHER TO WORK. STATE UUIDs? UUIDs based on the structure of the NFA, like Xilem? A builder class that allocates them?
 			return $"{nameof(Connections)}: {Connections}, {nameof(IsEnd)}: {IsEnd}";
 		}
@@ -58,14 +78,14 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	internal readonly State Start;
 	internal readonly State End;
 
-	public FiniteStateMachine() {
-		End = new State();
-		Start = new State().AddEpsilonConnection(End);
+	public FiniteStateMachine(ref int uuid) {
+		End = new State(ref uuid);
+		Start = new State(ref uuid).AddEpsilonConnection(End);
 	}
 
-	internal FiniteStateMachine(T? symbol) {
-		End = new State();
-		Start = new State().AddConnection(new StateConnection(End, symbol ?? default(T), !symbol.HasValue));
+	internal FiniteStateMachine(ref int uuid, T? symbol) {
+		End = new State(ref uuid);
+		Start = new State(ref uuid).AddConnection(new StateConnection(End, symbol ?? default(T), !symbol.HasValue));
 	}
 
 	private FiniteStateMachine(State start, State end) {
@@ -88,10 +108,10 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// </summary>
 	/// <param name="other"></param>
 	/// <returns></returns>
-	internal FiniteStateMachine<T> Alternate(FiniteStateMachine<T> other) {
+	internal FiniteStateMachine<T> Alternate(ref int uuid, FiniteStateMachine<T> other) {
 		// Slight optimisation: Use this.Start instead of creating new start state. Should be functionally identical
 		// TODO: Could optimise out the endState too actually and just have the end state be the end state of `this` or `other`
-		var endState = new State();
+		var endState = new State(ref uuid);
 
 		this.Start.AddEpsilonConnection(other.Start);
 		
@@ -131,26 +151,5 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 		this.End.AddEpsilonConnection(this.Start);
 		
 		return this;
-	}
-
-	/// <summary>
-	/// Ah shit this is actually quite complex... Deep object comparison
-	/// </summary>
-	/// <param name="other"></param>
-	/// <returns></returns>
-	internal bool Equals(FiniteStateMachine<T> other) {
-		// return Equals(Start, other.Start) && Equals(End, other.End);
-
-		return false;
-	}
-
-	internal bool CompareState(State state) {
-		var conns = state.Connections;
-		
-		return false;
-	}
-
-	public override bool Equals(object? obj) {
-		return obj is FiniteStateMachine<T> other && Equals(other);
 	}
 }

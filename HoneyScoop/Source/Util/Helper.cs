@@ -81,11 +81,16 @@ internal static class Helper {
 	internal static List<FiniteStateMachine<byte>.StateConnection> Flatten(FiniteStateMachine<byte>.State startState) {
 		var connections = new List<FiniteStateMachine<byte>.StateConnection>();
 
-		Stack<FiniteStateMachine<byte>.State> stateStack = new Stack<FiniteStateMachine<byte>.State>();
+		Stack<FiniteStateMachine<byte>.State> stateStack = new();
 		stateStack.Push(startState);
+		HashSet<FiniteStateMachine<byte>.State> visitedStates = new();
 
 		while(stateStack.Count > 0) {
 			FiniteStateMachine<byte>.State state = stateStack.Pop();
+			if(visitedStates.Contains(state)) {
+				continue;
+			}
+			visitedStates.Add(state);
 			for(int i = 0; i < state.Connections.Count; i++) {
 				if(state.Connections[i].Transparent) {
 					stateStack.Push(state.Connections[i].Next);

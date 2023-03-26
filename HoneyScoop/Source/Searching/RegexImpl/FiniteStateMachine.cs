@@ -19,9 +19,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	internal class State { // TODO: This is kinda expensive to construct - Maybe add a constructor that doesn't then also initialise `connections`
 		private readonly int _uuid;
 		internal List<StateConnection> Connections; // TODO: Array or List?
-		
-		internal bool IsEnd => Connections.Count == 0;
-		
+
 		/// <summary>
 		/// Specify a capacity to preallocate when creating the <c>List&lt;StateConnection&gt;</c> of connections (for optimisation purposes)
 		/// </summary>
@@ -30,7 +28,6 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 		internal State(ref int uuid, int preallocCapacity = 4) {
 			_uuid = uuid;
 			uuid++;
-			Console.WriteLine(uuid);
 			this.Connections = new List<StateConnection>(preallocCapacity);
 		}
 
@@ -64,8 +61,9 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 			return _uuid;
 		}
 
-		public override string ToString() { // TODO: NEED THIS FOR REGEXMATCHER TO WORK. STATE UUIDs? UUIDs based on the structure of the NFA, like Xilem? A builder class that allocates them?
-			return $"{nameof(Connections)}: {Connections}, {nameof(IsEnd)}: {IsEnd}";
+		public override string ToString() {
+			// return $"State({_uuid})";
+			return $"{_uuid}";
 		}
 	}
 
@@ -73,7 +71,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// A StateConnection object represents a directional connection from one State to another - The <c>Next</c> state.
 	/// If the connection is a ε-connection, <c>Transparent</c> is true, otherwise, <c>Symbol</c> is used
 	/// </summary>
-	internal readonly record struct StateConnection(State Next, T Symbol, bool Transparent, bool Visited = false);
+	internal readonly record struct StateConnection(State Next, T Symbol, bool Transparent);
 
 	internal readonly State Start;
 	internal readonly State End;
@@ -136,7 +134,6 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// </summary>
 	/// <returns></returns>
 	internal FiniteStateMachine<T> AlternateLoop() {
-		// TODO: Test - This is different to implementations I've come across in research - But as far as I can think it is functionally identical?
 		this.Start.AddEpsilonConnection(this.End);
 		this.End.AddEpsilonConnection(this.Start);
 		
@@ -152,4 +149,46 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 		
 		return this;
 	}
+
+#if DEBUG
+	/// <summary>
+	/// Prints out the structure of the NFA, along with it's start and end states. The printed-out structure is valid mermaid diagram markup for easy visualisation
+	/// </summary>
+	internal void Debug() {
+		Console.WriteLine(" --- NFA DEBUG START --- ");
+		
+		Console.WriteLine($"Start: {Start}");
+		Console.WriteLine($"End: {End}");
+		
+		Stack<State> toVisit = new();
+		HashSet<State> visited = new();
+
+		toVisit.Push(Start);
+
+		while(toVisit.Count != 0) {
+			State state = toVisit.Pop();
+			visited.Add(state);
+			for(int i = 0; i < state.Connections.Count; i++) {
+				DebugPrintConnection(state, state.Connections[i]);
+				if(!visited.Contains(state.Connections[i].Next)) {
+					toVisit.Push(state.Connections[i].Next);
+					visited.Add(state.Connections[i].Next);
+				}
+			}
+		}
+		
+		Console.WriteLine(" --- NFA DEBUG END --- ");
+	}
+
+	private void DebugPrintConnection(State start, StateConnection conn) {
+		// Console.WriteLine($"{start} -> ${conn.Next} : Transparent({conn.Transparent}), Symbol({conn.Symbol})");
+		string connStr;
+		if(conn.Transparent) {
+			connStr = "ε";
+		} else {
+			connStr = conn.Symbol.ToString() ?? "ERROR";
+		}
+		Console.WriteLine($"{start} -->|\"{connStr}\"| {conn.Next}");
+	}
+#endif
 }

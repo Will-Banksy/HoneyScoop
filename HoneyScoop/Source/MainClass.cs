@@ -71,43 +71,36 @@ internal static class MainClass {
 		
 		DoTesting();
 	}
-
+	
 	static void DoTesting() {
 		byte[] testNfaData = {
-			0x00, 0x00, 0x01, 0x7f, 0xff
+			0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x7f, 0xab, 0xab, 0xf7
 		};
-		var matcher = new RegexMatcher(@"\x01|\xff", 0);
+		var matcher = new RegexMatcher(@"(\x01\x00+\x7f)|(\x7f\x00?\xab*(\xff|\xf7))", 0);
 		var matches = matcher.Advance(testNfaData);
 		Console.Write("[");
 		foreach(var m in matches) {
-			Console.Write($"{m.StartOfMatch}, ");
+			Console.Write($"({m.StartOfMatch}, {m.EndOfMatch}), ");
 		}
 		Console.WriteLine("]");
 
-		// byte[] testCrc32Data = {
-		// 	0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x16, 0x04, 0x03, 0x00, 0x00, 
-		// 	0x00
-		// };
-		// uint expectedCrc32 = 0x02E3B014;
-		// uint crc = Crc32.CalculateCrc32(testCrc32Data);
-		// Debug.Assert(crc == expectedCrc32, $"Calculated CRC does not match the actual CRC. The calculated CRC was: {Convert.ToString(crc, 16).PadLeft(8, '0')}");
-		//
-		// byte[] testPngData = GetPngTestData();
-		// FileTypePng png = new FileTypePng();
-		// AnalysisResult result = png.Analyse(testPngData);
-		// Debug.Assert(result == AnalysisResult.Correct, "The incorrect analysis result was computed");
-		//
-		// var infix = @"((\x0a\x0b*)|\x0c?)+\x0d\x0e\x0f";
-		// var expectedPostfix = @"\x0a\x0b*'\x0c?|+\x0d'\x0e'\x0f'";
-		// Console.WriteLine($"Infix: {infix}");
-		// string postfix = RegexLexer.Token.TokensToString(RegexEngine.ParseToPostfix(infix));
-		// Console.WriteLine($"Postfix: {postfix}");
-		// Debug.Assert(postfix.Equals(expectedPostfix), "Test Failed: Infix regex was not converted to correct postfix expression");
+		byte[] testCrc32Data = {
+			0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x16, 0x04, 0x03, 0x00, 0x00, 
+			0x00
+		};
+		uint expectedCrc32 = 0x02E3B014;
+		uint crc = Crc32.CalculateCrc32(testCrc32Data);
+		Debug.Assert(crc == expectedCrc32, $"Calculated CRC does not match the actual CRC. The calculated CRC was: {Convert.ToString(crc, 16).PadLeft(8, '0')}");
 		
-		// var regex = @"\x0a\x0b";
-		// var expected = new FiniteStateMachine<byte>(0x0a);
-		// FiniteStateMachine<byte> got = RegexEngine.ParseRegex(regex);
-		// Debug.Assert(got.Equals(expected), "Test Failed: Postfix regex was not converted into a Finite State Machine/NFA correctly (or in this case the NFA comparison is broken while I work on a solution)");
+		byte[] testPngData = GetPngTestData();
+		FileTypePng png = new FileTypePng();
+		AnalysisResult result = png.Analyse(testPngData);
+		Debug.Assert(result == AnalysisResult.Correct, "The incorrect analysis result was computed");
+		
+		var infix = @"((\x0a\x0b*)|\x0c?)+\x0d\x0e\x0f";
+		var expectedPostfix = @"\x0a\x0b*'\x0c?|+\x0d'\x0e'\x0f'";
+		string postfix = RegexLexer.Token.TokensToString(RegexEngine.ParseToPostfix(infix));
+		Debug.Assert(postfix.Equals(expectedPostfix), "Test Failed: Infix regex was not converted to correct postfix expression");
 	}
 
 	static byte[] GetPngTestData() { // Function for testing FileTypePng analysis

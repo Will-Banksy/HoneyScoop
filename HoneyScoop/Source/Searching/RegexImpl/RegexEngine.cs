@@ -1,3 +1,5 @@
+using HoneyScoop.Util;
+
 namespace HoneyScoop.Searching.RegexImpl;
 
 internal static class RegexEngine {
@@ -23,10 +25,12 @@ internal static class RegexEngine {
 		if(_parseCache.ContainsKey(regex)) {
 			return _parseCache[regex];
 		}
-
-		// var regexHash = new CyclicPolynomialHash(Encoding.Default.GetBytes(regex));
 		
 		var postfix = ParseToPostfix(regex);
+#if DEBUG
+		Console.WriteLine($"Infix: {regex} --> Postfix: {Helper.ListToStringTight(postfix)}");
+#endif
+		
 		Stack<FiniteStateMachine<byte>> finiteStack = new Stack<FiniteStateMachine<byte>>();
 		int uuid = 0;
 		
@@ -34,30 +38,26 @@ internal static class RegexEngine {
 			switch(token.Type) {
 				case RegexLexer.TokenType.Literal://pushes the literal straight onto the stack
 					finiteStack.Push(new FiniteStateMachine<byte>(ref uuid, token.LiteralValue));
-					Console.WriteLine(" Lit ");
 					break;
 				
 				case RegexLexer.TokenType.UnaryOperator://operator that only takes one input
 					switch(token.OpType) {
 						case RegexLexer.OperatorType.AlternateEmpty://pops once then does the AlternateEmpty function and pushes it onto the stack
 							var nfaAltEmp = finiteStack.Pop();
-							nfaAltEmp.AlternateEmpty();
+							nfaAltEmp = nfaAltEmp.AlternateEmpty();
 							finiteStack.Push(nfaAltEmp);
-							Console.WriteLine(" AltEmp ");
 							break;
 						
 						case RegexLexer.OperatorType.AlternateLoop://pops once then does the AlternateLoop function and pushes it onto the stack
 							var nfaAltLoop = finiteStack.Pop();
-							nfaAltLoop.AlternateLoop();
+							nfaAltLoop = nfaAltLoop.AlternateLoop();
 							finiteStack.Push(nfaAltLoop);
-							Console.WriteLine(" AltLoop ");
 							break;
 						
 						case RegexLexer.OperatorType.AlternateLoopOnce://pops once then does the AlternateLoopOnce function and pushes it onto the stack
 							var nfaAltLoopOnce = finiteStack.Pop();
-							nfaAltLoopOnce.AlternateLoopOnce();
+							nfaAltLoopOnce = nfaAltLoopOnce.AlternateLoopOnce();
 							finiteStack.Push(nfaAltLoopOnce);
-							Console.WriteLine(" AltLoopOnce ");
 							break;
 					}
 					break;
@@ -67,19 +67,15 @@ internal static class RegexEngine {
 						case RegexLexer.OperatorType.Alternate://Pops twice and does the Alternate function on the second pop and then pushes the two pops back in order of second then first pop
 							var firstPopAlt = finiteStack.Pop();
 							var nfaAlt = finiteStack.Pop();
-							firstPopAlt.Alternate(ref uuid, nfaAlt);
+							firstPopAlt = firstPopAlt.Alternate(ref uuid, nfaAlt);
 							finiteStack.Push(firstPopAlt);
-							// finiteStack.Push(firstPopAlt);
-							Console.WriteLine(" Alt ");
 							break;
 						
 						case RegexLexer.OperatorType.Concat://Pops twice and does the Concatenate function on the second pop and then pushes the two pops back in order of second then first pop
-							var firstPopCon = finiteStack.Pop();
 							var nfaCon = finiteStack.Pop();
-							firstPopCon.Concatenate(nfaCon);
+							var firstPopCon = finiteStack.Pop();
+							firstPopCon = firstPopCon.Concatenate(nfaCon);
 							finiteStack.Push(firstPopCon);
-							// finiteStack.Push(firstPopCon);
-							Console.WriteLine(" Con ");
 							break;
 					}
 					break;

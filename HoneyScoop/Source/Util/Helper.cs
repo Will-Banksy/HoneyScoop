@@ -1,3 +1,4 @@
+using System.Text;
 using HoneyScoop.FileHandling;
 using HoneyScoop.Searching.RegexImpl;
 
@@ -101,5 +102,65 @@ internal static class Helper {
 		}
 
 		return connections;
+	}
+
+	/// <summary>
+	/// Checks whether the passed-in state is the end state, or is ε-connected to it
+	/// </summary>
+	/// <param name="state"></param>
+	/// <param name="endState"></param>
+	/// <returns></returns>
+	internal static bool IsEndState(FiniteStateMachine<byte>.State state, FiniteStateMachine<byte>.State endState) {
+		if(state.Equals(endState)) {
+			return true;
+		}
+		
+		HashSet<FiniteStateMachine<byte>.State> visited = new();
+
+		return IsEndStateRecur(state, endState, visited);
+	}
+
+	/// <summary>
+	/// Implementation detail of <see cref="IsEndState"/> - Recursive function that keeps track of visited nodes (states)
+	/// </summary>
+	/// <param name="state"></param>
+	/// <param name="endState"></param>
+	/// <param name="visited"></param>
+	/// <returns></returns>
+	private static bool IsEndStateRecur(FiniteStateMachine<byte>.State state, FiniteStateMachine<byte>.State endState, HashSet<FiniteStateMachine<byte>.State> visited) {
+		if(state.Equals(endState)) {
+			return true;
+		}
+		
+		for(int i = 0; i < state.Connections.Count; i++) {
+			if(state.Connections[i].Transparent && !visited.Contains(state.Connections[i].Next)) {
+				visited.Add(state.Connections[i].Next);
+				if(IsEndStateRecur(state.Connections[i].Next, endState, visited)) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	internal static string ListToString<T>(IList<T> list) {
+		StringBuilder sb = new();
+		sb.Append('[');
+		for(int i = 0; i < list.Count(); i++) {
+			sb.Append($"{list[i]}, ");
+		}
+		sb.Append(']');
+
+		return sb.ToString();
+	}
+
+	internal static string ListToStringTight<T>(IList<T> list) {
+		StringBuilder sb = new();
+		for(int i = 0; i < list.Count(); i++) {
+			sb.Append($"{list[i]}");
+		}
+
+		return sb.ToString();
 	}
 }

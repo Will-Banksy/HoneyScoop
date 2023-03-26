@@ -21,11 +21,6 @@ internal class FileTypeMp3 : IFileType {
 			return AnalysisResult.Unrecognised;
 		}
 
-		// Check for frame synchronization
-		if((data[0] & 0xFF) != 0xFF || ((data[1] & 0xE0) != 0xE0)) {
-			return AnalysisResult.Unrecognised;
-		}
-
 		ReadOnlySpan<byte> tagData = data.Slice(0, 10);
 		ReadOnlySpan<byte> tagSizeBytes = tagData.Slice(6, 4);
 		int tagSize = BitConverter.ToInt32(tagSizeBytes);

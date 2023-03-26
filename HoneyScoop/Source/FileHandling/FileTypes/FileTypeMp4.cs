@@ -9,8 +9,13 @@ namespace HoneyScoop.FileHandling.FileTypes {
 		private const int BrandSize = 4; // Size of the brand field in the header
 
 		// Supported brands in hexadecimal format
-		private static readonly string[] SupportedBrands = { @"\x6D\x70\x34\x31", @"\x6D\x70\x34\x32", @"\x69\x73\x6F\x6D", @"\x69\x73\x6F\x32" };
-
+		private static readonly byte[][] SupportedBrands = {
+			new byte[] { 0x69, 0x73, 0x6F, 0x6D },
+			new byte[] { 0x4D, 0x34, 0x41, 0x20 },
+			new byte[] { 0x69, 0x73, 0x6F, 0x32 },
+			new byte[] { 0x6D, 0x70, 0x34, 0x31 },
+			new byte[] { 0x4D, 0x34, 0x56, 0x20 }
+		};
 		public AnalysisResult Analyse(ReadOnlySpan<byte> data) {
 			// Check if data is longer than header and is present
 			if(data.Length < HeaderSize) {
@@ -19,10 +24,12 @@ namespace HoneyScoop.FileHandling.FileTypes {
 
 			// Check if brand is supported
 			ReadOnlySpan<byte> brandData = data.Slice(8, BrandSize);
-			brandData.SequenceEqual(new byte[] { 0x10 });
-			string brandString = Encoding.ASCII.GetString(brandData);
-			if(!Array.Exists(SupportedBrands, brand => brand == brandString)) {
-				return AnalysisResult.Unrecognised;
+			for (int i = 0; i < SupportedBrands.Length; i++)
+			{
+				if (!brandData.SequenceEqual(SupportedBrands[i]))
+				{
+					return AnalysisResult.Unrecognised;
+				}
 			}
 
 			// Check if data is not empty

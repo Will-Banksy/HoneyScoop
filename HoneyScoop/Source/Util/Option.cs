@@ -1,7 +1,7 @@
 namespace HoneyScoop.Util; 
 
 /// <summary>
-/// Essentially the same as <see cref="Nullable{T}"/>...
+/// Essentially the same as <see cref="Nullable{T}"/>... But maybe slightly faster due to zero allocations...
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public readonly struct Option<T> where T: struct {

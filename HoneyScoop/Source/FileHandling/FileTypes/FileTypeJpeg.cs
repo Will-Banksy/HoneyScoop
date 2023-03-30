@@ -1,5 +1,3 @@
-using HoneyScoop.Util;
-
 namespace HoneyScoop.FileHandling.FileTypes {
 	internal class FileTypeJpg : IFileType {
 		public string Header => @"^\xFF\xD8"; // JPG signature

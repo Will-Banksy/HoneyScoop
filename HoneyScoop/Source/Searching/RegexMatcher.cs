@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using HoneyScoop.Searching.RegexImpl;
 using HoneyScoop.Util;
 

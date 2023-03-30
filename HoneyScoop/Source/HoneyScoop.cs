@@ -1,4 +1,5 @@
 using HoneyScoop.FileHandling;
+using HoneyScoop.Searching;
 using HoneyScoop.Util;
 
 namespace HoneyScoop;
@@ -64,7 +65,45 @@ internal class HoneyScoop {
 	/// Start the carving process
 	/// </summary>
 	internal void StartCarving() {
-		// TODO
+		// Firstly, create an instance of FileHandler
+		var fileHandler = new FileHandler(InputFile);
+		// And then create the instances of RegexMatcher from the SupportedFileTypes.FileTypeHandlers
+		List<RegexMatcher> matchers = CreateMatchers();
+
+		// This list will keep track of matches found
+		List<Pair<Match, Match?>> matches = new();
+
+		do {
+			ReadOnlySpan<byte> sectionBytes = fileHandler.Next();
+
+			for(int i = 0; i < matchers.Count; i++) {
+				List<Match> sectionMatches = matchers[i].Advance(sectionBytes);
+				for(int j = 0; j < sectionMatches.Count; j++) {
+					// Check whether the MatchType is even - if so, it is a header
+					if((sectionMatches[j].MatchType & 0x1) != 0x1) {
+						// Handle found header
+					} else {
+						// Handle found footer
+					}
+				}
+			}
+		} while(!fileHandler.Eof);
+	}
+
+	private List<RegexMatcher> CreateMatchers() {
+		List<RegexMatcher> matchers = new();
+		matchers.EnsureCapacity(SupportedFileTypes.FileTypeHandlers.Values.Count);
+
+		uint i = 0;
+
+		foreach(IFileType fileTypeInstance in SupportedFileTypes.FileTypeHandlers.Values) {
+			matchers.Add(new RegexMatcher(fileTypeInstance.Header, i));
+			i++;
+			matchers.Add(new RegexMatcher(fileTypeInstance.Footer, i));
+			i++;
+		}
+
+		return matchers;
 	}
 
 	public override string ToString() {

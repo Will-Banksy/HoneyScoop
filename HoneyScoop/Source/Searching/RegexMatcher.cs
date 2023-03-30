@@ -29,6 +29,10 @@ internal class RegexMatcher {
 		_nfa = RegexEngine.ParseRegex(regex);
 		_states = new List<Pair<State, int>>();
 		_type = type;
+		
+// #if DEBUG
+// 		_nfa.Debug();
+// #endif
 	}
 
 	/// <summary>
@@ -72,13 +76,13 @@ internal class RegexMatcher {
 			}
 		}
 
-		#if DEBUG
+#if DEBUG
 		Console.Write("Ending with states: [");
 		foreach(var state in _states) {
 			Console.Write($"{state}, ");
 		}
 		Console.WriteLine("]");
-		#endif
+#endif
 
 		return indexOfBytes;
 	}

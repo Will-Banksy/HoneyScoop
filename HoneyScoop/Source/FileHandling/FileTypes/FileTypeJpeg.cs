@@ -69,31 +69,31 @@ namespace HoneyScoop.FileHandling.FileTypes {
 			/// <param name="data"></param>
 			/// <param name="pos"></param>
 			/// <returns>A new Segment or null if the data is corrupted</returns>
-			internal static Option<Segment> Parse(ReadOnlySpan<byte> data, int pos) {
+			internal static Segment? Parse(ReadOnlySpan<byte> data, int pos) {
 				if(data[pos] != StartByte) {
-					return Option<Segment>.None();
+					return null;
 				}
 
 				int marker = data[pos + 1];
 				if(marker == EndByte) {
 					// End of Image (EOI) marker
-					return Option<Segment>.None();
+					return null;
 				}
 
 				if(marker == 0) {
 					// Some editors use 0 as padding before the actual marker
-					return Option<Segment>.None();
+					return null;
 				}
 
 				int length = (data[pos + 2] << 8) + data[pos + 3];
 				if(length < 2 || length > data.Length - pos - 2) {
-					return Option<Segment>.None();
+					return null;
 				}
 
 				ReadOnlySpan<byte> segmentData = data.Slice(pos + 4, length - 2);
 				bool isValid = data[pos + length - 1] == EndByte;
 
-				return Option<Segment>.Some(new Segment(segmentData, length, (byte)marker, isValid));
+				return new Segment(segmentData, length, (byte)marker, isValid);
 			}
 		}
 
@@ -104,12 +104,12 @@ namespace HoneyScoop.FileHandling.FileTypes {
 
 			while(pos < data.Length - FooterSize) {
 				var segment = Segment.Parse(data, pos);
-				if(!segment.IsSome()) {
+				if(segment == null) {
 					break;
 				}
 
-				segments.Add(segment.Unwrap());
-				pos += segment.Unwrap().TotalLength;
+				segments.Add(segment.Value);
+				pos += segment.Value.TotalLength;
 			}
 
 			bool isValid = segments.Any() && segments.All(s => s.CheckDataValid() == AnalysisResult.Correct);

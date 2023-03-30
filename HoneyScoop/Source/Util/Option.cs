@@ -1,6 +1,10 @@
 namespace HoneyScoop.Util; 
 
-public struct Option<T> where T: struct {
+/// <summary>
+/// Essentially the same as <see cref="Nullable{T}"/>...
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public readonly struct Option<T> where T: struct {
 	private readonly T _value;
 	private readonly bool _some;
 	

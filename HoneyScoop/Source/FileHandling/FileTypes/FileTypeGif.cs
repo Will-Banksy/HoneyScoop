@@ -1,5 +1,3 @@
-using HoneyScoop.Util;
-
 // TODO: Write the header and footer signatures using Regex e.g. \x00\x00 instead of 00 and \x47\x49\x46\x08 instead of GIF8
 // Also look at this: https://en.wikipedia.org/wiki/GIF#File_format
 // (Can use regex with the header to match either GIF87a or GIF89a and do some more research on the footer cause 0x0000 is likely to come up a lot so if that is the only viable to use footer that's an issue)
@@ -159,9 +157,9 @@ namespace HoneyScoop.FileHandling.FileTypes {
 				}
 			}
 
-			private Option<FileTypeInfo> GetFileType(ReadOnlySpan<byte> fileData) {
+			private FileTypeInfo? GetFileType(ReadOnlySpan<byte> fileData) {
 				if(!IsValidFileType(fileData)) {
-					return Option<FileTypeInfo>.None();
+					return null;
 				}
 
 				// Determine GIF version
@@ -175,9 +173,9 @@ namespace HoneyScoop.FileHandling.FileTypes {
 				int colorTableSize = 1 << ((logicalScreenDescriptor.Flags & 0x07) + 1);
 
 				// Parse Global Color Table (if present)
-				Option<ColorTable> globalColorTable = Option<ColorTable>.None();
+				ColorTable? globalColorTable = null;
 				if((logicalScreenDescriptor.Flags & 0x80) == 0x80) {
-					globalColorTable = Option<ColorTable>.Some(new ColorTable(fileData.Slice(13, colorTableSize), colorTableSize));
+					globalColorTable = new ColorTable(fileData.Slice(13, colorTableSize), colorTableSize);
 				}
 
 				// Search for blocks until the terminator is found
@@ -194,11 +192,11 @@ namespace HoneyScoop.FileHandling.FileTypes {
 
 						default:
 							// Invalid block type, so we can't continue parsing
-							return Option<FileTypeInfo>.None();
+							return null;
 					}
 				}
 
-				return Option<FileTypeInfo>.Some(new FileTypeInfo("GIF", "Graphics Interchange Format", version));
+				return new FileTypeInfo("GIF", "Graphics Interchange Format", version);
 			}
 		}
 	}

@@ -53,7 +53,6 @@ internal static class RegexLexer {
 		OpenParenthesis,
 		CloseParenthesis,
 		Literal,
-
 		/// <summary>
 		/// For where anything else doesn't make sense
 		/// </summary>
@@ -73,6 +72,7 @@ internal static class RegexLexer {
 		/// </summary>
 		internal readonly byte LiteralValue = 0;
 
+		internal readonly bool AnyLiteralValue = false;
 		/// <summary>
 		/// Construct a new, empty token
 		/// </summary>
@@ -119,6 +119,12 @@ internal static class RegexLexer {
 			LiteralValue = literalValue;
 		}
 
+		internal Token(bool anyLiteralValue)
+		{
+			Type = TokenType.Literal;
+			AnyLiteralValue = anyLiteralValue;
+		}
+		
 		internal string ToDebugString() { // TODO: This might be the sort of thing that should be in ToString so maybe need to rethink this not that it particularly matters
 			return $"Token(Type={Type},OpType={OpType},LiteralValue={LiteralValue})";
 		}
@@ -211,6 +217,9 @@ internal static class RegexLexer {
 						}
 					}
 
+					break;
+				case '.': 
+					tokens.Add(new Token(true));
 					break;
 			}
 		}

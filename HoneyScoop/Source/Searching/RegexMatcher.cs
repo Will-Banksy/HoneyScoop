@@ -46,7 +46,7 @@ internal class RegexMatcher {
 				var connections = Helper.Flatten(_states[j].Item1);
 				bool advanceExist = false;
 				for(int k = 0; k < connections.Count; k++) {
-					if(bytes[i] == connections[k].Symbol) {
+					if(bytes[i] == connections[k].Symbol || connections[k].AnyMatches) {
 						_states[j].Item1 = connections[k].Next;
 						advanceExist = true;
 						if(Helper.IsEndState(_states[j].Item1, _nfa.End)) {
@@ -65,7 +65,7 @@ internal class RegexMatcher {
 
 			var connectionsNfa = Helper.Flatten(_nfa.Start);
 			for(int j = 0; j < connectionsNfa.Count; j++) {
-				if(bytes[i] == connectionsNfa[j].Symbol) {
+				if(bytes[i] == connectionsNfa[j].Symbol || connectionsNfa[j].AnyMatches) {
 					if(Helper.IsEndState(connectionsNfa[j].Next, _nfa.End)) {
 						indexOfBytes.Add(new Match(i, i, _type));
 					} else {

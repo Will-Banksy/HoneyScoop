@@ -221,6 +221,10 @@ internal static class RegexLexer {
 				case '.': 
 					tokens.Add(new Token(true));
 					break;
+				default:
+					byte asciiLiteral = (byte)src[i];
+					tokens.Add(new Token(asciiLiteral));
+					break;
 			}
 		}
 

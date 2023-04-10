@@ -15,7 +15,7 @@ public class StringMatching
             {
                 matchStack.Push(matches[i]);
 
-                }
+            }
             else {
                 while (matchStack.Peek().MatchType != matches[i].MatchType - 1) {matchStack.Pop();}
 

@@ -69,9 +69,11 @@ internal class HoneyScoop {
 		var fileHandler = new FileHandler(InputFile);
 		// And then create the instances of RegexMatcher from the SupportedFileTypes.FileTypeHandlers
 		List<RegexMatcher> matchers = CreateMatchers();
-
+	
 		// This list will keep track of matches found
 		List<Pair<Match, Match?>> matches = new();
+		// This stack will hold headers until a matching footer is found
+		var matchStack = new Stack<Match>();
 
 		do {
 			ReadOnlySpan<byte> sectionBytes = fileHandler.Next();
@@ -82,8 +84,12 @@ internal class HoneyScoop {
 					// Check whether the MatchType is even - if so, it is a header
 					if((sectionMatches[j].MatchType & 0x1) != 0x1) {
 						// Handle found header
-					} else {
-						// Handle found footer
+						matchStack.Push(sectionMatches[j]);
+					} else
+					{
+						while (matchStack.Peek().MatchType != (sectionMatches[j].MatchType - 1)) {matchStack.Pop();}
+						//Adds the matched header and footer pair to the list
+						matches.Add(new Pair<Match, Match?>(matchStack.Pop(), sectionMatches[j]));
 					}
 				}
 			}

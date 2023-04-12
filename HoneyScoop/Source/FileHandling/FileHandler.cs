@@ -1,9 +1,7 @@
-using System.Diagnostics;
-
 namespace HoneyScoop.FileHandling;
 
 internal class FileHandler {
-	internal const int DefaultBufferSize = 1024 * 1024; // default buffer size in bytes (1 MB)
+	internal const int DefaultBufferSize = 1024 * 1024 * 2; // default buffer size in bytes (2 MB)
 
 	private readonly FileStream _fStream;
 	private readonly byte[] _buffer;
@@ -26,7 +24,6 @@ internal class FileHandler {
 	/// Return the next range of bytes as a read only span
 	/// </summary>
 	/// <returns></returns>
-	/// <exception cref="NotImplementedException">Always throws this until implemented</exception>
 	internal ReadOnlySpan<byte> Next() {
 		_fStream.Seek(_currentPosition, SeekOrigin.Begin); // Set the stream position to the last position
 		int bytesRead = _fStream.Read(_buffer, 0, _buffer.Length); // read up to the set buffer position from the current position

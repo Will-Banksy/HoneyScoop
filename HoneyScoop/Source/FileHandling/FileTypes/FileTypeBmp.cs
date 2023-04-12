@@ -1,11 +1,11 @@
-﻿namespace HoneyScoop.FileHandling.FileTypes
-{
-    internal class FileTypeBmp
-    {
+﻿namespace HoneyScoop.FileHandling.FileTypes;
 
-        public string Header => @"\x42\x4D"; //  BMP signature
-        public string Footer => @""; // No Footer Found
-
-
-    }
+internal class FileTypeBmp : IFileType {
+	public string Header => @"\x42\x4D"; //  BMP signature
+	public string Footer => @""; // No Footer Found
+	public bool HasFooter => false;
+	
+	public AnalysisResult Analyse(ReadOnlySpan<byte> data) {
+		throw new NotImplementedException();
+	}
 }

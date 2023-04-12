@@ -13,6 +13,12 @@ internal interface IFileType {
 	/// A regex string that matches the footer(s) for a specific file type
 	/// </summary>
 	internal string Footer { get; }
+	
+	/// <summary>
+	/// A boolean that returns whether the file type defines a footer.
+	/// This should be false if <see cref="Footer"/> returns an empty string
+	/// </summary>
+	internal bool HasFooter { get; }
 
 	/// <summary>
 	/// Implementations of this method should interpret the data as that of a specific file type, and check that the data does conform to the expectations of that file type,

@@ -85,8 +85,7 @@ internal class HoneyScoop {
 					if((sectionMatches[j].MatchType & 0x1) != 0x1) {
 						// Handle found header
 						matchStack.Push(sectionMatches[j]);
-					} else
-					{
+					} else {
 						while (matchStack.Peek().MatchType != (sectionMatches[j].MatchType - 1)) {matchStack.Pop();}
 						//Adds the matched header and footer pair to the list
 						matches.Add(new Pair<Match, Match?>(matchStack.Pop(), sectionMatches[j]));

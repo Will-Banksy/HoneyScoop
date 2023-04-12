@@ -65,6 +65,27 @@ internal class HoneyScoop {
 	/// Start the carving process
 	/// </summary>
 	internal void StartCarving() {
+		// The way scalpel does it:
+		//     1. Split the file up into large chunks and read a chunk at a time, keeping the last chunk in memory
+		//	   2. 1st pass: Find all headers and footers (only searching for footers if there is a header for which a footer could match in the current or last chunk),
+		//        keeping track of found headers and footers
+		//     3. 2nd pass: Extract file data where footers matching headers within the current chunk or last (as long as the amount of data that would be carved does not exceed a maximum) have been found,
+		//        or reading a defined max number of bytes from header if a footer has not been found or defined for that file type
+		
+		// The way we're gonna do it (probably):
+		//     1. Split the file up into large chunks and read a chunk at a time
+		//     2. 1st pass: Find all headers and footers in the current chunk (including allowing for headers/footers to be across chunk boundaries),
+		//        keeping track of where in the file found headers and footers are and their size
+		//     3. Pair up headers and footers, discarding lone footers and providing an adequately large amount of data after a header with no matching footer or no defined footer for that type
+		//     4. 2nd pass: Go through the file, accumulating data into some sort of data structure which intelligently only keeps necessary data loaded (may not be necessary),
+		//        and once all data for a particular header is accumulated, call Analyse on that data and then if the result is not "unrecognised" then write that data into a file
+		//        (maybe cmdline switch to enable writing unrecognised data?)
+		//         - The way we will handle large found files is... do we want to do like scalpel and have a maximum size we deal with or we could simply forgo analysis on files that
+		//           exceed a maximum but still write them out
+		//             - The first way will miss larger files but the second could introduce false positives (although we can label them as "not analysed" ig) and could introduce some major performance issues
+		//               and take up lots more disk space. The scalpel team clearly thought that the first was the optimal approach which is worth considering, as far more experienced and knowledgeable
+		//               individuals I'm sure they are
+
 		// Firstly, create an instance of FileHandler
 		var fileHandler = new FileHandler(InputFile);
 		// And then create the instances of RegexMatcher from the SupportedFileTypes.FileTypeHandlers

@@ -29,9 +29,10 @@ internal class RegexMatcher {
 		_states = new List<Pair<State, int>>();
 		_type = type;
 		
-// #if DEBUG
-// 		_nfa.Debug();
-// #endif
+// Disable this section for now, useful for debugging but otherwise just clutters stdout
+#if DEBUG && false
+		_nfa.Debug();
+#endif
 	}
 
 	/// <summary>
@@ -46,12 +47,13 @@ internal class RegexMatcher {
 				var connections = Helper.Flatten(_states[j].Item1);
 				bool advanceExist = false;
 				for(int k = 0; k < connections.Count; k++) {
-					if(bytes[i] == connections[k].Symbol || connections[k].AnyMatches) {
+					if(bytes[i] == connections[k].Symbol || connections[k].Wildcard) {
 						_states[j].Item1 = connections[k].Next;
 						advanceExist = true;
 						if(Helper.IsEndState(_states[j].Item1, _nfa.End)) {
 							indexOfBytes.Add(new Match(_states[j].Item2, i, _type));
 							_states.RemoveAt(j);
+							j--;
 						}
 
 						break;
@@ -65,7 +67,7 @@ internal class RegexMatcher {
 
 			var connectionsNfa = Helper.Flatten(_nfa.Start);
 			for(int j = 0; j < connectionsNfa.Count; j++) {
-				if(bytes[i] == connectionsNfa[j].Symbol || connectionsNfa[j].AnyMatches) {
+				if(bytes[i] == connectionsNfa[j].Symbol || connectionsNfa[j].Wildcard) {
 					if(Helper.IsEndState(connectionsNfa[j].Next, _nfa.End)) {
 						indexOfBytes.Add(new Match(i, i, _type));
 					} else {
@@ -75,7 +77,8 @@ internal class RegexMatcher {
 			}
 		}
 
-#if DEBUG
+// Disable this section for now, useful for debugging but otherwise just clutters stdout
+#if DEBUG && false
 		Console.Write("Ending with states: [");
 		foreach(var state in _states) {
 			Console.Write($"{state}, ");

@@ -7,9 +7,7 @@ namespace HoneyScoop.Searching.RegexImpl;
 /// Also known as NFA (Nondeterministic Finite Automata) and referred to as such in the codebase
 /// </summary>
 /// <typeparam name="T">The type of data that the NFA is matching</typeparam>
-internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make this capable of matching the '.' metacharacter. Hang on you can just do "a?" right? no?
-	// TODO: Restructure into a State Transition Table (STT) (if appropriate which I think it is). Try and keep the API similar to how it currently is without harming the efficiency of the implementation of the STT. The API might require some changes lmao
-	// TODO: If not restructuring into a STT, add some sort of tracking
+internal readonly struct FiniteStateMachine<T> where T: struct {
 	/// <summary>
 	/// Reference type so that instances of State can be referenced all over
 	/// <br /><br />
@@ -18,7 +16,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// </summary>
 	internal class State { // TODO: This is kinda expensive to construct - Maybe add a constructor that doesn't then also initialise `connections`
 		private readonly int _uuid;
-		internal List<StateConnection> Connections; // TODO: Array or List?
+		internal readonly List<StateConnection> Connections; // TODO: Array or List?
 
 		/// <summary>
 		/// Specify a capacity to preallocate when creating the <c>List&lt;StateConnection&gt;</c> of connections (for optimisation purposes)
@@ -37,12 +35,12 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 		}
 
 		internal State AddEpsilonConnection(State other) {
-			this.Connections.Add(new StateConnection(other, default, true));
+			this.Connections.Add(new StateConnection(other, default, true, default));
 			return this;
 		}
 		
-		internal State AddSymbolConnection(State other, T symbol) {
-			this.Connections.Add(new StateConnection(other, symbol, false));
+		internal State AddSymbolConnection(State other, T symbol, bool matchesAny) {
+			this.Connections.Add(new StateConnection(other, symbol, false, matchesAny));
 			return this;
 		}
 
@@ -71,7 +69,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// A StateConnection object represents a directional connection from one State to another - The <c>Next</c> state.
 	/// If the connection is a ε-connection, <c>Transparent</c> is true, otherwise, <c>Symbol</c> is used
 	/// </summary>
-	internal readonly record struct StateConnection(State Next, T Symbol, bool Transparent, bool AnyMatches);
+	internal readonly record struct StateConnection(State Next, T Symbol, bool Transparent, bool Wildcard);
 
 	internal readonly State Start;
 	internal readonly State End;
@@ -81,9 +79,20 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 		Start = new State(ref uuid).AddEpsilonConnection(End);
 	}
 
-	internal FiniteStateMachine(ref int uuid, T? symbol) {
+	/// <summary>
+	/// Constructs a new NFA with a connection between it's start and end having value <c>symbol</c> or being a transparent connection if <c>symbol</c> is null
+	/// </summary>
+	/// <param name="uuid"></param>
+	/// <param name="symbol"></param>
+	/// <param name="matchesAny">If true, the finite state machine will match any value</param>
+	internal FiniteStateMachine(ref int uuid, T? symbol, bool matchesAny = false) {
 		End = new State(ref uuid);
-		Start = new State(ref uuid).AddConnection(new StateConnection(End, symbol ?? default(T), !symbol.HasValue));
+		Start = new State(ref uuid);
+		if(symbol == null) {
+			Start.AddConnection(new StateConnection(End, default, false, default));
+		} else {
+			Start.AddConnection(new StateConnection(End, symbol ?? default, false, matchesAny));
+		}
 	}
 
 	private FiniteStateMachine(State start, State end) {
@@ -97,7 +106,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 	/// <param name="other"></param>
 	/// <returns></returns>
 	internal FiniteStateMachine<T> Concatenate(FiniteStateMachine<T> other) {
-		this.End.AddConnection(new StateConnection(other.Start, default, true));
+		this.End.AddEpsilonConnection(other.Start);
 		return new FiniteStateMachine<T>(this.Start, other.End);
 	}
 
@@ -185,6 +194,8 @@ internal readonly struct FiniteStateMachine<T> where T: struct { // TODO: Make t
 		string connStr;
 		if(conn.Transparent) {
 			connStr = "ε";
+		} else if(conn.Wildcard) {
+			connStr = ".";
 		} else {
 			connStr = conn.Symbol.ToString() ?? "ERROR";
 		}

@@ -34,7 +34,6 @@ using System.Diagnostics;
 using HoneyScoop.FileHandling;
 using HoneyScoop.FileHandling.FileTypes;
 using HoneyScoop.Searching;
-using HoneyScoop.Searching.RegexImpl;
 using HoneyScoop.Util;
 
 namespace HoneyScoop;
@@ -74,11 +73,11 @@ internal static class MainClass {
 	
 	static void DoTesting() {
 		byte[] testNfaData = {
-			0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x7f, 0xab, 0xab, 0xf7
+			0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x65, 0xab, 0xab, 0xf7
 		};
-		var matcher = new RegexMatcher(@"(\x01\x00+\x7f)|(\x7f\x00?\xab*(\xff|\xf7))", 0);
+		var matcher = new RegexMatcher(@"e..\xf7", 0);
 		var matches = matcher.Advance(testNfaData);
-		Console.Write("[");
+		Console.Write("Matches: [");
 		foreach(var m in matches) {
 			Console.Write($"({m.StartOfMatch}, {m.EndOfMatch}), ");
 		}
@@ -96,11 +95,6 @@ internal static class MainClass {
 		FileTypePng png = new FileTypePng();
 		AnalysisResult result = png.Analyse(testPngData);
 		Debug.Assert(result == AnalysisResult.Correct, "The incorrect analysis result was computed");
-		
-		var infix = @"((\x0a\x0b*)|\x0c?)+\x0d\x0e\x0f";
-		var expectedPostfix = @"\x0a\x0b*'\x0c?|+\x0d'\x0e'\x0f'";
-		string postfix = RegexLexer.Token.TokensToString(RegexEngine.ParseToPostfix(infix));
-		Debug.Assert(postfix.Equals(expectedPostfix), "Test Failed: Infix regex was not converted to correct postfix expression");
 	}
 
 	static byte[] GetPngTestData() { // Function for testing FileTypePng analysis

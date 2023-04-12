@@ -60,21 +60,28 @@ internal static class RegexLexer {
 	}
 
 	internal readonly struct Token {
+		/// <summary>
+		/// The type of the token
+		/// </summary>
 		internal readonly TokenType Type = TokenType.None;
 
 		/// <summary>
-		/// Only really has meaning if the Type is TokenType.UnaryOperator or TokenType.BinaryOperator
+		/// Only really has meaning if the Type is TokenType.UnaryOperator or TokenType.BinaryOperator. Contains the operator type the token represents
 		/// </summary>
 		internal readonly OperatorType OpType = OperatorType.None;
 
 		/// <summary>
-		/// Only really has meaning if the Type is TokenType.Literal
+		/// Only really has meaning if the Type is TokenType.Literal. Contains the literal value the token represents
 		/// </summary>
 		internal readonly byte LiteralValue = 0;
-
-		internal readonly bool AnyLiteralValue = false;
+		
 		/// <summary>
-		/// Construct a new, empty token
+		/// If true, this token represents a match to any literal value (a wildcard)
+		/// </summary>
+		internal readonly bool LiteralWildcard = false;
+		
+		/// <summary>
+		/// Construct a new token with default values
 		/// </summary>
 		public Token() {
 		}
@@ -119,14 +126,18 @@ internal static class RegexLexer {
 			LiteralValue = literalValue;
 		}
 
-		internal Token(bool anyLiteralValue)
-		{
+		/// <summary>
+		/// Construct a literal wildcard token.
+		/// Note that the bool is there just to differentiate this constructor from the default constructor and the passed-in value is ignored
+		/// </summary>
+		/// <param name="literalWildcard">Ignored</param>
+		internal Token(bool literalWildcard) {
 			Type = TokenType.Literal;
-			AnyLiteralValue = anyLiteralValue;
+			LiteralWildcard = true;
 		}
 		
 		internal string ToDebugString() { // TODO: This might be the sort of thing that should be in ToString so maybe need to rethink this not that it particularly matters
-			return $"Token(Type={Type},OpType={OpType},LiteralValue={LiteralValue})";
+			return $"Token(Type={Type},OpType={OpType},LiteralValue={LiteralValue},LiteralWildcard={LiteralWildcard})";
 		}
 
 		/// <summary>
@@ -135,7 +146,7 @@ internal static class RegexLexer {
 		/// <returns></returns>
 		public override string ToString() {
 			return Type switch {
-				TokenType.Literal => $"\\x{Convert.ToString(LiteralValue, 16).PadLeft(2, '0')}",
+				TokenType.Literal => LiteralWildcard ? "." : $"\\x{Convert.ToString(LiteralValue, 16).PadLeft(2, '0')}",
 				TokenType.OpenParenthesis => "(",
 				TokenType.CloseParenthesis => ")",
 				TokenType.UnaryOperator or TokenType.BinaryOperator => OpType switch {
@@ -216,14 +227,15 @@ internal static class RegexLexer {
 							}
 						}
 					}
-
 					break;
-				case '.': 
+				
+				case '.':
 					tokens.Add(new Token(true));
 					break;
+				
 				default:
-					byte asciiLiteral = (byte)src[i];
-					tokens.Add(new Token(asciiLiteral));
+					byte asciiValue = (byte)src[i];
+					tokens.Add(new Token(asciiValue));
 					break;
 			}
 		}

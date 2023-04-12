@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HoneyScoop.Source.FileHandling.FileTypes
+﻿namespace HoneyScoop.FileHandling.FileTypes
 {
-    internal class FIleTypePdf
+    internal class FileTypePdf
     {
 
         public string Header => @"\x25\x50\x44\x46\x2D"; // PDF signature

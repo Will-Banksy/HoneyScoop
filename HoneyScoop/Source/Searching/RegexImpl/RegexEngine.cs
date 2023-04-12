@@ -37,7 +37,7 @@ internal static class RegexEngine {
 		foreach(RegexLexer.Token token in postfix) {//Goes through the list of tokens and does an action based on what operator it is
 			switch(token.Type) {
 				case RegexLexer.TokenType.Literal://pushes the literal straight onto the stack
-					finiteStack.Push(new FiniteStateMachine<byte>(ref uuid, token.LiteralValue));
+					finiteStack.Push(new FiniteStateMachine<byte>(ref uuid, token.LiteralValue, token.LiteralWildcard));
 					break;
 				
 				case RegexLexer.TokenType.UnaryOperator://operator that only takes one input
@@ -102,7 +102,7 @@ internal static class RegexEngine {
 	/// </summary>
 	/// <param name="regex"></param>
 	/// <returns></returns>
-	internal static List<RegexLexer.Token> ParseToPostfix(string regex) { // TODO Make private. Internal for testing
+	private static List<RegexLexer.Token> ParseToPostfix(string regex) {
 		// Each postfix operator produces 1 NFA. Operators | and ' take 2 NFAs the rest take 1
 		// Inputs => Outputs
 		// ((ab*)|c)+def => ab*'c|+d'e'f'

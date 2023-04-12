@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HoneyScoop.Source.FileHandling.FileTypes
+﻿namespace HoneyScoop.FileHandling.FileTypes
 {
     internal class FileTypeBmp
     {

@@ -44,10 +44,15 @@ internal class HoneyScoop {
 		return _instance;
 	}
 
+	/// <summary>
+	/// Sets up the singleton HoneyScoop instance with parsed arguments
+	/// </summary>
+	/// <param name="parsedArgs"></param>
+	/// <param name="fileTypes"></param>
 	internal void Initialise(CommandLineArguments parsedArgs, List<string> fileTypes) {
 		for(int i = 0; i < fileTypes.Count; i++) {
 			FileType type = Helper.FromString(fileTypes[i]);
-			if(type != FileType.None) {
+			if(type != FileType.None && !FileTypes.Contains(type)) {
 				FileTypes.Add(type);
 			}
 		}
@@ -69,8 +74,9 @@ internal class HoneyScoop {
 		//     1. Split the file up into large chunks and read a chunk at a time, keeping the last chunk in memory
 		//	   2. 1st pass: Find all headers and footers (only searching for footers if there is a header for which a footer could match in the current or last chunk),
 		//        keeping track of found headers and footers
-		//     3. 2nd pass: Extract file data where footers matching headers within the current chunk or last (as long as the amount of data that would be carved does not exceed a maximum) have been found,
+		//     3. 2nd pass: Extract file data where footers matching headers within the current chunk or previous chunks (as long as the amount of data that would be carved does not exceed a maximum) have been found,
 		//        or reading a defined max number of bytes from header if a footer has not been found or defined for that file type
+		// This is not actually fully correct or might not be just read this: https://dfrws.org/sites/default/files/session-files/2005_USA_paper-scalpel_-_a_frugal_high_performance_file_carver.pdf
 		
 		// The way we're gonna do it (probably):
 		//     1. Split the file up into large chunks and read a chunk at a time
@@ -88,45 +94,99 @@ internal class HoneyScoop {
 
 		// Firstly, create an instance of FileHandler
 		var fileHandler = new FileHandler(InputFile);
-		// And then create the instances of RegexMatcher from the SupportedFileTypes.FileTypeHandlers
-		List<RegexMatcher> matchers = CreateMatchers();
-	
-		// This list will keep track of matches found
-		List<Pair<Match, Match?>> matches = new();
-		// This stack will hold headers until a matching footer is found
-		var matchStack = new Stack<Match>();
 
-		do {
-			ReadOnlySpan<byte> sectionBytes = fileHandler.Next();
+		// Create the list of pairs of file types and corresponding uids by pairing each FileType enum value with it's literal int value
+		List<Pair<FileType, uint>> fileTypes = FileTypes.Select(fileType => new Pair<FileType, uint>(fileType, (uint)fileType)).ToList();
 
-			for(int i = 0; i < matchers.Count; i++) {
-				List<Match> sectionMatches = matchers[i].Advance(sectionBytes);
-				for(int j = 0; j < sectionMatches.Count; j++) {
-					// Check whether the MatchType is even - if so, it is a header
-					if((sectionMatches[j].MatchType & 0x1) != 0x1) {
-						// Handle found header
-						matchStack.Push(sectionMatches[j]);
-					} else {
-						while (matchStack.Peek().MatchType != (sectionMatches[j].MatchType - 1)) {matchStack.Pop();}
-						//Adds the matched header and footer pair to the list
-						matches.Add(new Pair<Match, Match?>(matchStack.Pop(), sectionMatches[j]));
-					}
-				}
-			}
-		} while(!fileHandler.Eof);
+		// Perform the first phase/pass - Find all headers and footers in the file for each specified file type
+		List<Match> headerFooterMatches = SearchPhase(fileHandler, fileTypes);
+		
+		fileHandler.Reset();
+		
+		// TODO: Process search results; Carve phase;
 	}
 
-	private List<RegexMatcher> CreateMatchers() {
+	/// <summary>
+	/// This function searches the file for headers and footers, returning a list of <see cref="Match"/> values describing headers and footers
+	/// </summary>
+	/// <param name="fileHandler"></param>
+	private List<Match> SearchPhase(FileHandler fileHandler, List<Pair<FileType, uint>> fileTypes) {
+		if(Verbose) {
+			Console.WriteLine("Starting searching...");
+			Console.WriteLine($"Chunk size: {fileHandler.Buffer.Length}");
+		}
+		
+		// Create the instances of RegexMatcher, passing in the fileTypes list
+		List<RegexMatcher> matchers = CreateMatchers(fileTypes);
+
+		// List to keep track of found matches throughout the whole file
+		List<Match> foundMatches = new();
+
+		// Read the file chunk by chunk and search each chunk of the file for headers and footers
+		do {
+			long currentOffset = fileHandler.CurrentPosition;
+			ReadOnlySpan<byte> chunkBytes = fileHandler.Next();
+
+			for(int i = 0; i < matchers.Count; i++) {
+				List<Match> chunkMatches = matchers[i].Advance(chunkBytes, currentOffset);
+				foundMatches.AddRange(chunkMatches);
+			}
+		} while(!fileHandler.Eof);
+
+		if(Verbose) {
+			Console.WriteLine("Done searching");
+		}
+
+		return foundMatches;
+	}
+
+	private void ProcessSearchResults(List<Match> matches) {
+		throw new NotImplementedException();
+	}
+
+	private void CarvePhase(FileHandler fileHandler) {
+		throw new NotImplementedException();
+	}
+
+	/// <summary>
+	/// This function creates and returns RegexMatchers for each supplied <see cref="FileType"/>.
+	/// Each FileType is paired with a uint which is the UID for that file type - Usual process is to assign the UID of the FileType
+	/// to be the index of it in the FileType enum.<br />
+	/// Specifically, the UID supplied with each file type is first multiplied by 2 and then assigned to the matcher that matches the header
+	/// for that file type - the footer is the UID * 2 + 1 (1 more than the header), so that UIDs assigned to headers are always even and those
+	/// assigned to footers are always odd, and doing integer division of the matcher UID by 2 returns the UID of the FileType.
+	/// </summary>
+	/// <param name="fileTypes"></param>
+	/// <returns></returns>
+	private List<RegexMatcher> CreateMatchers(List<Pair<FileType, uint>> fileTypes) {
+		if(Verbose) {
+			Console.WriteLine("Creating matchers...");
+		}
+		
 		List<RegexMatcher> matchers = new();
-		matchers.EnsureCapacity(SupportedFileTypes.FileTypeHandlers.Values.Count);
+		matchers.EnsureCapacity(fileTypes.Count);
 
-		uint i = 0;
+		foreach(var fileType in fileTypes.Distinct()) {
+			bool supported = SupportedFileTypes.FileTypeHandlers.TryGetValue(fileType.Item1, out IFileType? iFileType);
+			if(!supported || iFileType == null) {
+				if(Verbose) {
+					Console.ForegroundColor = ConsoleColor.Yellow;
+					Console.WriteLine($"Skipping unsupported/unimplemented file type {fileType.Item1.ToString()}");
+				}
+			} else {
+				var matcherUid = fileType.Item2 * 2;
+				var headerMatcher = new RegexMatcher(iFileType.Header, matcherUid);
+				matchers.Add(headerMatcher);
+				if(iFileType.HasFooter) {
+					var footerMatcher = new RegexMatcher(iFileType.Footer, matcherUid + 1);
+					matchers.Add(footerMatcher);
+				}
+			}
+		}
 
-		foreach(IFileType fileTypeInstance in SupportedFileTypes.FileTypeHandlers.Values) {
-			matchers.Add(new RegexMatcher(fileTypeInstance.Header, i));
-			i++;
-			matchers.Add(new RegexMatcher(fileTypeInstance.Footer, i));
-			i++;
+		if(Verbose) {
+			Console.ResetColor();
+			Console.WriteLine("Done creating matchers");
 		}
 
 		return matchers;

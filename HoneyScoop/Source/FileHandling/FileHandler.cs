@@ -4,8 +4,8 @@ internal class FileHandler {
 	internal const int DefaultBufferSize = 1024 * 1024 * 2; // default buffer size in bytes (2 MB)
 
 	private readonly FileStream _fStream;
-	private readonly byte[] _buffer;
-	private long _currentPosition = 0;
+	internal readonly byte[] Buffer;
+	internal long CurrentPosition = 0;
 	private bool _eof;
 	internal bool Eof => _eof;
 
@@ -16,7 +16,7 @@ internal class FileHandler {
 	/// <param name="bufferSize"></param>
 	internal FileHandler(string filePath, int bufferSize = DefaultBufferSize) {
 		_fStream = File.OpenRead(filePath);
-		_buffer = new byte[bufferSize];
+		Buffer = new byte[bufferSize];
 		_eof = false;
 	}
 
@@ -25,15 +25,20 @@ internal class FileHandler {
 	/// </summary>
 	/// <returns></returns>
 	internal ReadOnlySpan<byte> Next() {
-		_fStream.Seek(_currentPosition, SeekOrigin.Begin); // Set the stream position to the last position
-		int bytesRead = _fStream.Read(_buffer, 0, _buffer.Length); // read up to the set buffer position from the current position
+		_fStream.Seek(CurrentPosition, SeekOrigin.Begin); // Set the stream position to the last position
+		int bytesRead = _fStream.Read(Buffer, 0, Buffer.Length); // read up to the set buffer position from the current position
 
 		if(bytesRead == 0) {
 			_eof = true;
 		}
 		
-		_currentPosition += bytesRead; // Update the current position
-		return _buffer; // Return the updated buffer
+		CurrentPosition += bytesRead; // Update the current position
+		return Buffer; // Return the updated buffer
+	}
+
+	internal void Reset() {
+		CurrentPosition = 0;
+		_eof = false;
 	}
 
 	/// <summary>

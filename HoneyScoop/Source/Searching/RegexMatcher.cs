@@ -7,7 +7,7 @@ using StateConnection = HoneyScoop.Searching.RegexImpl.FiniteStateMachine<byte>.
 namespace HoneyScoop.Searching;
 
 /// <summary>
-/// This class is basically the abstraction of the RegexImpl namespace - It's frontend
+/// This class is basically the abstraction of the RegexImpl namespace - Its frontend
 /// </summary>
 internal class RegexMatcher {
 	private readonly FiniteStateMachine<byte> _nfa;
@@ -39,8 +39,9 @@ internal class RegexMatcher {
 	/// Advances the regex matcher through the input range of bytes, returning a list of Matches
 	/// </summary>
 	/// <param name="bytes"></param>
+	/// <param name="currentOffset">The offset in the source data that <see cref="bytes"/> is taken from</param>
 	/// <returns></returns>
-	internal List<Match> Advance(ReadOnlySpan<byte> bytes) {
+	internal List<Match> Advance(ReadOnlySpan<byte> bytes, long currentOffset = 0) {
 		List<Match> indexOfBytes = new List<Match>();
 		for(int i = 0; i < bytes.Length; i++) {
 			for(int j = 0; j < _states.Count; j++) {

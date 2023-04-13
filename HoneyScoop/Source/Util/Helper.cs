@@ -79,22 +79,45 @@ internal static class Helper {
 		return FileTypeStrs.GetValueOrDefault(lower, FileType.None);
 	}
 
+	/// <summary>
+	/// Builds a list of non-ε connections starting from <see cref="startState"/>, following transparent connections.<br />
+	/// E.g. starting from state 0 in this NFA:
+	/// <code>
+	/// 0 -ε-> 1 ---> 3
+	/// 0 -ε-> 4 -ε-> 3 ---> 5
+	/// 0 ---> 2
+	/// 0 ---> 0
+	/// </code>
+	/// This function would return a list of connections:
+	/// <code>
+	/// [
+	///	    ---> 2,
+	///     ---> 0,
+	///     ---> 3,
+	///     ---> 5
+	/// ]
+	/// </code>
+	/// Note that connections are returned in the list in order of how deep the iteration goes, the deeper the further down the list, meaning that direct non-ε
+	/// connections from <see cref="startState"/> are first in the returned list
+	/// </summary>
+	/// <param name="startState"></param>
+	/// <returns></returns>
 	internal static List<FiniteStateMachine<byte>.StateConnection> Flatten(FiniteStateMachine<byte>.State startState) {
 		var connections = new List<FiniteStateMachine<byte>.StateConnection>();
 
-		Stack<FiniteStateMachine<byte>.State> stateStack = new();
-		stateStack.Push(startState);
+		Queue<FiniteStateMachine<byte>.State> stateQueue = new();
+		stateQueue.Enqueue(startState);
 		HashSet<FiniteStateMachine<byte>.State> visitedStates = new();
 
-		while(stateStack.Count > 0) {
-			FiniteStateMachine<byte>.State state = stateStack.Pop();
+		while(stateQueue.Count > 0) {
+			FiniteStateMachine<byte>.State state = stateQueue.Dequeue();
 			if(visitedStates.Contains(state)) {
 				continue;
 			}
 			visitedStates.Add(state);
 			for(int i = 0; i < state.Connections.Count; i++) {
 				if(state.Connections[i].Transparent) {
-					stateStack.Push(state.Connections[i].Next);
+					stateQueue.Enqueue(state.Connections[i].Next);
 				} else {
 					connections.Add(state.Connections[i]);
 				}

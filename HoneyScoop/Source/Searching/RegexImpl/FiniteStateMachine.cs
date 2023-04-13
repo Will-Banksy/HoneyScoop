@@ -163,7 +163,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct {
 	/// <summary>
 	/// Prints out the structure of the NFA, along with it's start and end states. The printed-out structure is valid mermaid diagram markup for easy visualisation
 	/// </summary>
-	internal void Debug() {
+	private void Debug() {
 		Console.WriteLine(" --- NFA DEBUG START --- ");
 		
 		Console.WriteLine($"Start: {Start}");

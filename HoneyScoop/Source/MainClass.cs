@@ -68,10 +68,37 @@ internal static class MainClass {
 		// DefinedArguments a List of the filetypes needed to search for.
 		// TakenArguments.InputFile a String of a path for the supplied file which the reconstruction will work on.
 		
+#if DEBUG
 		DoTesting();
+#endif
 	}
 	
+#if DEBUG
 	static void DoTesting() {
+		// Testing Helper.Flatten
+		// {
+		// 	int uuid = 0;
+		// 	var testNfa0 = new FiniteStateMachine<byte>.State(ref uuid);
+		// 	var testNfa1 = new FiniteStateMachine<byte>.State(ref uuid);
+		// 	var testNfa2 = new FiniteStateMachine<byte>.State(ref uuid);
+		// 	var testNfa3 = new FiniteStateMachine<byte>.State(ref uuid);
+		// 	var testNfa4 = new FiniteStateMachine<byte>.State(ref uuid);
+		// 	var testNfa5 = new FiniteStateMachine<byte>.State(ref uuid);
+		// 	testNfa0.AddEpsilonConnection(testNfa1);
+		// 	testNfa1.AddSymbolConnection(testNfa3, 0, true);
+		// 	testNfa0.AddEpsilonConnection(testNfa4);
+		// 	testNfa4.AddEpsilonConnection(testNfa3);
+		// 	testNfa3.AddSymbolConnection(testNfa5, 0, true);
+		// 	testNfa0.AddSymbolConnection(testNfa2, 0, true);
+		// 	testNfa0.AddSymbolConnection(testNfa0, 0, true);
+		// 	var testNfa = new FiniteStateMachine<byte>(testNfa0, testNfa5);
+		// 	testNfa.Debug();
+		// 	var testConnections = Helper.Flatten(testNfa0);
+		// 	foreach(var conn in testConnections) {
+		// 		testNfa.DebugPrintConnection(testNfa0, conn);
+		// 	}
+		// }
+
 		byte[] testNfaData = {
 			0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x65, 0xab, 0xab, 0xf7
 		};
@@ -145,4 +172,5 @@ internal static class MainClass {
 		    0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
 		};
 	}
+#endif
 }

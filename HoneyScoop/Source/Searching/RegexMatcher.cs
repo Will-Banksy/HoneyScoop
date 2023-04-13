@@ -11,7 +11,7 @@ namespace HoneyScoop.Searching;
 /// </summary>
 internal class RegexMatcher {
 	private readonly FiniteStateMachine<byte> _nfa;
-	private List<Pair<State, int>> _states;
+	private readonly List<Pair<State, int>> _states;
 	private readonly uint _type;
 	/// <summary>
 	/// Preprocessed data to speed up matching.
@@ -42,17 +42,17 @@ internal class RegexMatcher {
 	/// <param name="currentOffset">The offset in the source data that <see cref="bytes"/> is taken from</param>
 	/// <returns></returns>
 	internal List<Match> Advance(ReadOnlySpan<byte> bytes, long currentOffset = 0) {
-		List<Match> indexOfBytes = new List<Match>();
+		List<Match> matches = new List<Match>();
 		for(int i = 0; i < bytes.Length; i++) {
 			for(int j = 0; j < _states.Count; j++) {
 				var connections = Helper.Flatten(_states[j].Item1);
-				bool advanceExist = false;
+				bool hasAdvanced = false;
 				for(int k = 0; k < connections.Count; k++) {
 					if(bytes[i] == connections[k].Symbol || connections[k].Wildcard) {
 						_states[j].Item1 = connections[k].Next;
-						advanceExist = true;
+						hasAdvanced = true;
 						if(Helper.IsEndState(_states[j].Item1, _nfa.End)) {
-							indexOfBytes.Add(new Match(_states[j].Item2, i, _type));
+							matches.Add(new Match(_states[j].Item2, i, _type));
 							_states.RemoveAt(j);
 							j--;
 						}
@@ -61,18 +61,18 @@ internal class RegexMatcher {
 					}
 				}
 
-				if(advanceExist == false) {
+				if(!hasAdvanced) {
 					_states.RemoveAt(j);
 				}
 			}
 
-			var connectionsNfa = Helper.Flatten(_nfa.Start);
-			for(int j = 0; j < connectionsNfa.Count; j++) {
-				if(bytes[i] == connectionsNfa[j].Symbol || connectionsNfa[j].Wildcard) {
-					if(Helper.IsEndState(connectionsNfa[j].Next, _nfa.End)) {
-						indexOfBytes.Add(new Match(i, i, _type));
+			var startConnections = Helper.Flatten(_nfa.Start);
+			for(int j = 0; j < startConnections.Count; j++) {
+				if(bytes[i] == startConnections[j].Symbol || startConnections[j].Wildcard) {
+					if(Helper.IsEndState(startConnections[j].Next, _nfa.End)) {
+						matches.Add(new Match(i, i, _type));
 					} else {
-						_states.Add(new Pair<State, int>(connectionsNfa[j].Next, i));
+						_states.Add(new Pair<State, int>(startConnections[j].Next, i));
 					}
 				}
 			}
@@ -87,6 +87,6 @@ internal class RegexMatcher {
 		Console.WriteLine("]");
 #endif
 
-		return indexOfBytes;
+		return matches;
 	}
 }

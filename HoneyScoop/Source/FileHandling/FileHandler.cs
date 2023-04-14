@@ -25,6 +25,10 @@ internal class FileHandler {
 	/// </summary>
 	/// <returns></returns>
 	internal ReadOnlySpan<byte> Next() {
+		if(_eof) {
+			throw new InvalidOperationException();
+		}
+		
 		_fStream.Seek(CurrentPosition, SeekOrigin.Begin); // Set the stream position to the last position
 		int bytesRead = _fStream.Read(Buffer, 0, Buffer.Length); // read up to the set buffer position from the current position
 
@@ -33,7 +37,49 @@ internal class FileHandler {
 		}
 		
 		CurrentPosition += bytesRead; // Update the current position
-		return Buffer; // Return the updated buffer
+		return Buffer.AsSpan(..bytesRead); // Return the updated buffer
+	}
+
+	/// <summary>
+	/// Read a specific range of bytes from within the current chunk and return in a span
+	/// </summary>
+	/// <param name="start"></param>
+	/// <param name="stop"></param>
+	/// <returns></returns>
+	internal ReadOnlySpan<byte> Read(long? start = null, long? stop = null) {
+		long istart = start.GetValueOrDefault(CurrentPosition);
+		long istop = stop.GetValueOrDefault(CurrentPosition + Buffer.Length);
+
+		if(istart < CurrentPosition) {
+			istart = CurrentPosition;
+		}
+		if(istop > CurrentPosition + Buffer.Length) {
+			istop = CurrentPosition + Buffer.Length;
+		}
+
+		if(istart > istop) {
+			throw new ArgumentException();
+		}
+
+		int bufferIndex = (int)(istart - CurrentPosition);
+		int bytesToRead = (int)(istart - istop);
+
+		_fStream.Seek(istart, SeekOrigin.Begin);
+		int _ = _fStream.Read(Buffer, bufferIndex, bytesToRead);
+
+		return Buffer.AsSpan(bufferIndex, bytesToRead);
+	}
+
+	/// <summary>
+	/// Move on to the next chunk of bytes without reading anything
+	/// </summary>
+	internal void Skip() {
+		if(CurrentPosition + Buffer.Length >= _fStream.Length) {
+			CurrentPosition = _fStream.Length;
+			_eof = true;
+		} else {
+			CurrentPosition += Buffer.Length;
+		}
 	}
 
 	internal void Reset() {

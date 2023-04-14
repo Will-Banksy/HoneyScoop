@@ -52,7 +52,7 @@ internal class RegexMatcher {
 						_states[j] = (connections[k].Next, _states[j].Item2);
 						hasAdvanced = true;
 						if(Helper.IsEndState(_states[j].Item1, _nfa.End)) {
-							matches.Add(new Match(_states[j].Item2, i, _type));
+							matches.Add(new Match(_states[j].Item2 + currentOffset, i + currentOffset, _type));
 							_states.RemoveAt(j);
 							j--;
 						}
@@ -70,7 +70,7 @@ internal class RegexMatcher {
 			for(int j = 0; j < startConnections.Count; j++) {
 				if(bytes[i] == startConnections[j].Symbol || startConnections[j].Wildcard) {
 					if(Helper.IsEndState(startConnections[j].Next, _nfa.End)) {
-						matches.Add(new Match(i, i, _type));
+						matches.Add(new Match(i + currentOffset, i + currentOffset, _type));
 					} else {
 						_states.Add((startConnections[j].Next, i));
 					}

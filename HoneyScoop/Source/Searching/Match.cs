@@ -1,11 +1,11 @@
 namespace HoneyScoop.Searching;
 
 internal readonly struct Match {
-	internal readonly int StartOfMatch;
-	internal readonly int EndOfMatch;
+	internal readonly long StartOfMatch;
+	internal readonly long EndOfMatch;
 	internal readonly uint MatchType;
 
-	internal Match(int start, int end, uint type) {
+	internal Match(long start, long end, uint type) {
 		StartOfMatch = start;
 		EndOfMatch = end;
 		MatchType = type;

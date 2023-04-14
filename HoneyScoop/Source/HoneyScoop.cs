@@ -140,11 +140,20 @@ internal class HoneyScoop {
 		return foundMatches;
 	}
 
-	private List<(Match, Match)> ProcessSearchResults(List<Match> matches) {
+	private List<(Match, Match?)> ProcessSearchResults(List<Match> matches) {
+		// Pair every header with a footer if a suitable one exists, if not then pair it with null
+		//     A suitable one would be probably the next footer that has the same file type as the header (multiple headers might be paired with the same footer)
+		// Return those header-footer/null pairs
+		
 		throw new NotImplementedException();
 	}
 
-	private void CarvePhase(FileHandler fileHandler, List<(Match, Match)> headerFooterMatches) {
+	private void CarvePhase(FileHandler fileHandler, List<(Match, Match?)> pairs) {
+		// First, preprocess the match pairs to figure out which ranges need to be read into which files
+		// Probably need to map match pairs to file chunks and then assign "work" to be done in each chunk - basically roughly replicating what scalpel does
+		// Then read out the data from the file into the carved files - try be efficient here and only read what is necessary
+		// Remember to work with the various command-line options (e.g. Timestamp, Quiet, Verbose)
+		
 		throw new NotImplementedException();
 	}
 

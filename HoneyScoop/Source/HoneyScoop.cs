@@ -96,7 +96,7 @@ internal class HoneyScoop {
 		var fileHandler = new FileHandler(InputFile);
 
 		// Create the list of pairs of file types and corresponding uids by pairing each FileType enum value with it's literal int value
-		List<Pair<FileType, uint>> fileTypes = FileTypes.Select(fileType => new Pair<FileType, uint>(fileType, (uint)fileType)).ToList();
+		List<(FileType, uint)> fileTypes = FileTypes.Select(fileType => (fileType, (uint)fileType)).ToList();
 
 		// Perform the first phase/pass - Find all headers and footers in the file for each specified file type
 		List<Match> headerFooterMatches = SearchPhase(fileHandler, fileTypes);
@@ -110,7 +110,7 @@ internal class HoneyScoop {
 	/// This function searches the file for headers and footers, returning a list of <see cref="Match"/> values describing headers and footers
 	/// </summary>
 	/// <param name="fileHandler"></param>
-	private List<Match> SearchPhase(FileHandler fileHandler, List<Pair<FileType, uint>> fileTypes) {
+	private List<Match> SearchPhase(FileHandler fileHandler, List<(FileType, uint)> fileTypes) {
 		if(Verbose) {
 			Console.WriteLine("Starting searching...");
 			Console.WriteLine($"Chunk size: {fileHandler.Buffer.Length}");
@@ -140,11 +140,11 @@ internal class HoneyScoop {
 		return foundMatches;
 	}
 
-	private void ProcessSearchResults(List<Match> matches) {
+	private List<(Match, Match)> ProcessSearchResults(List<Match> matches) {
 		throw new NotImplementedException();
 	}
 
-	private void CarvePhase(FileHandler fileHandler) {
+	private void CarvePhase(FileHandler fileHandler, List<(Match, Match)> headerFooterMatches) {
 		throw new NotImplementedException();
 	}
 
@@ -158,7 +158,7 @@ internal class HoneyScoop {
 	/// </summary>
 	/// <param name="fileTypes"></param>
 	/// <returns></returns>
-	private List<RegexMatcher> CreateMatchers(List<Pair<FileType, uint>> fileTypes) {
+	private List<RegexMatcher> CreateMatchers(List<(FileType, uint)> fileTypes) {
 		if(Verbose) {
 			Console.WriteLine("Creating matchers...");
 		}
@@ -171,7 +171,7 @@ internal class HoneyScoop {
 			if(!supported || iFileType == null) {
 				if(Verbose) {
 					Console.ForegroundColor = ConsoleColor.Yellow;
-					Console.WriteLine($"Skipping unsupported/unimplemented file type {fileType.Item1.ToString()}");
+					Console.WriteLine($"Skipping unsupported/unimplemented file type {fileType.Item1}");
 				}
 			} else {
 				var matcherUid = fileType.Item2 * 2;

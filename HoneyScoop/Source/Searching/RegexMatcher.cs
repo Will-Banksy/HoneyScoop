@@ -11,13 +11,13 @@ namespace HoneyScoop.Searching;
 /// </summary>
 internal class RegexMatcher {
 	private readonly FiniteStateMachine<byte> _nfa;
-	private readonly List<Pair<State, int>> _states;
+	private readonly List<(State, int)> _states;
 	private readonly uint _type;
 	/// <summary>
 	/// Preprocessed data to speed up matching.
 	/// For each state, the flattened connection list (following transparent/ε-connections) and whether the state is the end is stored
 	/// </summary>
-	private Dictionary<State, ValuePair<List<StateConnection>, bool>>? _preprocData = null; // TODO: Actually implement this when it gets round to optimisation time
+	private Dictionary<State, (List<StateConnection>, bool)>? _preprocData = null; // TODO: Actually implement this when it gets round to optimisation time
 
 	/// <summary>
 	/// Initialises a RegexMatcher that matches the given regular expression
@@ -26,7 +26,7 @@ internal class RegexMatcher {
 	/// <param name="type">An integer used for identification; These will be passed back in the <see cref="Match"/> structs returned in <see cref="Advance"/></param>
 	internal RegexMatcher(string regex, uint type) {
 		_nfa = RegexEngine.ParseRegex(regex);
-		_states = new List<Pair<State, int>>();
+		_states = new List<(State, int)>();
 		_type = type;
 		
 // Disable this section for now, useful for debugging but otherwise just clutters stdout
@@ -49,7 +49,7 @@ internal class RegexMatcher {
 				bool hasAdvanced = false;
 				for(int k = 0; k < connections.Count; k++) {
 					if(bytes[i] == connections[k].Symbol || connections[k].Wildcard) {
-						_states[j].Item1 = connections[k].Next;
+						_states[j] = (connections[k].Next, _states[j].Item2);
 						hasAdvanced = true;
 						if(Helper.IsEndState(_states[j].Item1, _nfa.End)) {
 							matches.Add(new Match(_states[j].Item2, i, _type));
@@ -72,7 +72,7 @@ internal class RegexMatcher {
 					if(Helper.IsEndState(startConnections[j].Next, _nfa.End)) {
 						matches.Add(new Match(i, i, _type));
 					} else {
-						_states.Add(new Pair<State, int>(startConnections[j].Next, i));
+						_states.Add((startConnections[j].Next, i));
 					}
 				}
 			}

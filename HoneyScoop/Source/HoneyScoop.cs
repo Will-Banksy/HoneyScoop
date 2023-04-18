@@ -95,11 +95,8 @@ internal class HoneyScoop {
 		// Firstly, create an instance of FileHandler
 		var fileHandler = new FileHandler(InputFile);
 
-		// Create the list of pairs of file types and corresponding uids by pairing each FileType enum value with it's literal int value
-		List<(FileType, uint)> fileTypes = FileTypes.Select(fileType => (fileType, (uint)fileType)).ToList();
-
 		// Perform the first phase/pass - Find all headers and footers in the file for each specified file type
-		List<Match> headerFooterMatches = SearchPhase(fileHandler, fileTypes);
+		List<Match> headerFooterMatches = SearchPhase(fileHandler, FileTypes);
 		
 		fileHandler.Reset();
 		
@@ -110,7 +107,8 @@ internal class HoneyScoop {
 	/// This function searches the file for headers and footers, returning a list of <see cref="Match"/> values describing headers and footers
 	/// </summary>
 	/// <param name="fileHandler"></param>
-	private List<Match> SearchPhase(FileHandler fileHandler, List<(FileType, uint)> fileTypes) {
+	/// <param name="fileTypes"></param>
+	private List<Match> SearchPhase(FileHandler fileHandler, List<FileType> fileTypes) {
 		if(Verbose) {
 			Console.WriteLine("Starting searching...");
 			Console.WriteLine($"Chunk size: {fileHandler.Buffer.Length}");
@@ -167,7 +165,7 @@ internal class HoneyScoop {
 	/// </summary>
 	/// <param name="fileTypes"></param>
 	/// <returns></returns>
-	private List<RegexMatcher> CreateMatchers(List<(FileType, uint)> fileTypes) {
+	private List<RegexMatcher> CreateMatchers(List<FileType> fileTypes) {
 		if(Verbose) {
 			Console.WriteLine("Creating matchers...");
 		}
@@ -176,18 +174,17 @@ internal class HoneyScoop {
 		matchers.EnsureCapacity(fileTypes.Count);
 
 		foreach(var fileType in fileTypes.Distinct()) {
-			bool supported = SupportedFileTypes.FileTypeHandlers.TryGetValue(fileType.Item1, out IFileType? iFileType);
+			bool supported = SupportedFileTypes.FileTypeHandlers.TryGetValue(fileType, out IFileType? iFileType);
 			if(!supported || iFileType == null) {
 				if(Verbose) {
 					Console.ForegroundColor = ConsoleColor.Yellow;
-					Console.WriteLine($"Skipping unsupported/unimplemented file type {fileType.Item1}");
+					Console.WriteLine($"Skipping unsupported/unimplemented file type {fileType}");
 				}
 			} else {
-				var matcherUid = fileType.Item2 * 2;
-				var headerMatcher = new RegexMatcher(iFileType.Header, matcherUid);
+				var headerMatcher = new RegexMatcher(iFileType.Header, new FileTypePart(fileType, FilePart.Header));
 				matchers.Add(headerMatcher);
 				if(iFileType.HasFooter) {
-					var footerMatcher = new RegexMatcher(iFileType.Footer, matcherUid + 1);
+					var footerMatcher = new RegexMatcher(iFileType.Footer, new FileTypePart(fileType, FilePart.Footer));
 					matchers.Add(footerMatcher);
 				}
 			}

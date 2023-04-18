@@ -1,11 +1,13 @@
+using HoneyScoop.FileHandling;
+
 namespace HoneyScoop.Searching;
 
 internal readonly struct Match {
 	internal readonly long StartOfMatch;
 	internal readonly long EndOfMatch;
-	internal readonly uint MatchType;
+	internal readonly FileTypePart MatchType;
 
-	internal Match(long start, long end, uint type) {
+	internal Match(long start, long end, FileTypePart type) {
 		StartOfMatch = start;
 		EndOfMatch = end;
 		MatchType = type;

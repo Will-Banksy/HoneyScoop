@@ -186,4 +186,17 @@ internal static class Helper {
 
 		return sb.ToString();
 	}
+
+	internal static int MapToChunk(int i, int chunkSize) {
+		if(i < 0) {
+			throw new ArgumentException($"Index {i} is not valid - Must be greater than zero");
+		}
+		return i / chunkSize;
+	}
+
+	internal static (int, int) MapToChunkRange(int startI, int endI, int chunkSize) {
+		int startChunk = MapToChunk(startI, chunkSize);
+		int endChunk = MapToChunk(endI, chunkSize);
+		return (startChunk, endChunk);
+	}
 }

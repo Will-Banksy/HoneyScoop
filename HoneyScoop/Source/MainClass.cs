@@ -102,7 +102,7 @@ internal static class MainClass {
 		byte[] testNfaData = {
 			0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x65, 0xab, 0xab, 0xf7
 		};
-		var matcher = new RegexMatcher(@"e..\xf7", 0);
+		var matcher = new RegexMatcher(@"e..\xf7", new FileTypePart());
 		var matches = matcher.Advance(testNfaData);
 		Console.Write("Matches: [");
 		foreach(var m in matches) {

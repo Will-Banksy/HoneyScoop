@@ -1,3 +1,4 @@
+using HoneyScoop.FileHandling;
 using HoneyScoop.Searching.RegexImpl;
 using HoneyScoop.Util;
 
@@ -12,7 +13,7 @@ namespace HoneyScoop.Searching;
 internal class RegexMatcher {
 	private readonly FiniteStateMachine<byte> _nfa;
 	private readonly List<(State, int)> _states;
-	private readonly uint _type;
+	private readonly FileTypePart _type;
 	/// <summary>
 	/// Preprocessed data to speed up matching.
 	/// For each state, the flattened connection list (following transparent/ε-connections) and whether the state is the end is stored
@@ -24,7 +25,7 @@ internal class RegexMatcher {
 	/// </summary>
 	/// <param name="regex">The regular expression that this matcher will use</param>
 	/// <param name="type">An integer used for identification; These will be passed back in the <see cref="Match"/> structs returned in <see cref="Advance"/></param>
-	internal RegexMatcher(string regex, uint type) {
+	internal RegexMatcher(string regex, FileTypePart type) {
 		_nfa = RegexEngine.ParseRegex(regex);
 		_states = new List<(State, int)>();
 		_type = type;

@@ -66,5 +66,9 @@ internal enum AnalysisResult {
 	/// The data is not recognised to conform to the expectations of the specific file type - It most likely does not contain the contents of a file of that type.
 	/// When saying some data is "Unrecognised" as belonging to a specific file type, this does not take headers/footers into account as file type indicators.
 	/// </summary>
-	Unrecognised
+	Unrecognised,
+	/// <summary>
+	/// The file has not yet been analysed
+	/// </summary>
+	Unanalysed
 }

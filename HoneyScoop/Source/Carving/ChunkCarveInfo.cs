@@ -9,8 +9,15 @@ internal enum ChunkCarveType {
 }
 
 internal class ChunkCarveInfo {
-	internal int Start = 0;
-	internal int Stop = 0;
-	internal ChunkCarveType Type = ChunkCarveType.SkipCarve;
-	internal List<string> Filenames = new();
+	internal int Start;
+	internal int Stop;
+	internal ChunkCarveType Type;
+	internal List<string> Filenames;
+
+	internal ChunkCarveInfo(int start, int stop, ChunkCarveType type, List<string> filenames) {
+		Start = start;
+		Stop = stop;
+		Type = type;
+		Filenames = filenames;
+	}
 }

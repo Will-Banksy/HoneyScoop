@@ -30,6 +30,9 @@ internal class CarveHandler {
 
 		_numImportantChunks = 0;
 
+		// TODO: Optimisation - Could I merge the creation of the ChunkCarveInfos with the creation of the MatchedFiles... Do I even need MatchedFiles
+		// And then I'll just loop through the chunks and do the actual carving... I think
+		
 		_chunkFiles = new Dictionary<int, List<MatchedFile>>();
 		for(int i = 0; i < pairs.Count; i++) {
 			(int chunkRangeStart, int chunkRangeEnd) = Helper.MapToChunkRange(
@@ -48,15 +51,42 @@ internal class CarveHandler {
 			
 			_numImportantChunks = Int32.Max(chunkRangeEnd, _numImportantChunks);
 		}
-		
-		// TODO: Create ChunkCarveInfos for each chunk
 
-		for(int i = 0; i < _numImportantChunks; i++) {
-			if(!_chunkFiles.ContainsKey(i)) {
+		_carveInfo = new Dictionary<int, List<ChunkCarveInfo>>();
+		for(int chunkI = 0; chunkI < _numImportantChunks; chunkI++) {
+			if(!_chunkFiles.ContainsKey(chunkI)) {
 				continue;
 			}
 
-			List<MatchedFile> filesInChunk = _chunkFiles[i];
+			List<MatchedFile> filesInChunk = _chunkFiles[chunkI];
+
+			_carveInfo[chunkI] = new List<ChunkCarveInfo>();
+
+			ChunkCarveInfo continueCarveInfo = new ChunkCarveInfo(
+				_chunkSize * chunkI,
+				_chunkSize * (chunkI + 1) - 1,
+				ChunkCarveType.ContinueCarve,
+				new List<string>()
+			);
+			for(int i = 0; i < filesInChunk.Count; i++) {
+				ChunkCarveType type = filesInChunk[i].GetCarveType(chunkI, _chunkSize);
+
+				if(type == ChunkCarveType.ContinueCarve) {
+					continueCarveInfo.Filenames.Add(filesInChunk[i].Filename);
+				}
+				
+				ChunkCarveInfo info = new ChunkCarveInfo(
+					(int)filesInChunk[i].Start.StartOfMatch,
+					(int)(filesInChunk[i].End?.EndOfMatch ?? filesInChunk[i].Start.StartOfMatch + DefaultCarveSize),
+					type,
+					new List<string>() { filesInChunk[i].Filename }
+				);
+				_carveInfo[chunkI].Add(info);
+			}
+
+			if(continueCarveInfo.Filenames.Count != 0) {
+				_carveInfo[chunkI].Add(continueCarveInfo);
+			}
 
 			throw new NotImplementedException(); // TODO: Create ChunkCarveInfos based on all available chunk files etc etc.
 		}

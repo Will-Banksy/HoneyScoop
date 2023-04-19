@@ -199,4 +199,8 @@ internal static class Helper {
 		int endChunk = MapToChunk(endI, chunkSize);
 		return (startChunk, endChunk);
 	}
+
+	// internal static bool SpansEntireChunk(int startI, int endI, int chunkIndex, int chunkSize) {
+	// 	
+	// }
 }

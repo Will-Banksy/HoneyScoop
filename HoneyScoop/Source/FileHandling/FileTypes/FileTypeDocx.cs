@@ -13,6 +13,7 @@ namespace HoneyScoop.FileHandling.FileTypes
         public string Header => @"\x50\x4B\x03\x04";
         public string Footer => @"\x50\x4B\x05\x06";
         public bool HasFooter => true;
+		public string FileExtension => "docx";
 
         public AnalysisResult Analyse(ReadOnlySpan<byte> data)
         {

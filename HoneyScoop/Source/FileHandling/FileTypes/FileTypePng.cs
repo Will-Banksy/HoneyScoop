@@ -6,6 +6,7 @@ internal class FileTypePng : IFileType {
 	public string Header => @"\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"; // PNG signature
 	public string Footer => @"\x49\x45\x4e\x44\xae\x42\x60\x82"; // "IEND" + CRC32 of "IEND"
 	public bool HasFooter => true;
+	public string FileExtension => "png";
 
 	private const int HeaderSize = 8;
 	private const int FooterSize = 8;

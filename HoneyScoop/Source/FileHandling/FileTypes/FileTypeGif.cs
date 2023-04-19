@@ -8,6 +8,7 @@ internal class FileTypeGif : IFileType {
 	public string Header => "GIF"; // GIF signature
 	public string Footer => ";\0"; // GIF terminator
 	public bool HasFooter => true;
+	public string FileExtension => "gif";
 
 	private static readonly byte[] HeaderBytes = { (byte)71u, (byte)73u, (byte)70u };
 	private static readonly byte[] FooterBytes = { (byte)59u, 0 };

@@ -7,6 +7,7 @@ internal class FileTypeMov : IFileType {
 	public string Header => @"\x00\x00\x00\x20\x66\x74\x79\x70";
 	public string Footer => ""; // Does not have a footer
 	public bool HasFooter => false;
+	public string FileExtension => "mov";
 
 	private const int BrandSize = 4;
 		

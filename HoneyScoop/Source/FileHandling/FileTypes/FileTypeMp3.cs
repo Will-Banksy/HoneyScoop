@@ -7,6 +7,7 @@ internal class FileTypeMp3 : IFileType {
 	public string Header => @"\x49\x44\x33";
 	public string Footer => ""; // Does not have a footer
 	public bool HasFooter => false;
+	public string FileExtension => "mp3";
 
 	private const int TagIdSize = 3; // Part of header
 	private const int MajorVersionNumberSize = 1; // Part of header

@@ -64,6 +64,9 @@ internal readonly struct FileTypePart {
 }
 
 internal static class SupportedFileTypes {
+	/// <summary>
+	/// Contains a mapping from supported <see cref="FileType"/>s to their implementation
+	/// </summary>
 	internal static readonly ReadOnlyDictionary<FileType, IFileType> FileTypeHandlers = SetupSupportedFileTypes();
 
 	private static ReadOnlyDictionary<FileType, IFileType> SetupSupportedFileTypes() {

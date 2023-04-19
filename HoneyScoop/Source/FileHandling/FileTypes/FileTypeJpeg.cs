@@ -4,6 +4,7 @@ internal class FileTypeJpg : IFileType {
 	public string Header => @"^\xFF\xD8"; // JPG signature
 	public string Footer => @"\xFF\xD9"; // End of Image (EOI) marker
 	public bool HasFooter => true;
+	public string FileExtension => "jpg";
 
 	private const int HeaderSize = 2;
 	private const int FooterSize = 2;

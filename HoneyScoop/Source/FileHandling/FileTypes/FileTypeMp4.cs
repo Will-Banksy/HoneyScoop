@@ -6,6 +6,7 @@ internal class FileTypeMp4 : IFileType {
 	public string Header => @"\x20\x66\x74\x79\x70"; // "ftyp" in hexadecimal format
 	public string Footer => ""; // Does not have a footer
 	public bool HasFooter => false;
+	public string FileExtension => "mp4";
 
 	private const int HeaderSize = 12; // Size of the header
 	private const int BrandSize = 4; // Size of the brand field in the header

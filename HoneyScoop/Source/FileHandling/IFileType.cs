@@ -9,6 +9,7 @@ internal interface IFileType {
 	/// A regex string that matches the header(s) for a specific file type
 	/// </summary>
 	internal string Header { get; }
+	
 	/// <summary>
 	/// A regex string that matches the footer(s) for a specific file type
 	/// </summary>
@@ -19,6 +20,11 @@ internal interface IFileType {
 	/// This should be false if <see cref="Footer"/> returns an empty string
 	/// </summary>
 	internal bool HasFooter { get; }
+	
+	/// <summary>
+	/// Returns the (most common) file extension for this file type
+	/// </summary>
+	internal string FileExtension { get; }
 
 	/// <summary>
 	/// Implementations of this method should interpret the data as that of a specific file type, and check that the data does conform to the expectations of that file type,

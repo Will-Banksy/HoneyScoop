@@ -1,4 +1,6 @@
+using HoneyScoop.Carving;
 using HoneyScoop.FileHandling;
+using HoneyScoop.FileHandling.FileTypes;
 using HoneyScoop.Searching;
 using HoneyScoop.Util;
 
@@ -142,7 +144,27 @@ internal class HoneyScoop {
 		// Pair every header with a footer if a suitable one exists, if not then pair it with null
 		//     A suitable one would be probably the next footer that has the same file type as the header (multiple headers might be paired with the same footer)
 		// Return those header-footer/null pairs
-		
+		Stack<Match> matchStack = new Stack<Match>();
+		List<(Match, Match?)> completeMatches = new List<(Match, Match?)>();
+		for (var i = 0; i < matches.Count; i++) {
+			
+			if (matches[i].MatchType.Part == FilePart.Header) {
+				
+				matchStack.Push(matches[i]);
+			}
+			else {
+				if (matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType.Equals(matchStack.Peek().MatchType)) {
+					
+					completeMatches.Add((matchStack.Pop(), matches[i]));
+				}
+				else if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType != matchStack.Peek().MatchType) {//I know this part isn't correct but its a placeholder of what i need to finish as i am not too sure and its 3:30am
+					completeMatches.Add((matchStack.Pop(), null));
+				}
+			}
+
+
+		}
+
 		throw new NotImplementedException();
 	}
 

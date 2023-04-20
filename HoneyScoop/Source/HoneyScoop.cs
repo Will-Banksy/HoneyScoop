@@ -147,8 +147,21 @@ internal class HoneyScoop {
 		Stack<Match> matchStack = new Stack<Match>();
 		List<(Match, Match?)> completeMatches = new List<(Match, Match?)>();
 		for (var i = 0; i < matches.Count; i++) {
-			
-			if (matches[i].MatchType.Part == FilePart.Header) {
+			//Removes any footers that precede the first header
+			if (matches[i].MatchType.Part == FilePart.Footer && matchStack.Count == 0)
+			{
+				continue;
+			}
+			//Once it finds a header it will add it to the stack to be matched with a footer
+			if (matches[i].MatchType.Part == FilePart.Header && matchStack.Count == 0) {
+				
+				matchStack.Push(matches[i]);
+			}
+			//if a new header is found before a footer pair is found for the previous header then it will pair it with a null footer (Main concern is false positive header being found and wiping away the old one, hopefully shouldn't be the case)
+			else if (matches[i].MatchType.Part == FilePart.Header && matchStack.Count != 0)
+			{
+				
+				completeMatches.Add((matchStack.Pop(), null));
 				
 				matchStack.Push(matches[i]);
 			}
@@ -157,8 +170,9 @@ internal class HoneyScoop {
 					
 					completeMatches.Add((matchStack.Pop(), matches[i]));
 				}
-				else if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType != matchStack.Peek().MatchType) {//I know this part isn't correct but its a placeholder of what i need to finish as i am not too sure and its 3:30am
-					completeMatches.Add((matchStack.Pop(), null));
+				//When a footer is found after a header but doesn't match the header it is skipped because there shouldn't be overlapping headers and footers from different filetypes
+				else if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType != matchStack.Peek().MatchType) {
+					continue;
 				}
 			}
 

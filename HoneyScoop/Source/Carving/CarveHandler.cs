@@ -6,7 +6,6 @@ using HoneyScoop.Util;
 namespace HoneyScoop.Carving;
 
 internal class CarveHandler {
-	private readonly FileHandler _fileHandler;
 	private readonly int _chunkSize;
 
 	/// <summary>
@@ -25,11 +24,9 @@ internal class CarveHandler {
 	/// <summary>
 	/// Constructs the <see cref="CarveHandler"/> instance and performs some preprocessing
 	/// </summary>
-	/// <param name="fileHandler"></param>
 	/// <param name="chunkSize">The size of the chunks to allocate for loading file data into</param>
 	/// <param name="pairs"></param>
-	internal CarveHandler(FileHandler fileHandler, int chunkSize, List<(Match, Match?)> pairs) {
-		_fileHandler = fileHandler;
+	internal CarveHandler(int chunkSize, List<(Match, Match?)> pairs) {
 		_chunkSize = chunkSize;
 		_numImportantChunks = 0;
 		_carveInfo = new Dictionary<int, List<ChunkCarveInfo>>();
@@ -81,8 +78,8 @@ internal class CarveHandler {
 		}
 	}
 
-	internal void PerformCarving() {
-		CarveBufferManager buffer = new CarveBufferManager(_fileHandler, _chunkSize);
+	internal void PerformCarving(FileHandler fileHandler) {
+		CarveBufferManager buffer = new CarveBufferManager(fileHandler, _chunkSize);
 		
 		for(int chunkI = 0; chunkI < _numImportantChunks; chunkI++) {
 			List<ChunkCarveInfo> carveInfos = _carveInfo[chunkI];
@@ -120,8 +117,8 @@ internal class CarveHandler {
 
 		sb.Clear();
 		sb.Append(filename);
-		if(SupportedFileTypes.FileTypeHandlers.ContainsKey(start.MatchType.Type)) {
-			sb.Append(SupportedFileTypes.FileTypeHandlers[start.MatchType.Type].FileExtension);
+		if(SupportedFileTypes.FileTypeHandlers.TryGetValue(start.MatchType.Type, out IFileType? handler)) {
+			sb.Append(handler.FileExtension);
 		}
 
 		return sb.ToString();

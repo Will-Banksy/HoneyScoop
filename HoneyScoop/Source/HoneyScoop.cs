@@ -110,6 +110,9 @@ internal class HoneyScoop {
 		
 		// Perform the second phase/pass - Analyse and write out the found files
 		CarvePhase(fileHandler, chunkSize, matchPairs);
+		
+		// Close the file handler; Free the resource
+		fileHandler.Close();
 	}
 
 	/// <summary>
@@ -203,14 +206,14 @@ internal class HoneyScoop {
 			Console.WriteLine("Building carving information...");
 		}
 
-		CarveHandler carveHandler = new CarveHandler(fileHandler, chunkSize, pairs);
+		CarveHandler carveHandler = new CarveHandler(chunkSize, pairs);
 
 		if(Verbose) {
 			Console.WriteLine("Done building carving information");
 			Console.WriteLine("Performing carving...");
 		}
 		
-		carveHandler.PerformCarving();
+		carveHandler.PerformCarving(fileHandler);
 
 		if(Verbose) {
 			Console.WriteLine("Done carving");

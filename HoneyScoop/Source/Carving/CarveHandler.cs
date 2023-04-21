@@ -3,93 +3,101 @@ using HoneyScoop.FileHandling;
 using HoneyScoop.Searching;
 using HoneyScoop.Util;
 
-namespace HoneyScoop.Carving; 
+namespace HoneyScoop.Carving;
 
 internal class CarveHandler {
-	private int _chunkSize;
-	
+	private readonly FileHandler _fileHandler;
+	private readonly int _chunkSize;
+
 	/// <summary>
 	/// The index of the last chunk that contains any data
 	/// </summary>
-	private int _numImportantChunks;
-	
+	private readonly int _numImportantChunks;
+
 	/// <summary>
-	/// Contains a mapping from chunk indexes to a list of <see cref="MatchedFile"/>s that are present in that chunk.
-	/// Each MatchedFile may appear more than once
+	/// A dictionary mapping chunk indexes to a list of carving operations to carry out - Adjacent to Scalpel's work queues
 	/// </summary>
-	private Dictionary<int, List<MatchedFile>> _chunkFiles;
-	
-	private Dictionary<int, List<ChunkCarveInfo>> _carveInfo;
+	private readonly Dictionary<int, List<ChunkCarveInfo>> _carveInfo;
 
-	private const int DefaultCarveSize = 1024 * 1024 * 1024; // 1 GB
+	private const int DefaultCarveSize = 1024 * 1024 * 10; // 10 MB
+	private const int MaximumAnalysisSize = 1024 * 1024 * 10; // 10 MB
 
-	internal CarveHandler(FileHandler fileHandler, List<(Match, Match?)> pairs) {
-		_chunkSize = fileHandler.Buffer.Length;
+	/// <summary>
+	/// Constructs the <see cref="CarveHandler"/> instance and performs some preprocessing
+	/// </summary>
+	/// <param name="fileHandler"></param>
+	/// <param name="chunkSize">The size of the chunks to allocate for loading file data into</param>
+	/// <param name="pairs"></param>
+	internal CarveHandler(FileHandler fileHandler, int chunkSize, List<(Match, Match?)> pairs) {
+		_fileHandler = fileHandler;
+		_chunkSize = chunkSize;
+		_numImportantChunks = 0;
+		_carveInfo = new Dictionary<int, List<ChunkCarveInfo>>();
 
+		// A hashset to ensure all used filenames are unique (which they likely will be but this avoids edge cases with little performance penalty)
 		HashSet<string> usedFilenames = new HashSet<string>();
 
-		_numImportantChunks = 0;
-
-		// TODO: Optimisation - Could I merge the creation of the ChunkCarveInfos with the creation of the MatchedFiles... Do I even need MatchedFiles
-		// And then I'll just loop through the chunks and do the actual carving... I think
-		
-		_chunkFiles = new Dictionary<int, List<MatchedFile>>();
 		for(int i = 0; i < pairs.Count; i++) {
 			(int chunkRangeStart, int chunkRangeEnd) = Helper.MapToChunkRange(
 				(int)pairs[i].Item1.StartOfMatch,
 				(int)(pairs[i].Item2?.EndOfMatch ?? pairs[i].Item1.StartOfMatch + DefaultCarveSize),
 				_chunkSize
 			);
+
+			// Get a filename for this pair of matches
 			string filename = CreateFilename(pairs[i].Item1, pairs[i].Item2, usedFilenames);
-			MatchedFile file = new MatchedFile(pairs[i].Item1, pairs[i].Item2, filename);
+
+			// For each pair of matches, create ChunkCarveInfos and add them to the _carveInfo dictionary for each chunk index the Match pair intersects
 			for(int j = chunkRangeStart; j < chunkRangeEnd; j++) {
-				if(!_chunkFiles.ContainsKey(j)) {
-					_chunkFiles[j] = new List<MatchedFile>();
-				}
-				_chunkFiles[j].Add(file);
-			}
-			
-			_numImportantChunks = Int32.Max(chunkRangeEnd, _numImportantChunks);
-		}
-
-		_carveInfo = new Dictionary<int, List<ChunkCarveInfo>>();
-		for(int chunkI = 0; chunkI < _numImportantChunks; chunkI++) {
-			if(!_chunkFiles.ContainsKey(chunkI)) {
-				continue;
-			}
-
-			List<MatchedFile> filesInChunk = _chunkFiles[chunkI];
-
-			_carveInfo[chunkI] = new List<ChunkCarveInfo>();
-
-			ChunkCarveInfo continueCarveInfo = new ChunkCarveInfo(
-				_chunkSize * chunkI,
-				_chunkSize * (chunkI + 1) - 1,
-				ChunkCarveType.ContinueCarve,
-				new List<string>()
-			);
-			for(int i = 0; i < filesInChunk.Count; i++) {
-				ChunkCarveType type = filesInChunk[i].GetCarveType(chunkI, _chunkSize);
-
-				if(type == ChunkCarveType.ContinueCarve) {
-					continueCarveInfo.Filenames.Add(filesInChunk[i].Filename);
+				if(!_carveInfo.ContainsKey(j)) {
+					_carveInfo.Add(j, new List<ChunkCarveInfo>());
 				}
 				
+				ChunkCarveType type = GetCarveType(j, chunkRangeStart, chunkRangeEnd);
+				if(type == ChunkCarveType.ContinueCarve) {
+					if(_carveInfo[j][0].Type != ChunkCarveType.ContinueCarve) {
+						ChunkCarveInfo continueCarveInfo = new ChunkCarveInfo(
+							_chunkSize * j,
+							_chunkSize * (j + 1) - 1,
+							ChunkCarveType.ContinueCarve,
+							new List<string>() { filename }
+						);
+						_carveInfo[j].Insert(0, continueCarveInfo);
+					} else {
+						_carveInfo[j][0].Filenames.Add(filename);
+					}
+				}
+
 				ChunkCarveInfo info = new ChunkCarveInfo(
-					(int)filesInChunk[i].Start.StartOfMatch,
-					(int)(filesInChunk[i].End?.EndOfMatch ?? filesInChunk[i].Start.StartOfMatch + DefaultCarveSize),
+					(int)pairs[i].Item1.StartOfMatch,
+					(int)(pairs[i].Item2?.EndOfMatch ?? pairs[i].Item1.StartOfMatch + DefaultCarveSize),
 					type,
-					new List<string>() { filesInChunk[i].Filename }
+					new List<string>() { filename }
 				);
-				_carveInfo[chunkI].Add(info);
+				_carveInfo[j].Add(info);
 			}
 
-			if(continueCarveInfo.Filenames.Count != 0) {
-				_carveInfo[chunkI].Add(continueCarveInfo);
-			}
-
-			throw new NotImplementedException(); // TODO: Create ChunkCarveInfos based on all available chunk files etc etc.
+			_numImportantChunks = Int32.Max(chunkRangeEnd, _numImportantChunks);
 		}
+	}
+
+	internal void PerformCarving() {
+		CarveBufferManager buffer = new CarveBufferManager(_fileHandler, _chunkSize);
+		
+		for(int chunkI = 0; chunkI < _numImportantChunks; chunkI++) {
+			List<ChunkCarveInfo> carveInfos = _carveInfo[chunkI];
+
+			for(int i = 0; i < carveInfos.Count; i++) {
+				ChunkCarveInfo info = carveInfos[i];
+
+				switch(info.Type) {
+					case ChunkCarveType.StartCarve:
+						break;
+				}
+			}
+		}
+		
+		throw new NotImplementedException();
 	}
 
 	private static string CreateFilename(Match start, Match? end, HashSet<string> usedFilenames) {
@@ -107,6 +115,7 @@ internal class CarveHandler {
 
 			filename = checkFilename;
 		}
+
 		usedFilenames.Add(filename);
 
 		sb.Clear();
@@ -114,7 +123,28 @@ internal class CarveHandler {
 		if(SupportedFileTypes.FileTypeHandlers.ContainsKey(start.MatchType.Type)) {
 			sb.Append(SupportedFileTypes.FileTypeHandlers[start.MatchType.Type].FileExtension);
 		}
-		
+
 		return sb.ToString();
+	}
+
+	/// <summary>
+	/// Calculates, for a file starting in <see cref="chunkStart"/> and stopping in <see cref="chunkStop"/>, the <see cref="ChunkCarveType"/> for that file for chunk index <see cref="chunkI"/>
+	/// </summary>
+	/// <param name="chunkI"></param>
+	/// <param name="chunkStart"></param>
+	/// <param name="chunkStop"></param>
+	/// <returns></returns>
+	private static ChunkCarveType GetCarveType(int chunkI, int chunkStart, int chunkStop) {
+		if(chunkStart == chunkI && chunkStart == chunkStop) {
+			return ChunkCarveType.StartStopCarve;
+		} else if(chunkStart < chunkI && chunkStop > chunkI) {
+			return ChunkCarveType.ContinueCarve;
+		} else if(chunkStart == chunkI) {
+			return ChunkCarveType.StartCarve;
+		} else if(chunkStop == chunkI) {
+			return ChunkCarveType.StopCarve;
+		} else {
+			return ChunkCarveType.SkipCarve;
+		}
 	}
 }

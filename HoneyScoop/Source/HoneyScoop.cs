@@ -79,7 +79,7 @@ internal class HoneyScoop {
 		//     3. 2nd pass: Extract file data where footers matching headers within the current chunk or previous chunks (as long as the amount of data that would be carved does not exceed a maximum) have been found,
 		//        or reading a defined max number of bytes from header if a footer has not been found or defined for that file type
 		// This is not actually fully correct or might not be just read this: https://dfrws.org/sites/default/files/session-files/2005_USA_paper-scalpel_-_a_frugal_high_performance_file_carver.pdf
-		
+
 		// The way we're gonna do it (probably):
 		//     1. Split the file up into large chunks and read a chunk at a time
 		//     2. 1st pass: Find all headers and footers in the current chunk (including allowing for headers/footers to be across chunk boundaries),
@@ -94,15 +94,22 @@ internal class HoneyScoop {
 		//               and take up lots more disk space. The scalpel team clearly thought that the first was the optimal approach which is worth considering, as far more experienced and knowledgeable
 		//               individuals I'm sure they are
 
+		const int chunkSize = 1024 * 1024 * 10; // 10 MB
+		
 		// Firstly, create an instance of FileHandler
 		var fileHandler = new FileHandler(InputFile);
 
 		// Perform the first phase/pass - Find all headers and footers in the file for each specified file type
-		List<Match> headerFooterMatches = SearchPhase(fileHandler, FileTypes);
-		
+		List<Match> headerFooterMatches = SearchPhase(fileHandler, chunkSize, FileTypes);
+
+		// Reset the file handler for further operations
 		fileHandler.Reset();
+
+		// Process the search results to get the match pairs to feed to the next phase
+		List<(Match, Match?)> matchPairs = ProcessSearchResults(headerFooterMatches);
 		
-		// TODO: Process search results; Carve phase;
+		// Perform the second phase/pass - Analyse and write out the found files
+		CarvePhase(fileHandler, chunkSize, matchPairs);
 	}
 
 	/// <summary>
@@ -110,22 +117,25 @@ internal class HoneyScoop {
 	/// </summary>
 	/// <param name="fileHandler"></param>
 	/// <param name="fileTypes"></param>
-	private List<Match> SearchPhase(FileHandler fileHandler, List<FileType> fileTypes) {
+	private List<Match> SearchPhase(FileHandler fileHandler, int chunkSize, List<FileType> fileTypes) {
 		if(Verbose) {
-			Console.WriteLine("Starting searching...");
-			Console.WriteLine($"Chunk size: {fileHandler.Buffer.Length}");
+			Console.WriteLine($"Starting searching... (Chunk size: {chunkSize} bytes)");
 		}
-		
+
 		// Create the instances of RegexMatcher, passing in the fileTypes list
 		List<RegexMatcher> matchers = CreateMatchers(fileTypes);
 
 		// List to keep track of found matches throughout the whole file
 		List<Match> foundMatches = new();
 
+		// Allocate buffer for storing chunk data
+		byte[] buffer = new byte[chunkSize];
+
 		// Read the file chunk by chunk and search each chunk of the file for headers and footers
 		do {
 			long currentOffset = fileHandler.CurrentPosition;
-			ReadOnlySpan<byte> chunkBytes = fileHandler.Next();
+			fileHandler.Next(buffer);
+			ReadOnlySpan<byte> chunkBytes = buffer;
 
 			for(int i = 0; i < matchers.Count; i++) {
 				List<Match> chunkMatches = matchers[i].Advance(chunkBytes, currentOffset);
@@ -141,33 +151,32 @@ internal class HoneyScoop {
 	}
 
 	private List<(Match, Match?)> ProcessSearchResults(List<Match> matches) {
+		if(Verbose) {
+			Console.WriteLine("Processing search results...");
+		}
+		
 		// Pair every header with a footer if a suitable one exists, if not then pair it with null
 		//     A suitable one would be probably the next footer that has the same file type as the header (multiple headers might be paired with the same footer)
 		// Return those header-footer/null pairs
 		Stack<Match> matchStack = new Stack<Match>();
 		List<(Match, Match?)> completeMatches = new List<(Match, Match?)>();
-		for (var i = 0; i < matches.Count; i++) {
+		for(var i = 0; i < matches.Count; i++) {
 			//Removes any footers that precede the first header
-			if (matches[i].MatchType.Part == FilePart.Footer && matchStack.Count == 0)
-			{
+			if(matches[i].MatchType.Part == FilePart.Footer && matchStack.Count == 0) {
 				continue;
 			}
+
 			//Once it finds a header it will add it to the stack to be matched with a footer
-			if (matches[i].MatchType.Part == FilePart.Header && matchStack.Count == 0) {
-				
+			if(matches[i].MatchType.Part == FilePart.Header && matchStack.Count == 0) {
 				matchStack.Push(matches[i]);
 			}
 			//if a new header is found before a footer pair is found for the previous header then it will pair it with a null footer (Main concern is false positive header being found and wiping away the old one, hopefully shouldn't be the case)
-			else if (matches[i].MatchType.Part == FilePart.Header && matchStack.Count != 0)
-			{
-				
+			else if(matches[i].MatchType.Part == FilePart.Header && matchStack.Count != 0) {
 				completeMatches.Add((matchStack.Pop(), null));
-				
+
 				matchStack.Push(matches[i]);
-			}
-			else {
-				if (matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType.Equals(matchStack.Peek().MatchType)) {
-					
+			} else {
+				if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType.Equals(matchStack.Peek().MatchType)) {
 					completeMatches.Add((matchStack.Pop(), matches[i]));
 				}
 				//When a footer is found after a header but doesn't match the header it is skipped because there shouldn't be overlapping headers and footers from different filetypes
@@ -175,18 +184,37 @@ internal class HoneyScoop {
 					continue;
 				}
 			}
-
-
+		}
+		
+		if(Verbose) {
+			Console.WriteLine($"Done processing search results ({completeMatches.Count} matches)");
 		}
 
 		throw new NotImplementedException();
 	}
 
-	private void CarvePhase(FileHandler fileHandler, List<(Match, Match?)> pairs) {
+	private void CarvePhase(FileHandler fileHandler, int chunkSize, List<(Match, Match?)> pairs) {
 		// First, preprocess the match pairs to figure out which ranges need to be read into which files
 		// Probably need to map match pairs to file chunks and then assign "work" to be done in each chunk - basically roughly replicating what scalpel does
 		// Then read out the data from the file into the carved files - try be efficient here and only read what is necessary
 		// Remember to work with the various command-line options (e.g. Timestamp, Quiet, Verbose)
+
+		if(Verbose) {
+			Console.WriteLine("Building carving information...");
+		}
+
+		CarveHandler carveHandler = new CarveHandler(fileHandler, chunkSize, pairs);
+
+		if(Verbose) {
+			Console.WriteLine("Done building carving information");
+			Console.WriteLine("Performing carving...");
+		}
+		
+		carveHandler.PerformCarving();
+
+		if(Verbose) {
+			Console.WriteLine("Done carving");
+		}
 		
 		throw new NotImplementedException();
 	}
@@ -205,7 +233,7 @@ internal class HoneyScoop {
 		if(Verbose) {
 			Console.WriteLine("Creating matchers...");
 		}
-		
+
 		List<RegexMatcher> matchers = new();
 		matchers.EnsureCapacity(fileTypes.Count);
 

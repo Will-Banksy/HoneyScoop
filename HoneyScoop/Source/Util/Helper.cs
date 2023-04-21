@@ -199,8 +199,19 @@ internal static class Helper {
 		int endChunk = MapToChunk(endI, chunkSize);
 		return (startChunk, endChunk);
 	}
+	
+	/// <summary>
+	/// Returns the path to <see cref="filename"/> within the output directory for <see cref="analysisResult"/> and <see cref="fileType"/> (using
+	/// the output directory defined by the <see cref="HoneyScoop"/> instance - usually set through CLI args)
+	/// </summary>
+	/// <param name="analysisResult"></param>
+	/// <param name="fileType"></param>
+	/// <param name="filename"></param>
+	/// <returns></returns>
+	private static string OutputPath(AnalysisResult analysisResult, FileType fileType, string filename) {
+		string aRStr = analysisResult.ToString();
+		string fTStr = fileType.ToString();
 
-	// internal static bool SpansEntireChunk(int startI, int endI, int chunkIndex, int chunkSize) {
-	// 	
-	// }
+		return Path.Join(HoneyScoop.Instance().OutputDirectory, aRStr, fTStr, filename);
+	}
 }

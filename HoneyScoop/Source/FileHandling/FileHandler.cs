@@ -1,10 +1,7 @@
 namespace HoneyScoop.FileHandling;
 
 internal class FileHandler {
-	internal const int DefaultBufferSize = 1024 * 1024 * 2; // default buffer size in bytes (2 MB)
-
 	private readonly FileStream _fStream;
-	internal readonly byte[] Buffer;
 	internal long CurrentPosition = 0;
 	private bool _eof;
 	internal bool Eof => _eof;
@@ -13,72 +10,70 @@ internal class FileHandler {
 	/// Constructs a new FileHandler object, opening the specified file for processing
 	/// </summary>
 	/// <param name="filePath"></param>
-	/// <param name="bufferSize"></param>
-	internal FileHandler(string filePath, int bufferSize = DefaultBufferSize) {
+	internal FileHandler(string filePath) {
 		_fStream = File.OpenRead(filePath);
-		Buffer = new byte[bufferSize];
 		_eof = false;
 	}
 
 	/// <summary>
-	/// Return the next range of bytes as a read only span
+	/// Writes the next range of bytes into the provided span
 	/// </summary>
 	/// <returns></returns>
-	internal ReadOnlySpan<byte> Next() {
+	internal void Next(byte[] buffer) {
 		if(_eof) {
 			throw new InvalidOperationException();
 		}
-		
+
 		_fStream.Seek(CurrentPosition, SeekOrigin.Begin); // Set the stream position to the last position
-		int bytesRead = _fStream.Read(Buffer, 0, Buffer.Length); // read up to the set buffer position from the current position
+		int bytesRead = _fStream.Read(buffer, 0, buffer.Length); // read up to the set buffer position from the current position
 
 		if(bytesRead == 0) {
 			_eof = true;
 		}
 		
 		CurrentPosition += bytesRead; // Update the current position
-		return Buffer.AsSpan(..bytesRead); // Return the updated buffer
 	}
 
-	/// <summary>
-	/// Read a specific range of bytes from within the current chunk and return in a span
-	/// </summary>
-	/// <param name="start"></param>
-	/// <param name="stop"></param>
-	/// <returns></returns>
-	internal ReadOnlySpan<byte> Read(long? start = null, long? stop = null) {
-		long istart = start.GetValueOrDefault(CurrentPosition);
-		long istop = stop.GetValueOrDefault(CurrentPosition + Buffer.Length);
-
-		if(istart < CurrentPosition) {
-			istart = CurrentPosition;
-		}
-		if(istop > CurrentPosition + Buffer.Length) {
-			istop = CurrentPosition + Buffer.Length;
-		}
-
-		if(istart > istop) {
-			throw new ArgumentException();
-		}
-
-		int bufferIndex = (int)(istart - CurrentPosition);
-		int bytesToRead = (int)(istart - istop);
-
-		_fStream.Seek(istart, SeekOrigin.Begin);
-		int _ = _fStream.Read(Buffer, bufferIndex, bytesToRead);
-
-		return Buffer.AsSpan(bufferIndex, bytesToRead);
-	}
+	// /// <summary>
+	// /// Read a specific range of bytes from within the current chunk and return in a span
+	// /// </summary>
+	// /// <param name="start"></param>
+	// /// <param name="stop"></param>
+	// /// <returns></returns>
+	// internal ReadOnlySpan<byte> Read(long? start = null, long? stop = null) {
+	// 	long istart = start.GetValueOrDefault(CurrentPosition);
+	// 	long istop = stop.GetValueOrDefault(CurrentPosition + Buffer.Length);
+	//
+	// 	if(istart < CurrentPosition) {
+	// 		istart = CurrentPosition;
+	// 	}
+	// 	if(istop > CurrentPosition + Buffer.Length) {
+	// 		istop = CurrentPosition + Buffer.Length;
+	// 	}
+	//
+	// 	if(istart > istop) {
+	// 		throw new ArgumentException();
+	// 	}
+	//
+	// 	int bufferIndex = (int)(istart - CurrentPosition);
+	// 	int bytesToRead = (int)(istart - istop);
+	//
+	// 	_fStream.Seek(istart, SeekOrigin.Begin);
+	// 	int _ = _fStream.Read(Buffer, bufferIndex, bytesToRead);
+	//
+	// 	return Buffer.AsSpan(bufferIndex, bytesToRead);
+	// }
 
 	/// <summary>
 	/// Move on to the next chunk of bytes without reading anything
 	/// </summary>
-	internal void Skip() {
-		if(CurrentPosition + Buffer.Length >= _fStream.Length) {
+	/// <param name="skipAmt"></param>
+	internal void Skip(int skipAmt) {
+		if(CurrentPosition + skipAmt >= _fStream.Length) {
 			CurrentPosition = _fStream.Length;
 			_eof = true;
 		} else {
-			CurrentPosition += Buffer.Length;
+			CurrentPosition += skipAmt;
 		}
 	}
 

@@ -19,24 +19,6 @@ namespace HoneyScoop.FileHandling.FileTypes
         {
             try
             {
-                // Check if data is long enough to contain both header and footer
-                if (data.Length < PptxHeader.Length + PptxFooter.Length)
-                {
-                    return AnalysisResult.Unrecognised;
-                }
-
-                // Check if header is present at the beginning of the data
-                if (!data.Slice(0, PptxHeader.Length).SequenceEqual(PptxHeader))
-                {
-                    return AnalysisResult.Unrecognised;
-                }
-
-                // Check if footer is present at the end of the data
-                if (!data.Slice(data.Length - PptxFooter.Length).SequenceEqual(PptxFooter))
-                {
-                    return AnalysisResult.Unrecognised;
-                }
-
                 // Find the EOCD signature
                 int eocdPosition = data.LastIndexOf(PptxFooter);
 
@@ -46,13 +28,13 @@ namespace HoneyScoop.FileHandling.FileTypes
                 }
 
                 // Get the central directory position from the EOCD record
-                int centralDirectoryPosition = BitConverter.ToInt32(data.Slice(eocdPosition + 16, 4).ToArray());
+                int centralDirectoryPosition = BitConverter.ToInt32(data.Slice(eocdPosition + 16, 4));
 
                 // Check central directory file headers
                 while (centralDirectoryPosition < eocdPosition)
                 {
                     ReadOnlySpan<byte> centralDirectorySignatureSpan = data.Slice(centralDirectoryPosition, 4);
-                    uint centralDirectorySignature = BitConverter.ToUInt32(centralDirectorySignatureSpan.ToArray());
+                    uint centralDirectorySignature = BitConverter.ToUInt32(centralDirectorySignatureSpan);
 
                     // Central directory file header signature: 0x02014b50
                     if (centralDirectorySignature != 0x02014b50)
@@ -61,9 +43,9 @@ namespace HoneyScoop.FileHandling.FileTypes
                     }
 
                     // Read additional fields if necessary
-                    ushort centralDirectoryFileNameLength = BitConverter.ToUInt16(data.Slice(centralDirectoryPosition + 28, 2).ToArray());
-                    ushort centralDirectoryExtraFieldLength = BitConverter.ToUInt16(data.Slice(centralDirectoryPosition + 30, 2).ToArray());
-                    ushort centralDirectoryCommentLength = BitConverter.ToUInt16(data.Slice(centralDirectoryPosition + 32, 2).ToArray());
+                    ushort centralDirectoryFileNameLength = BitConverter.ToUInt16(data.Slice(centralDirectoryPosition + 28, 2));
+                    ushort centralDirectoryExtraFieldLength = BitConverter.ToUInt16(data.Slice(centralDirectoryPosition + 30, 2));
+                    ushort centralDirectoryCommentLength = BitConverter.ToUInt16(data.Slice(centralDirectoryPosition + 32, 2));
 
                     // Move to the next central directory file header
                     centralDirectoryPosition += (46 + centralDirectoryFileNameLength + centralDirectoryExtraFieldLength + centralDirectoryCommentLength);

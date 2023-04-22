@@ -107,14 +107,14 @@ internal static class Helper {
 
 		Queue<FiniteStateMachine<byte>.State> stateQueue = new();
 		stateQueue.Enqueue(startState);
-		HashSet<FiniteStateMachine<byte>.State> visitedStates = new();
+		HashSet<int> visitedStatesUids = new();
 
 		while(stateQueue.Count > 0) {
 			FiniteStateMachine<byte>.State state = stateQueue.Dequeue();
-			if(visitedStates.Contains(state)) {
+			if(visitedStatesUids.Contains(state.Uid)) {
 				continue;
 			}
-			visitedStates.Add(state);
+			visitedStatesUids.Add(state.Uid);
 			for(int i = 0; i < state.Connections.Count; i++) {
 				if(state.Connections[i].Transparent) {
 					stateQueue.Enqueue(state.Connections[i].Next);
@@ -208,7 +208,7 @@ internal static class Helper {
 	/// <param name="fileType"></param>
 	/// <param name="filename"></param>
 	/// <returns></returns>
-	private static string OutputPath(AnalysisResult analysisResult, FileType fileType, string filename) {
+	internal static string OutputPath(AnalysisResult analysisResult, FileType fileType, string filename) {
 		string aRStr = analysisResult.ToString();
 		string fTStr = fileType.ToString();
 

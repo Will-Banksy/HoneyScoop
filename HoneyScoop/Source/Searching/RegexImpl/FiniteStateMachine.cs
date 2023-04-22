@@ -15,17 +15,17 @@ internal readonly struct FiniteStateMachine<T> where T: struct {
 	/// where the State is the connected state and the T? is the connection character or a null represents an ε-connection (empty/transparent connection)
 	/// </summary>
 	internal class State { // TODO: This is kinda expensive to construct - Maybe add a constructor that doesn't then also initialise `connections`
-		private readonly int _uuid;
+		internal readonly int Uid;
 		internal readonly List<StateConnection> Connections; // TODO: Array or List?
 
 		/// <summary>
 		/// Specify a capacity to preallocate when creating the <c>List&lt;StateConnection&gt;</c> of connections (for optimisation purposes)
 		/// </summary>
-		/// <param name="uuid">The UUID assigned to this State</param>
+		/// <param name="uid">The UUID assigned to this State</param>
 		/// <param name="preallocCapacity">Pre-allocated capacity of the internal list of connections</param>
-		internal State(ref int uuid, int preallocCapacity = 4) {
-			_uuid = uuid;
-			uuid++;
+		internal State(ref int uid, int preallocCapacity = 4) {
+			Uid = uid;
+			uid++;
 			this.Connections = new List<StateConnection>(preallocCapacity);
 		}
 
@@ -45,7 +45,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct {
 		}
 
 		internal bool Equals(State other) {
-			return _uuid == other._uuid;
+			return Uid == other.Uid;
 		}
 
 		public override bool Equals(object? obj) {
@@ -56,12 +56,12 @@ internal readonly struct FiniteStateMachine<T> where T: struct {
 		}
 
 		public override int GetHashCode() {
-			return _uuid;
+			return Uid;
 		}
 
 		public override string ToString() {
 			// return $"State({_uuid})";
-			return $"{_uuid}";
+			return $"{Uid}";
 		}
 	}
 

@@ -1,6 +1,6 @@
 namespace HoneyScoop.FileHandling;
 
-internal class FileHandler { // TODO: Maybe make chunkSize a member variable
+internal class FileHandler { // TODO: Deprecate this in favour of using FileStream directly?
 	private readonly FileStream _fStream;
 	internal long CurrentPosition = 0;
 	private bool _eof;
@@ -38,31 +38,31 @@ internal class FileHandler { // TODO: Maybe make chunkSize a member variable
 	/// Read a specific range of bytes from within the current chunk and write it into the buffer
 	/// </summary>
 	/// <param name="buffer"></param>
-	/// <param name="chunkSize"></param>
-	/// <param name="bufferIndex"></param>
 	/// <param name="start"></param>
-	/// <param name="stop"></param>
 	/// <returns></returns>
-	internal void Read(byte[] buffer, int chunkSize, int bufferIndex = 0, long? start = null, long? stop = null) {
-		long istart = start.GetValueOrDefault(CurrentPosition);
-		long istop = stop.GetValueOrDefault(CurrentPosition + chunkSize);
-	
-		if(istart < CurrentPosition) {
-			istart = CurrentPosition;
-		}
-		if(istop > CurrentPosition + chunkSize) {
-			istop = CurrentPosition + chunkSize;
-		}
-	
-		if(istart > istop) {
-			throw new ArgumentException();
-		}
+	internal void Read(Span<byte> buffer, int start) {
+		// long istart = start.GetValueOrDefault(CurrentPosition);
+		// long istop = stop.GetValueOrDefault(CurrentPosition + chunkSize);
+		//
+		// if(istart < CurrentPosition) {
+		// 	istart = CurrentPosition;
+		// }
+		// if(istop > CurrentPosition + chunkSize) {
+		// 	istop = CurrentPosition + chunkSize;
+		// }
+		//
+		// if(istart > istop) {
+		// 	throw new ArgumentException();
+		// }
 	
 		// int bufferIndex = (int)(istart - CurrentPosition);
-		int bytesToRead = (int)(istart - istop);
+		// int bytesToRead = (int)(istart - istop);
 	
-		_fStream.Seek(istart, SeekOrigin.Begin);
-		int _ = _fStream.Read(buffer, bufferIndex, bytesToRead);
+		_fStream.Seek(start, SeekOrigin.Begin);
+		int read = _fStream.Read(buffer);
+		if(read < buffer.Length) {
+			_eof = true;
+		}
 	}
 
 	/// <summary>

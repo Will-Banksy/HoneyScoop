@@ -52,11 +52,11 @@ internal class CarveBufferManager {
 		}
 
 		// Get the offset from the start of the current chunk to start + _chunkSize (i.e. the position within the second half of the buffer to read into)
-		int bufferStart = start - (_chunkIndex + 1) * _chunkSize;
+		int bufferStart = start - _chunkIndex * _chunkSize + _chunkSize;
 
 		// Calculate the amount of bytes to read and create a span of the portion of _buffer to read into
 		int readSize = stop - start;
-		Span<byte> readTarget = _buffer.AsSpan()[bufferStart..readSize];
+		Span<byte> readTarget = _buffer.AsSpan(bufferStart, readSize);
 
 		_fileHandler.Read(readTarget, start);
 

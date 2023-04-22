@@ -214,4 +214,10 @@ internal static class Helper {
 
 		return Path.Join(HoneyScoop.Instance().OutputDirectory, aRStr, fTStr, filename);
 	}
+
+	internal static void EnsureExists(string filepath) {
+		string? dirName = Path.GetDirectoryName(filepath);
+		if(dirName != null)
+			Directory.CreateDirectory(dirName);
+	}
 }

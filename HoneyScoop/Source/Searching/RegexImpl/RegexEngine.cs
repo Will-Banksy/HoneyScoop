@@ -22,12 +22,12 @@ internal static class RegexEngine {
 	/// <param name="regex"></param>
 	/// <returns></returns>
 	internal static FiniteStateMachine<byte> ParseRegex(string regex) {
-		if(_parseCache.ContainsKey(regex)) {
-			return _parseCache[regex];
+		if(_parseCache.TryGetValue(regex, out var cached)) {
+			return cached;
 		}
 		
 		var postfix = ParseToPostfix(regex);
-#if DEBUG
+#if DEBUG && false
 		Console.WriteLine($"Infix: {regex} --> Postfix: {Helper.ListToStringTight(postfix)}");
 #endif
 		

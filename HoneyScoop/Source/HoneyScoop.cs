@@ -148,7 +148,7 @@ internal class HoneyScoop {
 		} while(!fileHandler.Eof);
 
 		if(Verbose) {
-			Console.WriteLine("Done searching");
+			Console.WriteLine($"Done searching ({foundMatches.Count} total header/footer matches)");
 		}
 
 		return foundMatches;
@@ -159,11 +159,19 @@ internal class HoneyScoop {
 			Console.WriteLine("Processing search results...");
 		}
 		
+		
+		
 		// Pair every header with a footer if a suitable one exists, if not then pair it with null
 		//     A suitable one would be probably the next footer that has the same file type as the header (multiple headers might be paired with the same footer)
 		// Return those header-footer/null pairs
 		Stack<Match> matchStack = new Stack<Match>();
 		List<(Match, Match?)> completeMatches = new List<(Match, Match?)>();
+
+		if(matches.Count == 2) { // TODO: REMOVE THIS THIS IS JUST FOR TESTING
+			completeMatches.Add((matches[0], matches[1]));
+			goto skipActualImplementation;
+		}
+		
 		for(var i = 0; i < matches.Count; i++) {
 			//Removes any footers that precede the first header
 			if(matches[i].MatchType.Part == FilePart.Footer && matchStack.Count == 0) {
@@ -190,11 +198,15 @@ internal class HoneyScoop {
 			}
 		}
 		
+		throw new NotImplementedException();
+		
+		skipActualImplementation: // TODO: REMOVE THIS LABEL THIS IS JUST FOR TESTING
+		
 		if(Verbose) {
 			Console.WriteLine($"Done processing search results ({completeMatches.Count} matches)");
 		}
 
-		throw new NotImplementedException();
+		return completeMatches;
 	}
 
 	private void CarvePhase(FileHandler fileHandler, int chunkSize, List<(Match, Match?)> pairs) {
@@ -219,8 +231,6 @@ internal class HoneyScoop {
 		if(Verbose) {
 			Console.WriteLine("Done carving");
 		}
-		
-		throw new NotImplementedException();
 	}
 
 	/// <summary>
@@ -260,7 +270,7 @@ internal class HoneyScoop {
 
 		if(Verbose) {
 			Console.ResetColor();
-			Console.WriteLine("Done creating matchers");
+			Console.WriteLine($"Done creating matchers ({matchers.Count} matchers)");
 		}
 
 		return matchers;

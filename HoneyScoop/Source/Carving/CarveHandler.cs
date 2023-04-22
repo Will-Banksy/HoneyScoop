@@ -58,7 +58,7 @@ internal class CarveHandler {
 			_fileInfo.Add(fid, fInfo);
 
 			// For each pair of matches, create ChunkCarveInfos and add them to the _carveInfo dictionary for each chunk index the Match pair intersects
-			for(int j = chunkRangeStart; j < chunkRangeEnd; j++) {
+			for(int j = chunkRangeStart; j <= chunkRangeEnd; j++) {
 				if(!_carveInfo.ContainsKey(j)) {
 					_carveInfo.Add(j, new List<ChunkCarveInfo>());
 				}
@@ -91,6 +91,11 @@ internal class CarveHandler {
 						// Stop at the defined stop point (which, if footer match is null, will be the start + the default carve size)
 						stopCarve = (int)(pairs[i].Item2?.EndOfMatch ?? pairs[i].Item1.StartOfMatch + DefaultCarveSize);
 						break;
+					
+					case ChunkCarveType.StartStopCarve:
+						startCarve = (int)pairs[i].Item1.StartOfMatch;
+						stopCarve = (int)(pairs[i].Item2?.EndOfMatch ?? pairs[i].Item1.StartOfMatch + DefaultCarveSize);
+						break;
 				}
 
 				// Collect the information into an object and store that
@@ -117,7 +122,7 @@ internal class CarveHandler {
 		// Fids that are going to be completed this chunk
 		Dictionary<int, int> analyseFidsNow = new Dictionary<int, int>();
 
-		for(int chunkI = 0; chunkI < _numImportantChunks; chunkI++) {
+		for(int chunkI = 0; chunkI <= _numImportantChunks; chunkI++) {
 			bool keepChunkData = false;
 
 			List<ChunkCarveInfo> carveInfos = _carveInfo[chunkI];
@@ -132,6 +137,7 @@ internal class CarveHandler {
 						ReadOnlySpan<byte> fileData = buffer.Fetch(info.Start, info.Stop);
 						AnalysisResult analysisResult = SupportedFileTypes.FileTypeHandlers[fileInfo.FType].Analyse(fileData);
 						string filepath = Helper.OutputPath(analysisResult, fileInfo.FType, fileInfo.Filename);
+						Helper.EnsureExists(filepath);
 						FileStream oStream = new FileStream(filepath, FileMode.Create);
 						oStream.Write(fileData);
 						oStream.Close();
@@ -159,6 +165,7 @@ internal class CarveHandler {
 						ReadOnlySpan<byte> fileData = buffer.Fetch(info.Start, info.Stop);
 						AnalysisResult analysisResult = AnalysisResult.Unanalysed;
 						string filepath = Helper.OutputPath(analysisResult, fileInfo.FType, fileInfo.Filename);
+						Helper.EnsureExists(filepath);
 						fileInfo.OutputStream = new FileStream(filepath, FileMode.Create);
 						fileInfo.OutputStream?.Write(fileData);
 						break;
@@ -171,6 +178,7 @@ internal class CarveHandler {
 							ReadOnlySpan<byte> fileData = buffer.GetWithLast(startLoadFrom, info.Stop);
 							AnalysisResult analysisResult = SupportedFileTypes.FileTypeHandlers[fileInfo.FType].Analyse(fileData);
 							string filepath = Helper.OutputPath(analysisResult, fileInfo.FType, fileInfo.Filename);
+							Helper.EnsureExists(filepath);
 							FileStream oStream = new FileStream(filepath, FileMode.Create);
 							oStream.Write(fileData);
 							oStream.Close();
@@ -195,6 +203,7 @@ internal class CarveHandler {
 	private static string CreateFilename(Match start, Match? end, HashSet<string> usedFilenames) {
 		StringBuilder sb = new();
 		sb.Append(start.StartOfMatch.ToString());
+		sb.Append("-");
 		sb.Append(end?.EndOfMatch.ToString() ?? (start.StartOfMatch + DefaultCarveSize).ToString());
 		string filename = sb.ToString();
 		int appended = 0;
@@ -213,7 +222,7 @@ internal class CarveHandler {
 		sb.Clear();
 		sb.Append(filename);
 		if(SupportedFileTypes.FileTypeHandlers.TryGetValue(start.MatchType.Type, out IFileType? handler)) {
-			sb.Append(handler.FileExtension);
+			sb.Append($".{handler.FileExtension}");
 		}
 
 		return sb.ToString();

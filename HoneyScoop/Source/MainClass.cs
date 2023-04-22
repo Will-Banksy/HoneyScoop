@@ -49,13 +49,13 @@ internal static class MainClass {
 		// Taking in Command line arguments
 		// Works only after running ParseArgs, which sets the CLI arguments as required
 		
-		// CommandLineArguments argParser = new CommandLineArguments();
-		// List<string> specifiedFileTypes = argParser.ParseArgs(args);
-		//
-		// HoneyScoop controller = HoneyScoop.Instance();
-		// controller.Initialise(argParser, specifiedFileTypes);
-		//
-		// Console.WriteLine(controller.ToString());
+		CommandLineArguments argParser = new CommandLineArguments();
+		List<string> specifiedFileTypes = argParser.ParseArgs(args);
+		
+		HoneyScoop controller = HoneyScoop.Instance();
+		controller.Initialise(argParser, specifiedFileTypes);
+		
+		controller.StartCarving();
 		
 		// Accessible arguments:
 		// Pattern: TakenArguments.COMMAND_LINE_ARGUMENT

@@ -119,14 +119,15 @@ internal class HoneyScoop {
 	/// This function searches the file for headers and footers, returning a list of <see cref="Match"/> values describing headers and footers
 	/// </summary>
 	/// <param name="fileHandler"></param>
+	/// <param name="chunkSize"></param>
 	/// <param name="fileTypes"></param>
 	private List<Match> SearchPhase(FileHandler fileHandler, int chunkSize, List<FileType> fileTypes) {
+		// Create the instances of RegexMatcher, passing in the fileTypes list
+		List<RegexMatcher> matchers = CreateMatchers(fileTypes);
+
 		if(Verbose) {
 			Console.WriteLine($"Starting searching... (Chunk size: {chunkSize} bytes)");
 		}
-
-		// Create the instances of RegexMatcher, passing in the fileTypes list
-		List<RegexMatcher> matchers = CreateMatchers(fileTypes);
 
 		// List to keep track of found matches throughout the whole file
 		List<Match> foundMatches = new();
@@ -153,7 +154,7 @@ internal class HoneyScoop {
 		return foundMatches;
 	}
 
-	private List<(Match, Match?)> ProcessSearchResults(List<Match> matches) {
+	private List<(Match, Match?)> ProcessSearchResults(List<Match> matches) { // TODO: Complete/correct this
 		if(Verbose) {
 			Console.WriteLine("Processing search results...");
 		}

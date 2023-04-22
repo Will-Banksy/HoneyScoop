@@ -36,6 +36,10 @@ internal class RegexMatcher {
 #endif
 	}
 
+	internal void Preproc() {
+		// TODO: Do Helper.Flatten and Helper.IsEndState preprocessing and use that data rather than recalculating every time cause we have some large memory issues
+	}
+
 	/// <summary>
 	/// Advances the regex matcher through the input range of bytes, returning a list of Matches
 	/// </summary>

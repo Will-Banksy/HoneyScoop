@@ -18,7 +18,7 @@ internal class RegexMatcher {
 	/// Preprocessed data to speed up matching.
 	/// For each state, the flattened connection list (following transparent/ε-connections) and whether the state is the end is stored
 	/// </summary>
-	private Dictionary<State, (List<StateConnection>, bool)>? _preprocData = null; // TODO: Actually implement this when it gets round to optimisation time
+	private Dictionary<State, (List<StateConnection>, bool)>? _preprocData;
 
 	/// <summary>
 	/// Initialises a RegexMatcher that matches the given regular expression
@@ -29,6 +29,9 @@ internal class RegexMatcher {
 		_nfa = RegexEngine.ParseRegex(regex);
 		_states = new List<(State, int)>();
 		_type = type;
+		_preprocData = new Dictionary<State, (List<StateConnection>, bool)>();
+		
+		Preproc();
 		
 // Disable this section for now, useful for debugging but otherwise just clutters stdout
 #if DEBUG && false
@@ -36,8 +39,16 @@ internal class RegexMatcher {
 #endif
 	}
 
-	internal void Preproc() {
-		// TODO: Do Helper.Flatten and Helper.IsEndState preprocessing and use that data rather than recalculating every time cause we have some large memory issues
+	private void Preproc() {
+		Helper.Walk(_nfa, state => {
+			_preprocData?.Add(
+				state,
+				(
+					Helper.Flatten(state),
+					Helper.IsEndState(state, _nfa.End)
+				)
+			);
+		});
 	}
 
 	/// <summary>
@@ -50,13 +61,13 @@ internal class RegexMatcher {
 		List<Match> matches = new List<Match>();
 		for(int i = 0; i < bytes.Length; i++) {
 			for(int j = 0; j < _states.Count; j++) {
-				var connections = Helper.Flatten(_states[j].Item1);
+				var connections = _preprocData[_states[j].Item1].Item1;
 				bool hasAdvanced = false;
 				for(int k = 0; k < connections.Count; k++) {
 					if(bytes[i] == connections[k].Symbol || connections[k].Wildcard) {
 						_states[j] = (connections[k].Next, _states[j].Item2);
 						hasAdvanced = true;
-						if(Helper.IsEndState(_states[j].Item1, _nfa.End)) {
+						if(_preprocData[_states[j].Item1].Item2) {
 							matches.Add(new Match(_states[j].Item2 + currentOffset, i + currentOffset, _type));
 							_states.RemoveAt(j);
 							j--;
@@ -71,10 +82,10 @@ internal class RegexMatcher {
 				}
 			}
 
-			var startConnections = Helper.Flatten(_nfa.Start);
+			var startConnections = _preprocData[_nfa.Start].Item1;
 			for(int j = 0; j < startConnections.Count; j++) {
 				if(bytes[i] == startConnections[j].Symbol || startConnections[j].Wildcard) {
-					if(Helper.IsEndState(startConnections[j].Next, _nfa.End)) {
+					if(_preprocData[startConnections[j].Next].Item2) {
 						matches.Add(new Match(i + currentOffset, i + currentOffset, _type));
 					} else {
 						_states.Add((startConnections[j].Next, i));

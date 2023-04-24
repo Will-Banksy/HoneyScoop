@@ -166,6 +166,24 @@ internal static class Helper {
 		
 		return false;
 	}
+
+	internal static void Walk(FiniteStateMachine<byte> nfa, Action<FiniteStateMachine<byte>.State> action) {
+		Stack<FiniteStateMachine<byte>.State> stateQueue = new();
+		stateQueue.Push(nfa.Start);
+		HashSet<int> visitedStatesUids = new();
+
+		while(stateQueue.Count > 0) {
+			FiniteStateMachine<byte>.State state = stateQueue.Pop();
+			if(visitedStatesUids.Contains(state.Uid)) {
+				continue;
+			}
+			visitedStatesUids.Add(state.Uid);
+			action(state);
+			for(int i = 0; i < state.Connections.Count; i++) {
+				stateQueue.Push(state.Connections[i].Next);
+			}
+		}
+	}
 	
 	internal static string ListToString<T>(IList<T> list) {
 		StringBuilder sb = new();

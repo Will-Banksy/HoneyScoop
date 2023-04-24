@@ -29,12 +29,8 @@
 // Also no space between keywords and any arguments in brackets after them e.e. `if(flag)` not `if (flag)` and `switch(thing)` not `switch (thing)`
 //
 // For notes on writing performant C# and for C# resources: https://willbanksy-pkb.notion.site/C-edef060a627f4f2babe13346a11e5962
-//DO NOT USE CAPITAL LETTERS IN ANY REGEX PROGRAMMING PLEASE
+
 using System.Diagnostics;
-using HoneyScoop.FileHandling;
-using HoneyScoop.FileHandling.FileTypes;
-using HoneyScoop.Searching;
-using HoneyScoop.Util;
 
 namespace HoneyScoop;
 
@@ -51,11 +47,22 @@ internal static class MainClass {
 		
 		CommandLineArguments argParser = new CommandLineArguments();
 		List<string> specifiedFileTypes = argParser.ParseArgs(args);
-		
+
 		HoneyScoop controller = HoneyScoop.Instance();
 		controller.Initialise(argParser, specifiedFileTypes);
 		
+		Stopwatch? sw = null;
+		if(controller.Verbose) {
+			sw = new Stopwatch();
+			sw.Start();
+		}
+		
 		controller.StartCarving();
+		
+		if(controller.Verbose) {
+			sw?.Stop();
+			Console.WriteLine($"Took {sw?.ElapsedMilliseconds} ms");
+		}
 		
 		// Accessible arguments:
 		// Pattern: TakenArguments.COMMAND_LINE_ARGUMENT

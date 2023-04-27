@@ -18,7 +18,6 @@ internal class HoneyScoop {
 	internal bool Quiet;
 	internal bool NoOrganise;
 	internal bool Timestamp;
-	internal int NumThreads;
 	internal string OutputDirectory;
 	internal string InputFile;
 
@@ -28,7 +27,6 @@ internal class HoneyScoop {
 		Quiet = false;
 		NoOrganise = false;
 		Timestamp = false;
-		NumThreads = 0;
 		OutputDirectory = "";
 		InputFile = "";
 	}
@@ -63,7 +61,6 @@ internal class HoneyScoop {
 		Quiet = parsedArgs.QuietMode;
 		NoOrganise = parsedArgs.NoOrganise;
 		Timestamp = parsedArgs.Timestamp;
-		NumThreads = parsedArgs.NumThreads;
 		OutputDirectory = parsedArgs.OutputDirectory;
 		InputFile = parsedArgs.InputFile;
 	}
@@ -167,10 +164,10 @@ internal class HoneyScoop {
 		Stack<Match> matchStack = new Stack<Match>();
 		List<(Match, Match?)> completeMatches = new List<(Match, Match?)>();
 
-		if(matches.Count == 2) { // TODO: REMOVE THIS THIS IS JUST FOR TESTING
-			completeMatches.Add((matches[0], matches[1]));
-			goto skipActualImplementation;
-		}
+		// if(matches.Count == 2) { // TODO: REMOVE THIS THIS IS JUST FOR TESTING
+		// 	completeMatches.Add((matches[0], matches[1]));
+		// 	goto skipActualImplementation;
+		// }
 		
 		for(var i = 0; i < matches.Count; i++) {
 			//Removes any footers that precede the first header
@@ -188,7 +185,7 @@ internal class HoneyScoop {
 
 				matchStack.Push(matches[i]);
 			} else {
-				if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType.Equals(matchStack.Peek().MatchType)) {
+				if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType.Type.Equals(matchStack.Peek().MatchType.Type)) {
 					completeMatches.Add((matchStack.Pop(), matches[i]));
 				}
 				//When a footer is found after a header but doesn't match the header it is skipped because there shouldn't be overlapping headers and footers from different filetypes
@@ -198,9 +195,9 @@ internal class HoneyScoop {
 			}
 		}
 		
-		throw new NotImplementedException();
+		// throw new NotImplementedException();
 		
-		skipActualImplementation: // TODO: REMOVE THIS LABEL THIS IS JUST FOR TESTING
+		// skipActualImplementation: // TODO: REMOVE THIS LABEL THIS IS JUST FOR TESTING
 		
 		if(Verbose) {
 			Console.WriteLine($"Done processing search results ({completeMatches.Count} matches)");
@@ -277,6 +274,6 @@ internal class HoneyScoop {
 	}
 
 	public override string ToString() {
-		return $"{nameof(FileTypes)}: {FileTypes}, {nameof(Verbose)}: {Verbose}, {nameof(Quiet)}: {Quiet}, {nameof(NoOrganise)}: {NoOrganise}, {nameof(Timestamp)}: {Timestamp}, {nameof(NumThreads)}: {NumThreads}, {nameof(OutputDirectory)}: {OutputDirectory}, {nameof(InputFile)}: {InputFile}";
+		return $"{nameof(FileTypes)}: {FileTypes}, {nameof(Verbose)}: {Verbose}, {nameof(Quiet)}: {Quiet}, {nameof(NoOrganise)}: {NoOrganise}, {nameof(Timestamp)}: {Timestamp}, {nameof(OutputDirectory)}: {OutputDirectory}, {nameof(InputFile)}: {InputFile}";
 	}
 }

@@ -57,7 +57,7 @@ internal class RegexMatcher {
 	/// <param name="bytes"></param>
 	/// <param name="currentOffset">The offset in the source data that <see cref="bytes"/> is taken from</param>
 	/// <returns></returns>
-	internal List<Match> Advance(ReadOnlySpan<byte> bytes, long currentOffset = 0) {
+	internal List<Match> Advance(ReadOnlySpan<byte> bytes, long currentOffset = 0) { // Adam
 		List<Match> matches = new List<Match>();
 		for(int i = 0; i < bytes.Length; i++) {
 			for(int j = 0; j < _states.Count; j++) {

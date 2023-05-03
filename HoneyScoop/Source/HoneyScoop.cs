@@ -216,6 +216,10 @@ internal class HoneyScoop {
 			Console.WriteLine("Building carving information...");
 		}
 
+		if(Timestamp) {
+			Helper.SetTimestampedOutputDir();
+		}
+
 		CarveHandler carveHandler = new CarveHandler(chunkSize, pairs);
 
 		if(Verbose) {

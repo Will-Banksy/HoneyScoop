@@ -137,7 +137,9 @@ internal class CarveHandler {
 						ReadOnlySpan<byte> fileData = buffer.Fetch(info.Start, info.Stop);
 						AnalysisResult analysisResult = SupportedFileTypes.FileTypeHandlers[fileInfo.FType].Analyse(fileData);
 						string filepath = Helper.OutputPath(analysisResult, fileInfo.FType, fileInfo.Filename);
-						Helper.EnsureExists(filepath);
+						if(!Helper.EnsureExists(filepath)) {
+							return;
+						}
 						FileStream oStream = new FileStream(filepath, FileMode.Create);
 						oStream.Write(fileData);
 						oStream.Close();
@@ -165,7 +167,9 @@ internal class CarveHandler {
 						ReadOnlySpan<byte> fileData = buffer.Fetch(info.Start, info.Stop);
 						AnalysisResult analysisResult = AnalysisResult.Unanalysed;
 						string filepath = Helper.OutputPath(analysisResult, fileInfo.FType, fileInfo.Filename);
-						Helper.EnsureExists(filepath);
+						if(!Helper.EnsureExists(filepath)) {
+							return;
+						}
 						fileInfo.OutputStream = new FileStream(filepath, FileMode.Create);
 						fileInfo.OutputStream?.Write(fileData);
 						break;
@@ -178,7 +182,9 @@ internal class CarveHandler {
 							ReadOnlySpan<byte> fileData = buffer.GetWithLast(startLoadFrom, info.Stop);
 							AnalysisResult analysisResult = SupportedFileTypes.FileTypeHandlers[fileInfo.FType].Analyse(fileData);
 							string filepath = Helper.OutputPath(analysisResult, fileInfo.FType, fileInfo.Filename);
-							Helper.EnsureExists(filepath);
+							if(!Helper.EnsureExists(filepath)) {
+								return;
+							}
 							FileStream oStream = new FileStream(filepath, FileMode.Create);
 							oStream.Write(fileData);
 							oStream.Close();

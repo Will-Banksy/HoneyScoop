@@ -71,7 +71,9 @@ internal static class SupportedFileTypes {
 
 	private static ReadOnlyDictionary<FileType, IFileType> SetupSupportedFileTypes() {
 		return new ReadOnlyDictionary<FileType, IFileType>(new Dictionary<FileType, IFileType>() {
-			{ FileType.Png, new FileTypePng() }
+			{ FileType.Png, new FileTypePng() },
+			{ FileType.Jpg, new FileTypeJpg() },
+			{ FileType.Mp4, new FileTypeMp4() }
 		});
 	}
 }

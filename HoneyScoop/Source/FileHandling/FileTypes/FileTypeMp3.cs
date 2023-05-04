@@ -34,14 +34,15 @@ internal class FileTypeMp3 : IFileType {
 		}
 
 		// Converts data stream into string but still in hex form
-		string dataString = BitConverter.ToString(data.ToArray()).Replace("-", "\\x");
-		
-		// pattern matching for \x00\x00\xFF\xF|E followed by any possible hex char
-		string pattern = @"\\x00\\x00\\xFF\\x[FE][A-F0-9]"; 
-		if (Regex.IsMatch(dataString, pattern))
+		// string dataString = BitConverter.ToString(data.ToArray()).Replace("-", "\\x");
+		for (int i = 0; i < data.Length - 1; i++)
 		{
-			return AnalysisResult.Correct;
+			if (data[i] == 0xFF && (data[i+1] >> 4) == 0x0F || (data[i+1] >> 4) == 0x0E)
+			{
+				return AnalysisResult.Correct;
+			}
 		}
+
 
 		return AnalysisResult.Unrecognised;
 	}

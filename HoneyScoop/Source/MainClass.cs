@@ -65,7 +65,7 @@ internal static class MainClass {
 		
 		if(controller.Verbose) {
 			sw?.Stop();
-			Console.WriteLine($"Took {sw?.ElapsedMilliseconds} ms");
+			Console.WriteLine($"Took {sw?.Elapsed.TotalSeconds:0.00}s");
 		}
 		
 		// Accessible arguments:

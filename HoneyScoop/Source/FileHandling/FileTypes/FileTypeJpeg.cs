@@ -1,7 +1,7 @@
 namespace HoneyScoop.FileHandling.FileTypes;
 
 internal class FileTypeJpg : IFileType {
-	public string Header => @"^\xFF\xD8"; // JPG signature
+	public string Header => @"\xFF\xD8"; // JPG signature
 	public string Footer => @"\xFF\xD9"; // End of Image (EOI) marker
 	public bool HasFooter => true;
 	public string FileExtension => "jpg";

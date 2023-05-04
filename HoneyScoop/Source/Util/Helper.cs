@@ -238,7 +238,14 @@ internal static class Helper {
 		string fTStr = fileType.ToString();
 
 		if(_timestampedOutDir != null) {
+			if(HoneyScoop.Instance().NoOrganise) {
+				return Path.Join(HoneyScoop.Instance().OutputDirectory, _timestampedOutDir, aRStr, filename);
+			}
 			return Path.Join(HoneyScoop.Instance().OutputDirectory, _timestampedOutDir, aRStr, fTStr, filename);
+		}
+
+		if(HoneyScoop.Instance().NoOrganise) {
+			return Path.Join(HoneyScoop.Instance().OutputDirectory, aRStr, filename);
 		}
 		return Path.Join(HoneyScoop.Instance().OutputDirectory, aRStr, fTStr, filename);
 	}

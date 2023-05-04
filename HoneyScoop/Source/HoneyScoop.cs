@@ -194,6 +194,20 @@ internal class HoneyScoop {
 				}
 			}
 		}
+
+		while (matchStack.Count != 0)
+		{
+
+			if (matchStack.Peek().MatchType.Part.Equals(FilePart.Footer))
+			{
+				matchStack.Pop();
+			}
+			else if (matchStack.Peek().MatchType.Part.Equals(FilePart.Header))
+			{
+				completeMatches.Add((matchStack.Pop(), null));
+			}
+			
+		}
 		
 		// throw new NotImplementedException();
 		

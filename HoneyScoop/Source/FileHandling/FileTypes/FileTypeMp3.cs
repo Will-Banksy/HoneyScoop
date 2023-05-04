@@ -17,7 +17,7 @@ internal class FileTypeMp3 : IFileType {
 	
 	/// <summary>
 	/// Checks if proper header length is present and converts the datastream into stream,
-	/// this then is checked with regex for an incomplete hex stream, which is 0000FFF or 0000FFE
+	/// this then is checked with bitwise operations for an incomplete hex stream, which is FFF or FFE (or FF0F, FF0E using >> 4)
 	/// representing the Synchronisation Frame of an MP3 file.
 	/// </summary>
 	/// <param name="data">The stream of data bytes that get checked.</param>
@@ -33,8 +33,7 @@ internal class FileTypeMp3 : IFileType {
 			return AnalysisResult.Corrupted;
 		}
 
-		// Converts data stream into string but still in hex form
-		// string dataString = BitConverter.ToString(data.ToArray()).Replace("-", "\\x");
+		// Bitwise checking for FFF or FFE Synchronisation frame.
 		for (int i = 0; i < data.Length - 1; i++)
 		{
 			if (data[i] == 0xFF && (data[i+1] >> 4) == 0x0F || (data[i+1] >> 4) == 0x0E)

@@ -11,6 +11,7 @@ internal enum FileType : short {
 	Png,
 	Jpg,
 	Gif,
+	Mov,
 	Mp4,
 	Mp3,
 	Wav,
@@ -72,8 +73,9 @@ internal static class SupportedFileTypes {
 	private static ReadOnlyDictionary<FileType, IFileType> SetupSupportedFileTypes() {
 		return new ReadOnlyDictionary<FileType, IFileType>(new Dictionary<FileType, IFileType>() {
 			{ FileType.Png, new FileTypePng() },
-			{ FileType.Jpg, new FileTypeJpg() },
-			{ FileType.Mp4, new FileTypeMp4() }
+			{ FileType.Mp4, new FileTypeMp4() },
+			{ FileType.Mp3, new FileTypeMp3() },
+			{ FileType.Mov, new FileTypeMov() }
 		});
 	}
 }

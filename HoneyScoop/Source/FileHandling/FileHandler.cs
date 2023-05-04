@@ -5,6 +5,7 @@ internal class FileHandler { // TODO: Deprecate this in favour of using FileStre
 	internal long CurrentPosition = 0;
 	private bool _eof;
 	internal bool Eof => _eof;
+	internal long FileSize;
 
 	/// <summary>
 	/// Constructs a new FileHandler object, opening the specified file for processing
@@ -13,6 +14,7 @@ internal class FileHandler { // TODO: Deprecate this in favour of using FileStre
 	internal FileHandler(string filePath) {
 		_fStream = File.OpenRead(filePath);
 		_eof = false;
+		FileSize = _fStream.Length;
 	}
 
 	/// <summary>
@@ -41,23 +43,6 @@ internal class FileHandler { // TODO: Deprecate this in favour of using FileStre
 	/// <param name="start"></param>
 	/// <returns></returns>
 	internal void Read(Span<byte> buffer, int start) {
-		// long istart = start.GetValueOrDefault(CurrentPosition);
-		// long istop = stop.GetValueOrDefault(CurrentPosition + chunkSize);
-		//
-		// if(istart < CurrentPosition) {
-		// 	istart = CurrentPosition;
-		// }
-		// if(istop > CurrentPosition + chunkSize) {
-		// 	istop = CurrentPosition + chunkSize;
-		// }
-		//
-		// if(istart > istop) {
-		// 	throw new ArgumentException();
-		// }
-	
-		// int bufferIndex = (int)(istart - CurrentPosition);
-		// int bytesToRead = (int)(istart - istop);
-	
 		_fStream.Seek(start, SeekOrigin.Begin);
 		int read = _fStream.Read(buffer);
 		if(read < buffer.Length) {

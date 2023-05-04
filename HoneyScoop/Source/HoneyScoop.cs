@@ -1,6 +1,6 @@
+using System.Diagnostics;
 using HoneyScoop.Carving;
 using HoneyScoop.FileHandling;
-using HoneyScoop.FileHandling.FileTypes;
 using HoneyScoop.Searching;
 using HoneyScoop.Util;
 
@@ -132,6 +132,8 @@ internal class HoneyScoop {
 		// Allocate buffer for storing chunk data
 		byte[] buffer = new byte[chunkSize];
 
+		Stopwatch timer = Stopwatch.StartNew();
+
 		// Read the file chunk by chunk and search each chunk of the file for headers and footers
 		do {
 			long currentOffset = fileHandler.CurrentPosition;
@@ -142,7 +144,15 @@ internal class HoneyScoop {
 				List<Match> chunkMatches = matchers[i].Advance(chunkBytes, currentOffset);
 				foundMatches.AddRange(chunkMatches);
 			}
+
+			if(!Quiet) {
+				string elapsed = timer.Elapsed.TotalSeconds.ToString("0.00");
+				string progress = (((float)currentOffset / (float)fileHandler.FileSize) * 100).ToString("0.00");
+				Console.Write($"\rSearching... {progress}% complete ({elapsed}s elapsed)");
+			}
 		} while(!fileHandler.Eof);
+		
+		Console.WriteLine();
 
 		if(Verbose) {
 			Console.WriteLine($"Done searching ({foundMatches.Count} total header/footer matches)");
@@ -269,9 +279,10 @@ internal class HoneyScoop {
 		foreach(var fileType in fileTypes.Distinct()) {
 			bool supported = SupportedFileTypes.FileTypeHandlers.TryGetValue(fileType, out IFileType? iFileType);
 			if(!supported || iFileType == null) {
-				if(Verbose) {
+				if(!Quiet) {
 					Console.ForegroundColor = ConsoleColor.Yellow;
 					Console.WriteLine($"Skipping unsupported/unimplemented file type {fileType}");
+					Console.ResetColor();
 				}
 			} else {
 				var headerMatcher = new RegexMatcher(iFileType.Header, new FileTypePart(fileType, FilePart.Header));
@@ -284,7 +295,6 @@ internal class HoneyScoop {
 		}
 
 		if(Verbose) {
-			Console.ResetColor();
 			Console.WriteLine($"Done creating matchers ({matchers.Count} matchers)");
 		}
 

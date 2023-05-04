@@ -217,6 +217,13 @@ internal static class Helper {
 		int endChunk = MapToChunk(endI, chunkSize);
 		return (startChunk, endChunk);
 	}
+
+	private static string? _timestampedOutDir = null;
+
+	internal static string SetTimestampedOutputDir() {
+		_timestampedOutDir = DateTime.Now.ToString("s");
+		return _timestampedOutDir;
+	}
 	
 	/// <summary>
 	/// Returns the path to <see cref="filename"/> within the output directory for <see cref="analysisResult"/> and <see cref="fileType"/> (using
@@ -230,12 +237,44 @@ internal static class Helper {
 		string aRStr = analysisResult.ToString();
 		string fTStr = fileType.ToString();
 
+		if(_timestampedOutDir != null) {
+			if(HoneyScoop.Instance().NoOrganise) {
+				return Path.Join(HoneyScoop.Instance().OutputDirectory, _timestampedOutDir, aRStr, filename);
+			}
+			return Path.Join(HoneyScoop.Instance().OutputDirectory, _timestampedOutDir, aRStr, fTStr, filename);
+		}
+
+		if(HoneyScoop.Instance().NoOrganise) {
+			return Path.Join(HoneyScoop.Instance().OutputDirectory, aRStr, filename);
+		}
 		return Path.Join(HoneyScoop.Instance().OutputDirectory, aRStr, fTStr, filename);
 	}
 
-	internal static void EnsureExists(string filepath) {
+	/// <summary>
+	/// Creates directories for a path if they do not already exist
+	/// </summary>
+	/// <param name="filepath"></param>
+	/// <returns>Returns true if the path exists or was able to be created, false otherwise</returns>
+	internal static bool EnsureExists(string filepath) {
 		string? dirName = Path.GetDirectoryName(filepath);
-		if(dirName != null)
-			Directory.CreateDirectory(dirName);
+		if(dirName != null) {
+			Exception? except = null;
+			try {
+				DirectoryInfo dirInfo = Directory.CreateDirectory(dirName);
+				if(dirInfo.Exists) {
+					return true;
+				}
+			} catch(Exception e) {
+				except = e;
+			}
+		
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine("Error creating/accessing output directory");
+			if(except != null) {
+				Console.Write($": {except}");
+			}
+		}
+
+		return false;
 	}
 }

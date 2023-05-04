@@ -11,6 +11,10 @@ namespace HoneyScoop.Searching;
 /// This class is basically the abstraction of the RegexImpl namespace - Its frontend
 /// </summary>
 internal class RegexMatcher {
+	// Optimisation info links
+	// https://learn.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-source-generators
+	// https://stackoverflow.com/questions/42742810/speed-up-millions-of-regex-replacements-in-python-3
+	
 	private readonly FiniteStateMachine<byte> _nfa;
 	private readonly List<(State, int)> _states;
 	private readonly FileTypePart _type;
@@ -31,7 +35,7 @@ internal class RegexMatcher {
 		_type = type;
 		_preprocData = new Dictionary<State, (List<StateConnection>, bool)>();
 		
-		Preproc();
+		Preprocess();
 		
 // Disable this section for now, useful for debugging but otherwise just clutters stdout
 #if DEBUG && false
@@ -39,7 +43,7 @@ internal class RegexMatcher {
 #endif
 	}
 
-	private void Preproc() {
+	private void Preprocess() {
 		Helper.Walk(_nfa, state => {
 			_preprocData?.Add(
 				state,
@@ -57,7 +61,7 @@ internal class RegexMatcher {
 	/// <param name="bytes"></param>
 	/// <param name="currentOffset">The offset in the source data that <see cref="bytes"/> is taken from</param>
 	/// <returns></returns>
-	internal List<Match> Advance(ReadOnlySpan<byte> bytes, long currentOffset = 0) {
+	internal List<Match> Advance(ReadOnlySpan<byte> bytes, long currentOffset = 0) { // Adam
 		List<Match> matches = new List<Match>();
 		for(int i = 0; i < bytes.Length; i++) {
 			for(int j = 0; j < _states.Count; j++) {

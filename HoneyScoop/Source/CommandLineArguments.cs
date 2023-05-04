@@ -31,9 +31,6 @@ internal class CommandLineArguments {
 	[Option('T', "timestamp", Required = false, HelpText = "Timestamp the output directories, disabled by default.")]
 	public bool Timestamp { get; set; }
 
-	[Option('t', "threads", Required = false, HelpText = "The number of threads to use for processing, by default its 40.")]
-	public int NumThreads { get; set; } = 40;
-
 	[Option('o', "output", Required = false, HelpText = "The output directory path, by default its the current directory.")]
 	public string OutputDirectory { get; set; } = Environment.CurrentDirectory;
 
@@ -50,11 +47,7 @@ internal class CommandLineArguments {
 					}
 
 					Console.WriteLine($"[+] The output directory is {o.OutputDirectory}.");
-					if(o.NumThreads != 40) {
-						NumThreads = o.NumThreads;
-					}
 
-					Console.WriteLine($"[+] The program will use {o.NumThreads} threads for processing.");
 					if(o.Verbose && !o.QuietMode) {
 						Verbose = true;
 						Console.WriteLine("[+] Verbose output enabled.");

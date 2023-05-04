@@ -1,6 +1,6 @@
+using System.Diagnostics;
 using HoneyScoop.Carving;
 using HoneyScoop.FileHandling;
-using HoneyScoop.FileHandling.FileTypes;
 using HoneyScoop.Searching;
 using HoneyScoop.Util;
 
@@ -18,7 +18,6 @@ internal class HoneyScoop {
 	internal bool Quiet;
 	internal bool NoOrganise;
 	internal bool Timestamp;
-	internal int NumThreads;
 	internal string OutputDirectory;
 	internal string InputFile;
 
@@ -28,7 +27,6 @@ internal class HoneyScoop {
 		Quiet = false;
 		NoOrganise = false;
 		Timestamp = false;
-		NumThreads = 0;
 		OutputDirectory = "";
 		InputFile = "";
 	}
@@ -63,7 +61,6 @@ internal class HoneyScoop {
 		Quiet = parsedArgs.QuietMode;
 		NoOrganise = parsedArgs.NoOrganise;
 		Timestamp = parsedArgs.Timestamp;
-		NumThreads = parsedArgs.NumThreads;
 		OutputDirectory = parsedArgs.OutputDirectory;
 		InputFile = parsedArgs.InputFile;
 	}
@@ -135,6 +132,8 @@ internal class HoneyScoop {
 		// Allocate buffer for storing chunk data
 		byte[] buffer = new byte[chunkSize];
 
+		Stopwatch timer = Stopwatch.StartNew();
+
 		// Read the file chunk by chunk and search each chunk of the file for headers and footers
 		do {
 			long currentOffset = fileHandler.CurrentPosition;
@@ -145,7 +144,15 @@ internal class HoneyScoop {
 				List<Match> chunkMatches = matchers[i].Advance(chunkBytes, currentOffset);
 				foundMatches.AddRange(chunkMatches);
 			}
+
+			if(!Quiet) {
+				string elapsed = timer.Elapsed.TotalSeconds.ToString("0.00");
+				string progress = (((float)currentOffset / (float)fileHandler.FileSize) * 100).ToString("0.00");
+				Console.Write($"\rSearching... {progress}% complete ({elapsed}s elapsed)");
+			}
 		} while(!fileHandler.Eof);
+		
+		Console.WriteLine();
 
 		if(Verbose) {
 			Console.WriteLine($"Done searching ({foundMatches.Count} total header/footer matches)");
@@ -167,10 +174,10 @@ internal class HoneyScoop {
 		Stack<Match> matchStack = new Stack<Match>();
 		List<(Match, Match?)> completeMatches = new List<(Match, Match?)>();
 
-		if(matches.Count == 2) { // TODO: REMOVE THIS THIS IS JUST FOR TESTING
-			completeMatches.Add((matches[0], matches[1]));
-			goto skipActualImplementation;
-		}
+		// if(matches.Count == 2) { // TODO: REMOVE THIS THIS IS JUST FOR TESTING
+		// 	completeMatches.Add((matches[0], matches[1]));
+		// 	goto skipActualImplementation;
+		// }
 		
 		for(var i = 0; i < matches.Count; i++) {
 			//Removes any footers that precede the first header
@@ -188,7 +195,7 @@ internal class HoneyScoop {
 
 				matchStack.Push(matches[i]);
 			} else {
-				if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType.Equals(matchStack.Peek().MatchType)) {
+				if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType.Type.Equals(matchStack.Peek().MatchType.Type)) {
 					completeMatches.Add((matchStack.Pop(), matches[i]));
 				}
 				//When a footer is found after a header but doesn't match the header it is skipped because there shouldn't be overlapping headers and footers from different filetypes
@@ -197,10 +204,24 @@ internal class HoneyScoop {
 				}
 			}
 		}
+
+		while (matchStack.Count != 0)
+		{
+
+			if (matchStack.Peek().MatchType.Part.Equals(FilePart.Footer))
+			{
+				matchStack.Pop();
+			}
+			else if (matchStack.Peek().MatchType.Part.Equals(FilePart.Header))
+			{
+				completeMatches.Add((matchStack.Pop(), null));
+			}
+			
+		}
 		
-		throw new NotImplementedException();
+		// throw new NotImplementedException();
 		
-		skipActualImplementation: // TODO: REMOVE THIS LABEL THIS IS JUST FOR TESTING
+		// skipActualImplementation: // TODO: REMOVE THIS LABEL THIS IS JUST FOR TESTING
 		
 		if(Verbose) {
 			Console.WriteLine($"Done processing search results ({completeMatches.Count} matches)");
@@ -217,6 +238,10 @@ internal class HoneyScoop {
 
 		if(Verbose) {
 			Console.WriteLine("Building carving information...");
+		}
+
+		if(Timestamp) {
+			Helper.SetTimestampedOutputDir();
 		}
 
 		CarveHandler carveHandler = new CarveHandler(chunkSize, pairs);
@@ -254,9 +279,10 @@ internal class HoneyScoop {
 		foreach(var fileType in fileTypes.Distinct()) {
 			bool supported = SupportedFileTypes.FileTypeHandlers.TryGetValue(fileType, out IFileType? iFileType);
 			if(!supported || iFileType == null) {
-				if(Verbose) {
+				if(!Quiet) {
 					Console.ForegroundColor = ConsoleColor.Yellow;
 					Console.WriteLine($"Skipping unsupported/unimplemented file type {fileType}");
+					Console.ResetColor();
 				}
 			} else {
 				var headerMatcher = new RegexMatcher(iFileType.Header, new FileTypePart(fileType, FilePart.Header));
@@ -269,7 +295,6 @@ internal class HoneyScoop {
 		}
 
 		if(Verbose) {
-			Console.ResetColor();
 			Console.WriteLine($"Done creating matchers ({matchers.Count} matchers)");
 		}
 
@@ -277,6 +302,6 @@ internal class HoneyScoop {
 	}
 
 	public override string ToString() {
-		return $"{nameof(FileTypes)}: {FileTypes}, {nameof(Verbose)}: {Verbose}, {nameof(Quiet)}: {Quiet}, {nameof(NoOrganise)}: {NoOrganise}, {nameof(Timestamp)}: {Timestamp}, {nameof(NumThreads)}: {NumThreads}, {nameof(OutputDirectory)}: {OutputDirectory}, {nameof(InputFile)}: {InputFile}";
+		return $"{nameof(FileTypes)}: {FileTypes}, {nameof(Verbose)}: {Verbose}, {nameof(Quiet)}: {Quiet}, {nameof(NoOrganise)}: {NoOrganise}, {nameof(Timestamp)}: {Timestamp}, {nameof(OutputDirectory)}: {OutputDirectory}, {nameof(InputFile)}: {InputFile}";
 	}
 }

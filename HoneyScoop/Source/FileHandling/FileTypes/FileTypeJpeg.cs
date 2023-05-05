@@ -1,6 +1,7 @@
 namespace HoneyScoop.FileHandling.FileTypes;
 
 internal class FileTypeJpg : IFileType {
+  
     public string Header => @"\xFF\xD8\xFF\xE0\x00\x10"; // JPG signature
     public string Footer => @"\xFF\xD9"; // End of Image (EOI) marker
     public bool HasFooter => true;
@@ -13,7 +14,7 @@ internal class FileTypeJpg : IFileType {
 
         while (pos < data.Length - FooterSize)
         {
-            var segment = Segment.Parse(data, pos);
+            var segment= Segment.Parse(data, pos);
             if (segment == null)
             {
                 break;
@@ -43,7 +44,7 @@ internal class FileTypeJpg : IFileType {
             return AnalysisResult.Unrecognised;
         }
     }
-    
+
     private const int HeaderSize = 6;
     private const int FooterSize = 2;
 

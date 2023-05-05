@@ -3,7 +3,7 @@ using System.Text;
 namespace HoneyScoop.FileHandling.FileTypes; 
 
 internal class FileTypeMp4 : IFileType {
-	public string Header => @"\x20\x66\x74\x79\x70"; // "ftyp" in hexadecimal format
+	public string Header => @"\x00\x00\x00\x20\x66\x74\x79\x70"; // "ftyp" in hexadecimal format
 	public string Footer => ""; // Does not have a footer
 	public bool HasFooter => false;
 	public string FileExtension => "mp4";

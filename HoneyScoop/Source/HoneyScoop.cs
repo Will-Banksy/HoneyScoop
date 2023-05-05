@@ -152,6 +152,8 @@ internal class HoneyScoop {
 			}
 		} while(!fileHandler.Eof);
 		
+		foundMatches.Sort((m1, m2) => (int)(m1.StartOfMatch - m2.StartOfMatch));
+		
 		Console.WriteLine();
 
 		if(Verbose) {

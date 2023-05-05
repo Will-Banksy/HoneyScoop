@@ -75,7 +75,8 @@ internal static class SupportedFileTypes {
 			{ FileType.Png, new FileTypePng() },
 			{ FileType.Mp4, new FileTypeMp4() },
 			{ FileType.Mp3, new FileTypeMp3() },
-			{ FileType.Mov, new FileTypeMov() }
+			{ FileType.Mov, new FileTypeMov() },
+			{ FileType.Jpg, new FileTypeJpg() }
 		});
 	}
 }

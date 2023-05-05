@@ -1,5 +1,8 @@
 using System.Text.RegularExpressions;
-using HoneyScoop.FileHandling;internal class FileTypeGif : IFileType {
+
+namespace HoneyScoop.Source.FileHandling.FileTypes;
+
+internal class FileTypeGif : IFileType {
 	public string Header => "GIF";
 	public string Footer => "";
 	public bool HasFooter => false;

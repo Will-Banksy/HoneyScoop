@@ -1,9 +1,9 @@
 using System.Text;
 
-namespace HoneyScoop.Source.FileHandling.FileTypes;
+namespace HoneyScoop.FileHandling.FileTypes;
 
 internal class FileTypeRar : IFileType {
-	public string Header => "\x52\x61\x72\x21\x1A\x07\x00";
+	public string Header => @"\x52\x61\x72\x21\x1A\x07\x00";
 	public string Footer => "";
 	public bool HasFooter => false;
 	public string FileExtension => "rar";

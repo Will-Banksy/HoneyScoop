@@ -40,15 +40,18 @@ internal class CarveBufferManager {
 	/// <param name="stop">The position from within the file to stop reading at</param>
 	/// <returns></returns>
 	internal ReadOnlySpan<byte> Fetch(int start, int stop) {
+		int chunkStart = _chunkIndex * _chunkSize;
+		int chunkEnd = (_chunkIndex + 1) * _chunkSize - 1;
+		
 		// Ensure arguments are valid - I.e. within the current chunk and start <= stop
-		if(start < _chunkIndex) {
-			start = _chunkIndex;
+		if(start < chunkStart) {
+			start = chunkStart;
 		}
-		if(stop > _chunkIndex + _chunkSize) {
-			stop = _chunkIndex + _chunkSize - 1;
+		if(stop > chunkEnd) {
+			stop = chunkEnd;
 		}
 		if(start > stop) {
-			throw new ArgumentException();
+			throw new ArgumentException($"Attempting to fetch starting at a position greater than the end position (start: {start}, stop: {stop})");
 		}
 
 		// Get the offset from the start of the current chunk to start + _chunkSize (i.e. the position within the second half of the buffer to read into)

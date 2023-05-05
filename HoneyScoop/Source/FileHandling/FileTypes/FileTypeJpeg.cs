@@ -3,21 +3,22 @@ using System.Text;
 
 namespace HoneyScoop.Source.FileHandling.FileTypes;
 
-internal class FileTypeJpg : IFileType {
-  
+internal class FileTypeJpg : IFileType
+{
+
     public string Header => @"\xFF\xD8\xFF\xE0\x00\x10"; // JPG signature
     public string Footer => @"\xFF\xD9"; // End of Image (EOI) marker
     public bool HasFooter => true;
     public string FileExtension => "jpg";
-    
-    public AnalysisResult Analyse(ReadOnlySpan<byte> data)
+
+    public void Analyse(ReadOnlySpan<byte> data)
     {
         var segments = new List<Segment>();
         int pos = HeaderSize;
 
         while (pos < data.Length - FooterSize)
         {
-            var segment= Segment.Parse(data, pos);
+            var segment = Segment.Parse(data, pos);
             if (segment == null)
             {
                 break;
@@ -26,32 +27,17 @@ internal class FileTypeJpg : IFileType {
             segments.Add(segment.Value);
             pos += segment.Value.TotalLength;
         }
-
-        bool isValid = segments.Any() && segments.All(s => s.CheckDataValid() == AnalysisResult.Correct);
-
-        
-        bool headerMatched = false;
-        foreach (string header in Headers)
-        {
-            if (!data.Slice(0, header.Length).SequenceEqual(Encoding.ASCII.GetBytes(header))) continue;
-            headerMatched = true;
-            break;
-        }
-
-        if (headerMatched)
-        {
-            return isValid ? AnalysisResult.Correct : AnalysisResult.Corrupted;
-        }
-        else
-        {
-            return AnalysisResult.Unrecognised;
-        }
     }
+
+
+
+
 
     private const int HeaderSize = 6;
     private const int FooterSize = 2;
 
-    private readonly struct Segment {
+    private readonly struct Segment
+    {
         internal const byte StartByte = 0xFF;
         internal const byte EndByte = 0xD9;
 
@@ -59,33 +45,37 @@ internal class FileTypeJpg : IFileType {
 
         internal readonly int Length;
 
-        
+
         internal readonly bool IsValid;
         internal readonly int TotalLength;
 
-      
+
         /// <param name="data"></param>
         /// <param name="length"></param>
         /// <param name="marker"></param>
         /// <param name="isValid"></param>
-        private Segment(ReadOnlySpan<byte> data, int length, byte marker, bool isValid) {
+        private Segment(ReadOnlySpan<byte> data, int length, byte marker, bool isValid)
+        {
             Marker = marker;
             Length = length;
             IsValid = isValid;
             TotalLength = length + 2;
         }
-        
+
 
         /// <summary>
         /// Checks whether the segment data matches what is expected of the segment type.
         /// </summary>
         /// <returns>An <see cref="AnalysisResult"/> indicating how the segment data matches it's expectations</returns>
-        internal AnalysisResult CheckDataValid() {
-            if(!IsValid) {
+        internal AnalysisResult CheckDataValid()
+        {
+            if (!IsValid)
+            {
                 return AnalysisResult.Corrupted;
             }
 
-            switch(Marker) {
+            switch (Marker)
+            {
                 case 0xC0:
                 case 0xC1:
                 case 0xC2:
@@ -179,3 +169,9 @@ internal class FileTypeJpg : IFileType {
                 }
             }
         }
+
+        public static IEnumerable<string> Headers { get; set; }
+    }
+}
+
+      

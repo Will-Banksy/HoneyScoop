@@ -5,7 +5,8 @@ namespace HoneyScoop.FileHandling.FileTypes;
 
 internal class FileTypeMp3 : IFileType {
 	public string Header => @"\x49\x44\x33";
-	public string Footer => ""; // Does not have a footer
+	// public string Header => @"(\x49\x44\x33)|(\xFF\xFB\x44\x00\x00)|(\x57\x41\x56\x45)|(\xFF\xFB\xD0)|(\x4C\x41\x4D\x45)"; // Other headers but require testing due to unique nature of MP3
+	public string Footer => "";
 	public bool HasFooter => false;
 	public string FileExtension => "mp3";
 

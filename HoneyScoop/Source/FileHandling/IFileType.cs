@@ -78,3 +78,14 @@ internal enum AnalysisResult {
 	/// </summary>
 	Unanalysed
 }
+
+/// <summary>
+/// A struct that contains file metadata obtained during analysis that is useful to the carving process
+/// </summary>
+internal struct AnalysisFileInfo { // TODO: Any other relevant data? Maybe actual file offset? And then refine and use this
+	/// <summary>
+	/// The actual size of the file, according to the internal data - Only set this if you are *sure*
+	/// that it will be correct, but the carving process might ignore it if the analysis result is not <see cref="AnalysisResult.Correct"/> anyway
+	/// </summary>
+	internal long ActualFileSize;
+}

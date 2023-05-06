@@ -8,7 +8,7 @@ internal class FileTypeZip : IFileType {
 	private static readonly byte[] ZipFooter = { 0x50, 0x4B, 0x05, 0x06 }; // Zip footer (EOCD)
 
 	internal static readonly string ZipHeaderRegex = @"\x50\x4B\x03\x04";
-	internal static readonly string ZipFooterRegex = @"\x50\x4B\x05\x06"; // ..................
+	internal static readonly string ZipFooterRegex = @"\x50\x4B\x05\x06.................."; // The 18 '.'s are for making sure that the whole EOCD record is matched
 
 	public string Header => ZipHeaderRegex;
 	public string Footer => ZipFooterRegex;

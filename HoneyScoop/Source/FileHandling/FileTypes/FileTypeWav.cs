@@ -1,13 +1,50 @@
-﻿namespace HoneyScoop.FileHandling.FileTypes; 
+﻿using System;
+using System.Text;
+using System.Linq;
+using HoneyScoop.Util;
 
+namespace HoneyScoop.FileHandling.FileTypes; 
 internal class FileTypeWav : IFileType {
-	public string Header => @"\x25\x50\x44\x46\x2D"; // PDF signature
-	public string Footer => @"\x52\x49\x46\x46\x00\x00\x00\x00\x57\x41\x56\x45\x66\x6D\x74\x20"; // The \x00\x00\x00\x00 is a place holder as file size should be located there
-	public bool HasFooter => true;
+	public string Header => "RIFF.{4}WAVEfmt "; 
+	public string Footer => null; 
+	public bool HasFooter => false;
 	public string FileExtension => "wav";
 	public bool RequiresFooter => false;
 	
-	public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data) {
-		throw new NotImplementedException();
-	}
+	public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data)
+        {
+
+			//RIFF HEADER VALIDATIONS 
+
+            // Check the RIFF Header (first 4 bytes)
+            string riffHeader = Encoding.ASCII.GetString(data.Slice(0, 4));
+            if (riffHeader != "RIFF")
+            {
+                return AnalysisResult.Unrecognised.Wrap();
+            }
+
+            // Check Wave Chunk 
+            string waveChunk = Encoding.ASCII.GetString(data.Slice(8, 4));
+            if (waveChunk != "WAVE")
+            {
+                return AnalysisResult.Unrecognised.Wrap();
+            }
+
+            // Check Format Chunk
+            string formatChunk = Encoding.ASCII.GetString(data.Slice(12, 4));
+            if (formatChunk != "fmt ")
+            {
+                return AnalysisResult.Unrecognised.Wrap();
+            }
+
+			//FORMAT VALIDATIONS TODO
+
+
+
+
+			//DATA VALIDATIONS TODO
+
+
+            return AnalysisResult.Correct.Wrap();
+        }
 }

@@ -8,6 +8,7 @@ internal class FileTypeMov : IFileType {
 	public string Footer => ""; // Does not have a footer
 	public bool HasFooter => false;
 	public string FileExtension => "mov";
+	public bool RequiresFooter => false;
 
 	private const int BrandSize = 4;
 		
@@ -24,10 +25,10 @@ internal class FileTypeMov : IFileType {
 	/// </summary>
 	/// <param name="data">The stream of data bytes that get checked.</param>
 	/// <returns>Returns whether the conditions of a mov file are present or not.</returns>
-	public AnalysisResult Analyse(ReadOnlySpan<byte> data) {
+	public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data) {
 		// Check if data is longer than header and is present
 		if(data.Length < Header.Length) {
-			return AnalysisResult.Unrecognised;
+			return AnalysisResult.Unrecognised.Wrap();
 		}
 
 		// Check if brand is present and supported
@@ -36,10 +37,10 @@ internal class FileTypeMov : IFileType {
 		{
 			if (brandData.SequenceEqual(SupportedBrands[i]))
 			{
-				return AnalysisResult.Correct;
+				return AnalysisResult.Correct.Wrap();
 			}
 		}
 
-		return AnalysisResult.Unrecognised;
+		return AnalysisResult.Unrecognised.Wrap();
 	}
 }

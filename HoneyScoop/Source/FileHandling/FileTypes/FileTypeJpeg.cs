@@ -1,3 +1,5 @@
+using HoneyScoop.Util;
+
 namespace HoneyScoop.FileHandling.FileTypes;
 
 internal class FileTypeJpg : IFileType {
@@ -6,8 +8,9 @@ internal class FileTypeJpg : IFileType {
     public string Footer => @"\xFF\xD9"; // End of Image (EOI) marker
     public bool HasFooter => true;
     public string FileExtension => "jpg";
+	public bool RequiresFooter => false;
 
-    public AnalysisResult Analyse(ReadOnlySpan<byte> data)
+    public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data)
     {
         var segments = new List<Segment>();
         int pos = HeaderSize;
@@ -25,10 +28,10 @@ internal class FileTypeJpg : IFileType {
         }
 		
 		if(segments.Any(s => s.CheckDataValid() != AnalysisResult.Correct)) {
-			return AnalysisResult.FormatError;
+			return AnalysisResult.FormatError.Wrap();
 		}
 
-        return AnalysisResult.Correct;
+        return AnalysisResult.Correct.Wrap();
     }
 
 
@@ -43,8 +46,7 @@ internal class FileTypeJpg : IFileType {
 
 		internal readonly bool IsValid;
         internal readonly int TotalLength;
-
-
+		
         /// <param name="data"></param>
         /// <param name="length"></param>
         /// <param name="marker"></param>

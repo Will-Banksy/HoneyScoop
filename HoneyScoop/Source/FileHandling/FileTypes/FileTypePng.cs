@@ -7,6 +7,7 @@ internal class FileTypePng : IFileType {
 	public string Footer => @"\x49\x45\x4e\x44\xae\x42\x60\x82"; // "IEND" + CRC32 of "IEND"
 	public bool HasFooter => true;
 	public string FileExtension => "png";
+	public bool RequiresFooter => false;
 
 	private const int HeaderSize = 8;
 	private const int FooterSize = 8;
@@ -138,9 +139,9 @@ internal class FileTypePng : IFileType {
 		}
 	}
 
-	public AnalysisResult Analyse(ReadOnlySpan<byte> data) {
+	public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data) {
 		if(data.Length < (HeaderSize + IhdrSizeTotal + FooterSize)) {
-			return AnalysisResult.Unrecognised; // If the data is too small, return Unrecognised
+			return AnalysisResult.Unrecognised.Wrap(); // If the data is too small, return Unrecognised
 		}
 
 		int offset = HeaderSize; // Initialise the offset to the header size
@@ -159,11 +160,11 @@ internal class FileTypePng : IFileType {
 		// If the chunk is not an IHDR chunk, does not have the correct length, and the chunk data is evaluated to be either errored or corrupted,
 		// then it is most likely that this data is not a PNG image
 		if(!isIhdr && !correctLength && (ihdrAnalysisResult == AnalysisResult.FormatError || ihdrAnalysisResult == AnalysisResult.Corrupted)) {
-			return AnalysisResult.Unrecognised; // Return as no further updates can happen to ret
+			return AnalysisResult.Unrecognised.Wrap(); // Return as no further updates can happen to ret
 		}
 
 		if(ret == AnalysisResult.Corrupted) {
-			return ret; // Return as no further updates can happen to ret
+			return ret.Wrap(); // Return as no further updates can happen to ret
 		}
 
 		offset += ihdr.TotalLength;
@@ -206,7 +207,7 @@ internal class FileTypePng : IFileType {
 
 			// If ret is corrupted, then return, as no further updates are possible
 			if(ret == AnalysisResult.Corrupted) {
-				return ret;
+				return ret.Wrap();
 			}
 		}
 
@@ -217,6 +218,6 @@ internal class FileTypePng : IFileType {
 			ret = ret.UpdateResultWith(AnalysisResult.FormatError);
 		}
 
-		return ret;
+		return ret.Wrap();
 	}
 }

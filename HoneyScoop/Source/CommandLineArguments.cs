@@ -58,7 +58,9 @@ internal class CommandLineArguments {
 					if (o.UnrecognisedOutput)
 					{
 						UnrecognisedOutput = true; // if true, unrecognised files will also be outputted.
-						Console.WriteLine("[+] The unrecognised files will be outputted.");
+						if(Verbose) {
+							Console.WriteLine("[+] The unrecognised files will be outputted.");
+						}
 					}
 
 					if(o.QuietMode && !o.Verbose) {

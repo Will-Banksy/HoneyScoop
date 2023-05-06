@@ -41,6 +41,10 @@ internal class CarveHandler {
 		HashSet<string> usedFilenames = new HashSet<string>();
 
 		for(int i = 0; i < pairs.Count; i++) {
+			if(pairs[i].Item2 == null && SupportedFileTypes.FileTypeHandlers[pairs[i].Item1.MatchType.Type].RequiresFooter) {
+				continue;
+			}
+			
 			(int chunkRangeStart, int chunkRangeEnd) = Helper.MapToChunkRange(
 				(int)pairs[i].Item1.StartOfMatch,
 				(int)(pairs[i].Item2?.EndOfMatch ?? pairs[i].Item1.StartOfMatch + DefaultCarveSize),
@@ -125,6 +129,10 @@ internal class CarveHandler {
 		for(int chunkI = 0; chunkI <= _numImportantChunks; chunkI++) {
 			bool keepChunkData = false;
 
+			if(!_carveInfo.ContainsKey(chunkI)) {
+				goto post_carve_for_chunk;
+			}
+			
 			List<ChunkCarveInfo> carveInfos = _carveInfo[chunkI];
 
 			for(int i = 0; i < carveInfos.Count; i++) {
@@ -135,7 +143,10 @@ internal class CarveHandler {
 						// Fetch the data and file info of that data and perform analysis
 						CarveFileInfo fileInfo = _fileInfo[info.Fid];
 						ReadOnlySpan<byte> fileData = buffer.Fetch(info.Start, info.Stop);
-						AnalysisResult analysisResult = SupportedFileTypes.FileTypeHandlers[fileInfo.FType].Analyse(fileData);
+						(AnalysisResult analysisResult, _) = SupportedFileTypes.FileTypeHandlers[fileInfo.FType].Analyse(fileData);
+						if(analysisResult == AnalysisResult.Unrecognised && !HoneyScoop.Instance().UnrecognisedOutput) {
+							break;
+						}
 						string filepath = Helper.OutputPath(analysisResult, fileInfo.FType, fileInfo.Filename);
 						if(!Helper.EnsureExists(filepath)) {
 							return;
@@ -180,7 +191,10 @@ internal class CarveHandler {
 						if(analyseFidsNow.TryGetValue(info.Fid, out int startLoadFrom)) {
 							buffer.Fetch(info.Start, info.Stop);
 							ReadOnlySpan<byte> fileData = buffer.GetWithLast(startLoadFrom, info.Stop);
-							AnalysisResult analysisResult = SupportedFileTypes.FileTypeHandlers[fileInfo.FType].Analyse(fileData);
+							(AnalysisResult analysisResult, _) = SupportedFileTypes.FileTypeHandlers[fileInfo.FType].Analyse(fileData);
+							if(analysisResult == AnalysisResult.Unrecognised && !HoneyScoop.Instance().UnrecognisedOutput) {
+								break;
+							}
 							string filepath = Helper.OutputPath(analysisResult, fileInfo.FType, fileInfo.Filename);
 							if(!Helper.EnsureExists(filepath)) {
 								return;
@@ -197,6 +211,8 @@ internal class CarveHandler {
 					}
 				}
 			}
+			
+			post_carve_for_chunk:
 
 			// Shift everything from analyseFidsNext to analyseFidsNow, and create a new dictionary for analyseFidsNext
 			analyseFidsNow = analyseFidsNext;
@@ -241,7 +257,7 @@ internal class CarveHandler {
 	/// <param name="chunkStart"></param>
 	/// <param name="chunkStop"></param>
 	/// <returns></returns>
-	private static ChunkCarveType GetCarveType(int chunkI, int chunkStart, int chunkStop) {
+	internal static ChunkCarveType GetCarveType(int chunkI, int chunkStart, int chunkStop) {
 		if(chunkStart == chunkI && chunkStart == chunkStop) {
 			return ChunkCarveType.StartStopCarve;
 		} else if(chunkStart == chunkI && chunkStart == chunkStop - 1) {

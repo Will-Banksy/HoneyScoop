@@ -171,54 +171,85 @@ internal class HoneyScoop {
 			Console.WriteLine("Processing search results...");
 		}
 
-		// Pair every header with a footer if a suitable one exists, if not then pair it with null
-		//     A suitable one would be probably the next footer that has the same file type as the header (multiple headers might be paired with the same footer)
-		// Return those header-footer/null pairs
-		Stack<Match> matchStack = new Stack<Match>();
-		List<(Match, Match?)> completeMatches = new List<(Match, Match?)>();
+		List<(Match, Match?)> completeMatches = new();
+		Dictionary<FileType, Stack<Match>> matchTracker = new();
 
-		// if(matches.Count == 2) { // TODO: REMOVE THIS THIS IS JUST FOR TESTING
-		// 	completeMatches.Add((matches[0], matches[1]));
-		// 	goto skipActualImplementation;
-		// }
+		for(int i = 0; i < matches.Count; i++) {
+			FileType matchType = matches[i].MatchType.Type;
+			if(Helper.HasFooter(matchType) && matches[i].MatchType.Part == FilePart.Header) {
+				if(!matchTracker.ContainsKey(matchType)) {
+					matchTracker[matchType] = new Stack<Match>();
+				}
 
-		for(var i = 0; i < matches.Count; i++) {
-			//Removes any footers that precede the first header
-			if(matches[i].MatchType.Part == FilePart.Footer && matchStack.Count == 0) {
-				continue;
-			}
-
-			//Once it finds a header it will add it to the stack to be matched with a footer
-			if(matches[i].MatchType.Part == FilePart.Header && matchStack.Count == 0) {
-				matchStack.Push(matches[i]);
-			}
-			//if a new header is found before a footer pair is found for the previous header then it will pair it with a null footer (Main concern is false positive header being found and wiping away the old one, hopefully shouldn't be the case)
-			else if(matches[i].MatchType.Part == FilePart.Header && matchStack.Count != 0) {
-				completeMatches.Add((matchStack.Pop(), null));
-
-				matchStack.Push(matches[i]);
+				matchTracker[matchType].Push(matches[i]);
+			} else if(matches[i].MatchType.Part == FilePart.Header) {
+				completeMatches.Add((matches[i], null));
 			} else {
-				if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType.Type.Equals(matchStack.Peek().MatchType.Type)) {
+				if(!matchTracker.ContainsKey(matchType)) {
+					matchTracker[matchType] = new Stack<Match>();
+				}
+				
+				Stack<Match> matchStack = matchTracker[matchType];
+				while(matchStack.Count != 0 && matchStack.Peek().MatchType.Part != FilePart.Header) {
+					matchStack.Pop();
+				}
+
+				if(matchStack.Count != 0) {
 					completeMatches.Add((matchStack.Pop(), matches[i]));
-				}
-				//When a footer is found after a header but doesn't match the header it is skipped because there shouldn't be overlapping headers and footers from different filetypes
-				else if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType != matchStack.Peek().MatchType) {
-					continue;
+				} else if(matches[i].MatchType.Part == FilePart.Header && !SupportedFileTypes.FileTypeHandlers[matchType].RequiresFooter) {
+					completeMatches.Add((matches[i], null));
 				}
 			}
 		}
 
-		while(matchStack.Count != 0) {
-			if(matchStack.Peek().MatchType.Part.Equals(FilePart.Footer)) {
-				matchStack.Pop();
-			} else if(matchStack.Peek().MatchType.Part.Equals(FilePart.Header)) {
-				completeMatches.Add((matchStack.Pop(), null));
+		foreach(Stack<Match> matchStack in matchTracker.Values) {
+			while(matchStack.Count != 0) {
+				Match match = matchStack.Pop();
+				if(match.MatchType.Part == FilePart.Header && !SupportedFileTypes.FileTypeHandlers[match.MatchType.Type].RequiresFooter) {
+					completeMatches.Add((match, null));
+				}
 			}
 		}
 
-		// throw new NotImplementedException();
-
-		// skipActualImplementation: // TODO: REMOVE THIS LABEL THIS IS JUST FOR TESTING
+		// // Pair every header with a footer if a suitable one exists, if not then pair it with null
+		// //     A suitable one would be probably the next footer that has the same file type as the header (multiple headers might be paired with the same footer)
+		// // Return those header-footer/null pairs
+		// Stack<Match> matchStack = new Stack<Match>();
+		// List<(Match, Match?)> completeMatches = new List<(Match, Match?)>();
+		//
+		// for(var i = 0; i < matches.Count; i++) {
+		// 	//Removes any footers that precede the first header
+		// 	if(matches[i].MatchType.Part == FilePart.Footer && matchStack.Count == 0) {
+		// 		continue;
+		// 	}
+		//
+		// 	//Once it finds a header it will add it to the stack to be matched with a footer
+		// 	if(matches[i].MatchType.Part == FilePart.Header && matchStack.Count == 0) {
+		// 		matchStack.Push(matches[i]);
+		// 	}
+		// 	//if a new header is found before a footer pair is found for the previous header then it will pair it with a null footer (Main concern is false positive header being found and wiping away the old one, hopefully shouldn't be the case)
+		// 	else if(matches[i].MatchType.Part == FilePart.Header && matchStack.Count != 0) {
+		// 		completeMatches.Add((matchStack.Pop(), null));
+		//
+		// 		matchStack.Push(matches[i]);
+		// 	} else {
+		// 		if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType.Type.Equals(matchStack.Peek().MatchType.Type)) {
+		// 			completeMatches.Add((matchStack.Pop(), matches[i]));
+		// 		}
+		// 		//When a footer is found after a header but doesn't match the header it is skipped because there shouldn't be overlapping headers and footers from different filetypes
+		// 		else if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType != matchStack.Peek().MatchType) {
+		// 			continue;
+		// 		}
+		// 	}
+		// }
+		//
+		// while(matchStack.Count != 0) {
+		// 	if(matchStack.Peek().MatchType.Part.Equals(FilePart.Footer)) {
+		// 		matchStack.Pop();
+		// 	} else if(matchStack.Peek().MatchType.Part.Equals(FilePart.Header)) {
+		// 		completeMatches.Add((matchStack.Pop(), null));
+		// 	}
+		// }
 
 		if(Verbose) {
 			Console.WriteLine($"Done processing search results ({completeMatches.Count} matches)");

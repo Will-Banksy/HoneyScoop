@@ -1,5 +1,6 @@
 using System.Text;
 using HoneyScoop.FileHandling;
+using HoneyScoop.Searching;
 using HoneyScoop.Searching.RegexImpl;
 
 namespace HoneyScoop.Util;
@@ -63,14 +64,13 @@ internal static class Helper {
 			{ "png", FileType.Png },
 			{ "jpg", FileType.Jpg },
 			{ "gif", FileType.Gif },
+			{ "mov", FileType.Mov },
 			{ "mp4", FileType.Mp4 },
 			{ "mp3", FileType.Mp3 },
 			{ "wav", FileType.Wav },
-			{ "xlsx", FileType.Xlsx },
-			{ "docx", FileType.Docx },
-			{ "pptx", FileType.Pptx },
 			{ "pdf", FileType.Pdf },
-			{ "zip", FileType.Zip }
+			{ "zip", FileType.Zip },
+			{ "rar", FileType.Rar }
 		};
 	}
 
@@ -277,4 +277,21 @@ internal static class Helper {
 
 		return false;
 	}
+
+	internal static (AnalysisResult, AnalysisFileInfo) Wrap(this AnalysisResult analysisResult) {
+		return (analysisResult, new AnalysisFileInfo());
+	}
+
+	internal static bool HasFooter(FileType type) {
+		if(SupportedFileTypes.FileTypeHandlers.TryGetValue(type, out IFileType? impl)) {
+			return impl.HasFooter;
+		}
+
+		return false;
+	}
+
+	// TODO:
+	// internal static bool Intersects(Match start, Match stop) {
+	// 	if(start.StartOfMatch < )
+	// }
 }

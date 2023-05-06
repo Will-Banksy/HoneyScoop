@@ -25,6 +25,11 @@ internal interface IFileType {
 	/// Returns the (most common) file extension for this file type
 	/// </summary>
 	internal string FileExtension { get; }
+	
+	/// <summary>
+	/// Returns whether this file should be carved if it was not matched with a footer
+	/// </summary>
+	internal bool RequiresFooter { get; }
 
 	/// <summary>
 	/// Implementations of this method should interpret the data as that of a specific file type, and check that the data does conform to the expectations of that file type,
@@ -32,7 +37,7 @@ internal interface IFileType {
 	/// </summary>
 	/// <param name="data">The data to analyse, the first byte being the first byte of the header signature and the last byte the last byte of the footer signature</param>
 	/// <returns>An <see cref="AnalysisResult"/> enum variant that describes broadly how the data matches the expected format</returns>
-	internal AnalysisResult Analyse(ReadOnlySpan<byte> data); // TODO: Consider: What if the file needs data that is not inside the span? We could support filetypes without a footer... As long as they declare an explicit length...
+	internal (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data);
 }
 
 /// <summary>
@@ -80,12 +85,35 @@ internal enum AnalysisResult {
 }
 
 /// <summary>
-/// A struct that contains file metadata obtained during analysis that is useful to the carving process
+/// A struct that contains file metadata obtained during analysis that is useful to the carving process.
+/// As of writing, this may not be fully implemented 
 /// </summary>
 internal struct AnalysisFileInfo { // TODO: Any other relevant data? Maybe actual file offset? And then refine and use this
+	// TODO: ooh idea what if for ZIP we actually just match the EOCD and use this to match the entire file? Would probably require another field in IFileType - MaxSize or SetSize or summin
 	/// <summary>
-	/// The actual size of the file, according to the internal data - Only set this if you are *sure*
-	/// that it will be correct, but the carving process might ignore it if the analysis result is not <see cref="AnalysisResult.Correct"/> anyway
+	/// The actual size of the file, according to the internal metadata - Only set this if you are *sure*
+	/// that it will be correct, but the carving process might ignore it if the analysis result is not <see cref="AnalysisResult.Correct"/> anyway.
+	/// Set to -1 for this to be ignored
 	/// </summary>
 	internal long ActualFileSize;
+
+	/// <summary>
+	/// The offset that the file actually occurs at, according to the internal metadata - Only set this if you are *sure*
+	/// that it will be correct, but the carving process might ignore it if the analysis result is not <see cref="AnalysisResult.Correct"/> anyway.
+	/// Set to -1 for this to be ignored
+	/// </summary>
+	internal long ActualFileOffset;
+
+	/// <summary>
+	/// The actual type of the file, according to the internal metadata - Only set this if you are *sure*
+	/// that it will be correct, but the carving process might ignore it if the analysis result is not <see cref="AnalysisResult.Correct"/> anyway.
+	/// Set to <see cref="FileType.None"/> for this to be ignored
+	/// </summary>
+	internal FileType ActualFileType;
+
+	internal AnalysisFileInfo(long actualFileSize = -1, long actualFileOffset = -1, FileType actualFileType = FileType.None) {
+		ActualFileSize = actualFileSize;
+		ActualFileOffset = actualFileOffset;
+		ActualFileType = actualFileType;
+	}
 }

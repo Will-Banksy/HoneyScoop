@@ -5,8 +5,9 @@ internal class FileTypePdf : IFileType {
 	public string Footer => @"(\x0A\x25\x25\x45\x4f\x46)|(\x0A\x25\x25\x45\x4F\x46\x0A)|(\x0D\x0A\x25\x25\x45\x4F\x46\x0D\x0A)|(\x0A\x25\x25\x45\x4F\x46\x0A)";
 	public bool HasFooter => true;
 	public string FileExtension => "pdf";
+	public bool RequiresFooter => false;
 
-	public AnalysisResult Analyse(ReadOnlySpan<byte> data) {
+	public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data) {
 		throw new NotImplementedException();
 	}
 }

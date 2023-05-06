@@ -5,8 +5,9 @@ internal class FileTypeBmp : IFileType {
 	public string Footer => @""; // No Footer Found
 	public bool HasFooter => false;
 	public string FileExtension => "bmp";
+	public bool RequiresFooter => false;
 
-	public AnalysisResult Analyse(ReadOnlySpan<byte> data) {
+	public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data) {
 		throw new NotImplementedException();
 	}
 }

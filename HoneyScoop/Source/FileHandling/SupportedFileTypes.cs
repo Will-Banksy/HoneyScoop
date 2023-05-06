@@ -15,9 +15,6 @@ internal enum FileType : short {
 	Mp4,
 	Mp3,
 	Wav,
-	Xlsx,
-	Docx,
-	Pptx,
 	Pdf,
 	Zip,
 	Rar
@@ -82,7 +79,7 @@ internal static class SupportedFileTypes {
 			// { FileType.Xlsx, new FileTypeXlsx() },
 			// { FileType.Pptx, new FileTypePptx() },
 			{ FileType.Zip, new FileTypeZip() },
-			// { FileType.Gif, new FileTypeGif() },
+			{ FileType.Gif, new FileTypeGif() },
 			{ FileType.Rar, new FileTypeRar() },
 		});
 	}

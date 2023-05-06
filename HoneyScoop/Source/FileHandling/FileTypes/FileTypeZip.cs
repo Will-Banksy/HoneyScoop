@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using HoneyScoop.Util;
 
 namespace HoneyScoop.FileHandling.FileTypes;
 
@@ -14,15 +15,16 @@ internal class FileTypeZip : IFileType {
 	public string Footer => ZipFooterRegex;
 	public bool HasFooter => true;
 	public string FileExtension => "zip";
+	public bool RequiresFooter => true;
 
-	public AnalysisResult Analyse(ReadOnlySpan<byte> data) {
+	public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data) {
 		try {
 			// Find the EOCD signature(finds last occurance of Zipfooter)
 			int eocdPosition = data.LastIndexOf(ZipFooter);
 
 			//if the sequence <0 the Eocd doesn't exist
 			if(eocdPosition < 0) {
-				return AnalysisResult.Unrecognised;
+				return AnalysisResult.Unrecognised.Wrap();
 			}
 
 			// Get the central directory position from the EOCD record(gets the 4 bytes after the first 16 and stores it)
@@ -36,7 +38,7 @@ internal class FileTypeZip : IFileType {
 
 				// Central directory file header signature: 0x02014b50(checks if the signature matches)
 				if(centralDirectorySignature != 0x02014b50) {
-					return AnalysisResult.Unrecognised;
+					return AnalysisResult.Unrecognised.Wrap();
 				}	
 
 				// Read additional fields if necessary
@@ -81,7 +83,7 @@ internal class FileTypeZip : IFileType {
 
 				if (storedCRC != calculatedCRC)
 				{
-   		 			return AnalysisResult.Corrupted;
+   		 			return AnalysisResult.Corrupted.Wrap();
 				}
 
 
@@ -89,9 +91,9 @@ internal class FileTypeZip : IFileType {
 				centralDirectoryPosition += (46 + centralDirectoryFileNameLength + centralDirectoryExtraFieldLength + centralDirectoryCommentLength);
 			}
 
-			return AnalysisResult.Correct;
+			return AnalysisResult.Correct.Wrap();
 		} catch(Exception) {
-			return AnalysisResult.Unrecognised;
+			return AnalysisResult.Unrecognised.Wrap();
 		}
 	}
 	

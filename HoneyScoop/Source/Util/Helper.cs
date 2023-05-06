@@ -269,9 +269,9 @@ internal static class Helper {
 			}
 		
 			Console.ForegroundColor = ConsoleColor.Red;
-			Console.WriteLine("Error creating/accessing output directory");
+			Console.Write("Error creating/accessing output directory");
 			if(except != null) {
-				Console.Write($": {except}");
+				Console.WriteLine($": {except}");
 			}
 		}
 

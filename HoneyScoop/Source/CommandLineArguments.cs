@@ -43,38 +43,45 @@ internal class CommandLineArguments {
 		Parser.Default.ParseArguments<CommandLineArguments>(arguments)
 			.WithParsed<CommandLineArguments>(o => {
 					if(!string.IsNullOrEmpty(o.OutputDirectory)) {
-						OutputDirectory = o.OutputDirectory;
+						OutputDirectory = Path.GetFullPath(o.OutputDirectory.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)));
 					}
-
-					Console.WriteLine($"[+] The output directory is {o.OutputDirectory}.");
 
 					if(o.Verbose && !o.QuietMode) {
 						Verbose = true;
+						Console.WriteLine($"[+] The output directory is {OutputDirectory}.");
 						Console.WriteLine("[+] Verbose output enabled.");
 					}
 
 					if(o.QuietMode && !o.Verbose) {
 						QuietMode = true;
-						Console.WriteLine("[+] Quiet mode enabled.");
+						// Console.WriteLine("[+] Quiet mode enabled.");
 					}
 
 					if(o.NoOrganise) {
 						NoOrganise = true;
-						Console.WriteLine("[+] The results will not be organised into directories by filetype.");
+						if(Verbose) {
+							Console.WriteLine("[+] The results will not be organised into directories by filetype.");
+						}
 					}
 
 					if(o.Timestamp) {
 						Timestamp = true;
-						Console.WriteLine("[+] The timestamps will be displayed.");
+						if(Verbose) {
+							Console.WriteLine("[+] The timestamps will be displayed.");
+						}
 					}
 
 					if(!File.Exists(o.InputFile)) {
-						Console.WriteLine("[-] The file supplied in does not exist. Please supply the path to the file in.");
+						Console.ForegroundColor = ConsoleColor.Red;
+						Console.WriteLine("[-] The disk image file supplied does not exist. Please supply the path to the disk image file.");
+						Console.ResetColor();
 						System.Environment.Exit(0);
 					}
 
 					InputFile = o.InputFile;
-					Console.WriteLine($"[+] The reconstruction will take place on the following file: {o.InputFile}");
+					if(Verbose) {
+						Console.WriteLine($"[+] The reconstruction will take place on the following file: {o.InputFile}");
+					}
 
 					// String formatting magic because the commandLineParser does not like Lists
 
@@ -82,18 +89,16 @@ internal class CommandLineArguments {
 
 					foreach(string fileType in fileTypes) {
 						if(o.SupportedFormats.Contains(fileType)) {
-							Console.WriteLine($"[+] Reconstruction will be conducted on {fileType} files...");
+							if(Verbose) {
+								Console.WriteLine($"[+] Reconstruction will be conducted on {fileType} files...");
+							}
+
 							definedFileTypes.Add(fileType);
-						} else {
+						} else if(Verbose) {
+							Console.ForegroundColor = ConsoleColor.Yellow;
 							Console.WriteLine($"[-] Filetype: {fileType} is not supported.");
+							Console.ResetColor();
 						}
-					}
-
-					// If there is no supported types supplied in.
-
-					if(!definedFileTypes.Any()) {
-						Console.WriteLine($"[-] Please provide filetypes accepted by the tool. ({string.Join(", ", o.SupportedFormats)}) ");
-						System.Environment.Exit(0);
 					}
 				}
 			);

@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace HoneyScoop.Source.FileHandling.FileTypes;
+namespace HoneyScoop.FileHandling.FileTypes;
 
 internal class FileTypeGif : IFileType {
 	public string Header => "GIF";

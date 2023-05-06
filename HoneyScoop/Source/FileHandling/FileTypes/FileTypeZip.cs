@@ -7,8 +7,11 @@ internal class FileTypeZip : IFileType {
 	private static readonly byte[] ZipHeader = { 0x50, 0x4B, 0x03, 0x04 }; // Zip signature
 	private static readonly byte[] ZipFooter = { 0x50, 0x4B, 0x05, 0x06 }; // Zip footer (EOCD)
 
-	public string Header => @"\x50\x4B\x03\x04";
-	public string Footer => @"\x50\x4B\x05\x06";
+	internal static readonly string ZipHeaderRegex = @"\x50\x4B\x03\x04";
+	internal static readonly string ZipFooterRegex = @"\x50\x4B\x05\x06"; // ..................
+
+	public string Header => ZipHeaderRegex;
+	public string Footer => ZipFooterRegex;
 	public bool HasFooter => true;
 	public string FileExtension => "zip";
 

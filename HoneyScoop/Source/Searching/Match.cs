@@ -21,6 +21,10 @@ internal readonly struct Match {
 		return obj is Match other && Equals(other);
 	}
 
+	public override string ToString() {
+		return $"{nameof(StartOfMatch)}: {StartOfMatch}, {nameof(EndOfMatch)}: {EndOfMatch}, {nameof(MatchType)}: {MatchType}";
+	}
+
 	public override int GetHashCode() {
 		return HashCode.Combine(StartOfMatch, EndOfMatch, MatchType);
 	}

@@ -18,6 +18,7 @@ internal class HoneyScoop {
 	internal bool Quiet;
 	internal bool NoOrganise;
 	internal bool Timestamp;
+	internal bool UnrecognisedOutput;
 	internal string OutputDirectory;
 	internal string InputFile;
 
@@ -27,6 +28,7 @@ internal class HoneyScoop {
 		Quiet = false;
 		NoOrganise = false;
 		Timestamp = false;
+		UnrecognisedOutput = false;
 		OutputDirectory = "";
 		InputFile = "";
 	}
@@ -61,6 +63,7 @@ internal class HoneyScoop {
 		Quiet = parsedArgs.QuietMode;
 		NoOrganise = parsedArgs.NoOrganise;
 		Timestamp = parsedArgs.Timestamp;
+		UnrecognisedOutput = parsedArgs.UnrecognisedOutput;
 		OutputDirectory = parsedArgs.OutputDirectory;
 		InputFile = parsedArgs.InputFile;
 	}

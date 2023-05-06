@@ -36,6 +36,9 @@ internal class CommandLineArguments {
 
 	[Option('c', "types", Required = false, HelpText = "The types of files to process")]
 	public string FileTypes { get; set; }
+	
+	[Option('u', "unrecognised_output", Required = false, HelpText = "Set if the output of unrecognised carvings should be made.")]
+	public bool UnrecognisedOutput { get; set; }
 
 
 	internal List<string> ParseArgs(string[] arguments) {
@@ -50,6 +53,12 @@ internal class CommandLineArguments {
 						Verbose = true;
 						Console.WriteLine($"[+] The output directory is {OutputDirectory}.");
 						Console.WriteLine("[+] Verbose output enabled.");
+					}
+
+					if (o.UnrecognisedOutput)
+					{
+						UnrecognisedOutput = true; // if true, unrecognised files will also be outputted.
+						Console.WriteLine("[+] The unrecognised files will be outputted.");
 					}
 
 					if(o.QuietMode && !o.Verbose) {

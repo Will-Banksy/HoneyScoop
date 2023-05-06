@@ -9,6 +9,7 @@ internal class FileTypeJpg : IFileType {
     public bool HasFooter => true;
     public string FileExtension => "jpg";
 	public bool RequiresFooter => false;
+	public PairingStrategy PairingMethod => PairingStrategy.PairNext;
 
     public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data)
     {

@@ -9,6 +9,7 @@ internal class FileTypeMov : IFileType {
 	public bool HasFooter => false;
 	public string FileExtension => "mov";
 	public bool RequiresFooter => false;
+	public PairingStrategy PairingMethod => PairingStrategy.PairNext;
 
 	private const int BrandSize = 4;
 		

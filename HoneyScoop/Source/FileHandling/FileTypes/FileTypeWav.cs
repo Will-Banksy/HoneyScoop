@@ -6,11 +6,12 @@ namespace HoneyScoop.FileHandling.FileTypes
 {
     internal class FileTypeWav : IFileType
     {
-        public string Header => "RIFF.{4}WAVEfmt ";
+        public string Header => "RIFF....WAVEfmt ";
         public string Footer => null;
         public bool HasFooter => false;
         public string FileExtension => "wav";
         public bool RequiresFooter => false;
+		public PairingStrategy PairingMethod => PairingStrategy.PairNext;
 
         public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data)
         {

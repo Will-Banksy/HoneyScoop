@@ -290,8 +290,11 @@ internal static class Helper {
 		return false;
 	}
 
-	// TODO:
-	// internal static bool Intersects(Match start, Match stop) {
-	// 	if(start.StartOfMatch < )
-	// }
+	internal static PairingStrategy Strategy(FileType type) {
+		if(SupportedFileTypes.FileTypeHandlers.TryGetValue(type, out IFileType? impl)) {
+			return impl.PairingMethod;
+		}
+
+		return PairingStrategy.PairNext;
+	}
 }

@@ -4,10 +4,11 @@ namespace HoneyScoop.FileHandling.FileTypes;
 
 internal class FileTypeGif : IFileType {
 	public string Header => "GIF8(7|9)a";
-	public string Footer => "";
-	public bool HasFooter => false;
+	public string Footer => @"(\x00\x00\x3b)|(\xff\xd9)";
+	public bool HasFooter => true;
 	public string FileExtension => "gif";
 	public bool RequiresFooter => false;
+	public PairingStrategy PairingMethod => PairingStrategy.PairNext;
 
 	private const int HeaderSize = 13; // The GIF header is 13 bytes long, including the version number and logical screen width/height
 

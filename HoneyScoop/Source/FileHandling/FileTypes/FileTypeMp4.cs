@@ -9,6 +9,7 @@ internal class FileTypeMp4 : IFileType {
 	public bool HasFooter => false;
 	public string FileExtension => "mp4";
 	public bool RequiresFooter => false;
+	public PairingStrategy PairingMethod => PairingStrategy.PairNext;
 
 	private const int HeaderSize = 12; // Size of the header
 	private const int BrandSize = 4; // Size of the brand field in the header

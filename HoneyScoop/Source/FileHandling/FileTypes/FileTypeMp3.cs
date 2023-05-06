@@ -8,6 +8,7 @@ internal class FileTypeMp3 : IFileType {
 	public bool HasFooter => false;
 	public string FileExtension => "mp3";
 	public bool RequiresFooter => false;
+	public PairingStrategy PairingMethod => PairingStrategy.PairNext;
 
 	private const int TagIdSize = 3; // Part of header
 	private const int MajorVersionNumberSize = 1; // Part of header

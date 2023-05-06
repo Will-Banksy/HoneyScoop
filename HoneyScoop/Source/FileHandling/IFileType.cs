@@ -30,6 +30,11 @@ internal interface IFileType {
 	/// Returns whether this file should be carved if it was not matched with a footer
 	/// </summary>
 	internal bool RequiresFooter { get; }
+	
+	/// <summary>
+	/// The <see cref="PairingStrategy"/> to use for this file type. As a default, use <see cref="PairingStrategy.PairNext"/>
+	/// </summary>
+	internal PairingStrategy PairingMethod { get; }
 
 	/// <summary>
 	/// Implementations of this method should interpret the data as that of a specific file type, and check that the data does conform to the expectations of that file type,

@@ -6,6 +6,7 @@ internal class FileTypePdf : IFileType {
 	public bool HasFooter => true;
 	public string FileExtension => "pdf";
 	public bool RequiresFooter => false;
+	public PairingStrategy PairingMethod => PairingStrategy.PairLast;
 
 	public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data) {
 		throw new NotImplementedException();

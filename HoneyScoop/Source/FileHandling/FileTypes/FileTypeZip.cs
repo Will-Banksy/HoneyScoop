@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using HoneyScoop.Util;
 
 namespace HoneyScoop.FileHandling.FileTypes;
@@ -8,14 +6,12 @@ internal class FileTypeZip : IFileType {
 	private static readonly byte[] ZipHeader = { 0x50, 0x4B, 0x03, 0x04 }; // Zip signature
 	private static readonly byte[] ZipFooter = { 0x50, 0x4B, 0x05, 0x06 }; // Zip footer (EOCD)
 
-	internal static readonly string ZipHeaderRegex = @"\x50\x4B\x03\x04";
-	internal static readonly string ZipFooterRegex = @"\x50\x4B\x05\x06.................."; // The 18 '.'s are for making sure that the whole EOCD record is matched
-
-	public string Header => ZipHeaderRegex;
-	public string Footer => ZipFooterRegex;
+	public string Header => @"\x50\x4B\x03\x04";
+	public string Footer => @"\x50\x4B\x05\x06..................."; // The 18 '.'s are for making sure that the whole EOCD record is matched
 	public bool HasFooter => true;
 	public string FileExtension => "zip";
 	public bool RequiresFooter => true;
+	public PairingStrategy PairingMethod => PairingStrategy.PairLast;
 
 	public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data) {
 		try {

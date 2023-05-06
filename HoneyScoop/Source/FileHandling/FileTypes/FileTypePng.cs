@@ -8,6 +8,7 @@ internal class FileTypePng : IFileType {
 	public bool HasFooter => true;
 	public string FileExtension => "png";
 	public bool RequiresFooter => false;
+	public PairingStrategy PairingMethod => PairingStrategy.PairNext;
 
 	private const int HeaderSize = 8;
 	private const int FooterSize = 8;
@@ -68,6 +69,9 @@ internal class FileTypePng : IFileType {
 				case TypeIhdr: {
 					// uint width = Helper.FromBigEndian(_data);
 					// uint height = Helper.FromBigEndian(_data[4..]);
+					if(_data.Length < TypeIhdrLength) {
+						return AnalysisResult.Unrecognised;
+					}
 					byte bitDepth = _data[8];
 					byte colourType = _data[9];
 					byte compressionMethod = _data[10];

@@ -106,7 +106,7 @@ internal class HoneyScoop {
 		fileHandler.Reset();
 
 		// Process the search results to get the match pairs to feed to the next phase
-		List<(Match, Match?)> matchPairs = ProcessSearchResults(headerFooterMatches);
+		List<(Match, Match?)> matchPairs = ProcessSearchResults(headerFooterMatches, chunkSize);
 
 		// Perform the second phase/pass - Analyse and write out the found files
 		CarvePhase(fileHandler, chunkSize, matchPairs);
@@ -166,7 +166,7 @@ internal class HoneyScoop {
 		return foundMatches;
 	}
 
-	private List<(Match, Match?)> ProcessSearchResults(List<Match> matches) { // TODO: Complete/correct this
+	private List<(Match, Match?)> ProcessSearchResults(List<Match> matches, int chunkSize) { // TODO: Use PairingStrategy
 		if(Verbose) {
 			Console.WriteLine("Processing search results...");
 		}
@@ -188,16 +188,35 @@ internal class HoneyScoop {
 				if(!matchTracker.ContainsKey(matchType)) {
 					matchTracker[matchType] = new Stack<Match>();
 				}
-				
-				Stack<Match> matchStack = matchTracker[matchType];
-				while(matchStack.Count != 0 && matchStack.Peek().MatchType.Part != FilePart.Header) {
-					matchStack.Pop();
-				}
 
-				if(matchStack.Count != 0) {
-					completeMatches.Add((matchStack.Pop(), matches[i]));
-				} else if(matches[i].MatchType.Part == FilePart.Header && !SupportedFileTypes.FileTypeHandlers[matchType].RequiresFooter) {
-					completeMatches.Add((matches[i], null));
+				if(Helper.Strategy(matchType) == PairingStrategy.PairNext) {
+					Stack<Match> matchStack = matchTracker[matchType];
+					while(matchStack.Count != 0 && matchStack.Peek().MatchType.Part != FilePart.Header) {
+						matchStack.Pop();
+					}
+
+					if(matchStack.Count != 0) {
+						completeMatches.Add((matchStack.Pop(), matches[i]));
+					} else if(matches[i].MatchType.Part == FilePart.Header && !SupportedFileTypes.FileTypeHandlers[matchType].RequiresFooter) {
+						completeMatches.Add((matches[i], null));
+					}
+				} else {
+					Stack<Match> matchStack = matchTracker[matchType];
+					Match? toPairWith = null;
+					while(matchStack.Count != 0) {
+						if(matchStack.Peek().MatchType.Part == FilePart.Header) {
+							toPairWith = matchStack.Pop();
+							if((toPairWith.Value.StartOfMatch + chunkSize) < matches[i].EndOfMatch) {
+								break;
+							}
+						} else {
+							matchStack.Pop();
+						}
+					}
+
+					if(toPairWith.HasValue) {
+						completeMatches.Add((toPairWith.Value, matches[i]));
+					}
 				}
 			}
 		}

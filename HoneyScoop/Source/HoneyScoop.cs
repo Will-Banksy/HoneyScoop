@@ -18,6 +18,7 @@ internal class HoneyScoop {
 	internal bool Quiet;
 	internal bool NoOrganise;
 	internal bool Timestamp;
+	internal bool UnrecognisedOutput;
 	internal string OutputDirectory;
 	internal string InputFile;
 
@@ -27,6 +28,7 @@ internal class HoneyScoop {
 		Quiet = false;
 		NoOrganise = false;
 		Timestamp = false;
+		UnrecognisedOutput = false;
 		OutputDirectory = "";
 		InputFile = "";
 	}
@@ -61,6 +63,7 @@ internal class HoneyScoop {
 		Quiet = parsedArgs.QuietMode;
 		NoOrganise = parsedArgs.NoOrganise;
 		Timestamp = parsedArgs.Timestamp;
+		UnrecognisedOutput = parsedArgs.UnrecognisedOutput;
 		OutputDirectory = parsedArgs.OutputDirectory;
 		InputFile = parsedArgs.InputFile;
 	}
@@ -92,7 +95,7 @@ internal class HoneyScoop {
 		//               individuals I'm sure they are
 
 		const int chunkSize = 1024 * 1024 * 10; // 10 MB
-		
+
 		// Firstly, create an instance of FileHandler
 		var fileHandler = new FileHandler(InputFile);
 
@@ -104,10 +107,10 @@ internal class HoneyScoop {
 
 		// Process the search results to get the match pairs to feed to the next phase
 		List<(Match, Match?)> matchPairs = ProcessSearchResults(headerFooterMatches);
-		
+
 		// Perform the second phase/pass - Analyse and write out the found files
 		CarvePhase(fileHandler, chunkSize, matchPairs);
-		
+
 		// Close the file handler; Free the resource
 		fileHandler.Close();
 	}
@@ -151,7 +154,9 @@ internal class HoneyScoop {
 				Console.Write($"\rSearching... {progress}% complete ({elapsed}s elapsed)");
 			}
 		} while(!fileHandler.Eof);
-		
+
+		foundMatches.Sort((m1, m2) => (int)(m1.StartOfMatch - m2.StartOfMatch));
+
 		Console.WriteLine();
 
 		if(Verbose) {
@@ -165,9 +170,7 @@ internal class HoneyScoop {
 		if(Verbose) {
 			Console.WriteLine("Processing search results...");
 		}
-		
-		
-		
+
 		// Pair every header with a footer if a suitable one exists, if not then pair it with null
 		//     A suitable one would be probably the next footer that has the same file type as the header (multiple headers might be paired with the same footer)
 		// Return those header-footer/null pairs
@@ -178,7 +181,7 @@ internal class HoneyScoop {
 		// 	completeMatches.Add((matches[0], matches[1]));
 		// 	goto skipActualImplementation;
 		// }
-		
+
 		for(var i = 0; i < matches.Count; i++) {
 			//Removes any footers that precede the first header
 			if(matches[i].MatchType.Part == FilePart.Footer && matchStack.Count == 0) {
@@ -205,24 +208,18 @@ internal class HoneyScoop {
 			}
 		}
 
-		while (matchStack.Count != 0)
-		{
-
-			if (matchStack.Peek().MatchType.Part.Equals(FilePart.Footer))
-			{
+		while(matchStack.Count != 0) {
+			if(matchStack.Peek().MatchType.Part.Equals(FilePart.Footer)) {
 				matchStack.Pop();
-			}
-			else if (matchStack.Peek().MatchType.Part.Equals(FilePart.Header))
-			{
+			} else if(matchStack.Peek().MatchType.Part.Equals(FilePart.Header)) {
 				completeMatches.Add((matchStack.Pop(), null));
 			}
-			
 		}
-		
+
 		// throw new NotImplementedException();
-		
+
 		// skipActualImplementation: // TODO: REMOVE THIS LABEL THIS IS JUST FOR TESTING
-		
+
 		if(Verbose) {
 			Console.WriteLine($"Done processing search results ({completeMatches.Count} matches)");
 		}
@@ -250,7 +247,7 @@ internal class HoneyScoop {
 			Console.WriteLine("Done building carving information");
 			Console.WriteLine("Performing carving...");
 		}
-		
+
 		carveHandler.PerformCarving(fileHandler);
 
 		if(Verbose) {

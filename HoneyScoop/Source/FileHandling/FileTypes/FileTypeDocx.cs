@@ -10,8 +10,8 @@ namespace HoneyScoop.FileHandling.FileTypes
         private static readonly byte[] DocxHeader = { 0x50, 0x4B, 0x03, 0x04 }; // DOCX signature (same as ZIP)
         private static readonly byte[] DocxFooter = { 0x50, 0x4B, 0x05, 0x06 }; // DOCX footer (EOCD) (same as ZIP)
 
-        public string Header => @"\x50\x4B\x03\x04";
-        public string Footer => @"\x50\x4B\x05\x06";
+		public string Header => FileTypeZip.ZipHeaderRegex;
+		public string Footer => FileTypeZip.ZipFooterRegex;
         public bool HasFooter => true;
 		public string FileExtension => "docx";
 

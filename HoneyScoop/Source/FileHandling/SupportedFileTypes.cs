@@ -20,6 +20,7 @@ internal enum FileType : short {
 	Pptx,
 	Pdf,
 	Zip,
+	Rar
 }
 
 /// <summary>
@@ -75,7 +76,14 @@ internal static class SupportedFileTypes {
 			{ FileType.Png, new FileTypePng() },
 			{ FileType.Mp4, new FileTypeMp4() },
 			{ FileType.Mp3, new FileTypeMp3() },
-			{ FileType.Mov, new FileTypeMov() }
+			{ FileType.Mov, new FileTypeMov() },
+			{ FileType.Jpg, new FileTypeJpg() },
+			// { FileType.Docx, new FileTypeDocx() },
+			// { FileType.Xlsx, new FileTypeXlsx() },
+			// { FileType.Pptx, new FileTypePptx() },
+			{ FileType.Zip, new FileTypeZip() },
+			// { FileType.Gif, new FileTypeGif() },
+			{ FileType.Rar, new FileTypeRar() },
 		});
 	}
 }

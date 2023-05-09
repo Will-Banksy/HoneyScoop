@@ -7,16 +7,16 @@ namespace HoneyScoop.Searching.RegexImpl;
 /// Also known as NFA (Nondeterministic Finite Automata) and referred to as such in the codebase
 /// </summary>
 /// <typeparam name="T">The type of data that the NFA is matching</typeparam>
-internal readonly struct FiniteStateMachine<T> where T: struct {
+internal readonly struct FiniteStateMachine<T> where T : struct {
 	/// <summary>
 	/// Reference type so that instances of State can be referenced all over
 	/// <br /><br />
 	/// A State object represents a state in a Finite State Machine, that has connections to other states represented by a tuple (State, T?)
 	/// where the State is the connected state and the T? is the connection character or a null represents an ε-connection (empty/transparent connection)
 	/// </summary>
-	internal class State { // TODO: This is kinda expensive to construct - Maybe add a constructor that doesn't then also initialise `connections`
+	internal class State {
 		internal readonly int Uid;
-		internal readonly List<StateConnection> Connections; // TODO: Array or List?
+		internal readonly List<StateConnection> Connections;
 
 		/// <summary>
 		/// Specify a capacity to preallocate when creating the <c>List&lt;StateConnection&gt;</c> of connections (for optimisation purposes)
@@ -38,7 +38,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct {
 			this.Connections.Add(new StateConnection(other, default, true, default));
 			return this;
 		}
-		
+
 		internal State AddSymbolConnection(State other, T symbol, bool matchesAny) {
 			this.Connections.Add(new StateConnection(other, symbol, false, matchesAny));
 			return this;
@@ -116,16 +116,10 @@ internal readonly struct FiniteStateMachine<T> where T: struct {
 	/// <param name="other"></param>
 	/// <returns></returns>
 	internal FiniteStateMachine<T> Alternate(ref int uuid, FiniteStateMachine<T> other) {
-		// Slight optimisation: Use this.Start instead of creating new start state. Should be functionally identical
-		// TODO: Could optimise out the endState too actually and just have the end state be the end state of `this` or `other`
-		var endState = new State(ref uuid);
-
 		this.Start.AddEpsilonConnection(other.Start);
-		
-		this.End.AddEpsilonConnection(endState);
-		other.End.AddEpsilonConnection(endState);
-		
-		return new FiniteStateMachine<T>(this.Start, endState);
+		other.End.AddEpsilonConnection(this.End);
+
+		return new FiniteStateMachine<T>(this.Start, this.End);
 	}
 
 	/// <summary>
@@ -134,7 +128,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct {
 	/// <returns></returns>
 	internal FiniteStateMachine<T> AlternateEmpty() {
 		this.Start.AddEpsilonConnection(this.End);
-		
+
 		return this;
 	}
 
@@ -145,7 +139,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct {
 	internal FiniteStateMachine<T> AlternateLoop() {
 		this.Start.AddEpsilonConnection(this.End);
 		this.End.AddEpsilonConnection(this.Start);
-		
+
 		return this;
 	}
 
@@ -155,20 +149,19 @@ internal readonly struct FiniteStateMachine<T> where T: struct {
 	/// <returns></returns>
 	internal FiniteStateMachine<T> AlternateLoopOnce() {
 		this.End.AddEpsilonConnection(this.Start);
-		
+
 		return this;
 	}
 
-#if DEBUG
 	/// <summary>
 	/// Prints out the structure of the NFA, along with it's start and end states. The printed-out structure is valid mermaid diagram markup for easy visualisation
 	/// </summary>
 	private void Debug() {
 		Console.WriteLine(" --- NFA DEBUG START --- ");
-		
+
 		Console.WriteLine($"Start: {Start}");
 		Console.WriteLine($"End: {End}");
-		
+
 		Stack<State> toVisit = new();
 		HashSet<State> visited = new();
 
@@ -185,7 +178,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct {
 				}
 			}
 		}
-		
+
 		Console.WriteLine(" --- NFA DEBUG END --- ");
 	}
 
@@ -199,7 +192,7 @@ internal readonly struct FiniteStateMachine<T> where T: struct {
 		} else {
 			connStr = conn.Symbol.ToString() ?? "ERROR";
 		}
+
 		Console.WriteLine($"{start} -->|\"{connStr}\"| {conn.Next}");
 	}
-#endif
 }

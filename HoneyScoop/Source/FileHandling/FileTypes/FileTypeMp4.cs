@@ -1,7 +1,7 @@
 using System.Text;
 using HoneyScoop.Util;
 
-namespace HoneyScoop.FileHandling.FileTypes; 
+namespace HoneyScoop.FileHandling.FileTypes;
 
 internal class FileTypeMp4 : IFileType {
 	public string Header => @"\x00\x00\x00\x20\x66\x74\x79\x70"; // "ftyp" in hexadecimal format
@@ -37,10 +37,8 @@ internal class FileTypeMp4 : IFileType {
 
 		// Check if brand is supported
 		ReadOnlySpan<byte> brandData = data.Slice(8, BrandSize);
-		for (int i = 0; i < SupportedBrands.Length; i++)
-		{
-			if (brandData.SequenceEqual(SupportedBrands[i]))
-			{
+		for(int i = 0; i < SupportedBrands.Length; i++) {
+			if(brandData.SequenceEqual(SupportedBrands[i])) {
 				// Check if data is not empty
 				if(data.Length <= HeaderSize) {
 					return AnalysisResult.Corrupted.Wrap();

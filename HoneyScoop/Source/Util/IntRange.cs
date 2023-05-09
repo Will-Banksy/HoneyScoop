@@ -42,6 +42,7 @@ internal readonly struct IntRange {
 				return;
 			}
 		}
+
 		ranges.Add(newRange);
 	}
 

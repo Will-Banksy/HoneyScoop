@@ -1,7 +1,6 @@
 using HoneyScoop.FileHandling;
 using HoneyScoop.Searching.RegexImpl;
 using HoneyScoop.Util;
-
 using State = HoneyScoop.Searching.RegexImpl.FiniteStateMachine<byte>.State;
 using StateConnection = HoneyScoop.Searching.RegexImpl.FiniteStateMachine<byte>.StateConnection;
 
@@ -14,10 +13,11 @@ internal class RegexMatcher {
 	// Optimisation info links
 	// https://learn.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-source-generators
 	// https://stackoverflow.com/questions/42742810/speed-up-millions-of-regex-replacements-in-python-3
-	
+
 	private readonly FiniteStateMachine<byte> _nfa;
 	private readonly List<(State, int)> _states;
 	private readonly FileTypePart _type;
+
 	/// <summary>
 	/// Preprocessed data to speed up matching.
 	/// For each state, the flattened connection list (following transparent/ε-connections) and whether the state is the end is stored
@@ -34,9 +34,9 @@ internal class RegexMatcher {
 		_states = new List<(State, int)>();
 		_type = type;
 		_preprocData = new Dictionary<State, (List<StateConnection>, bool)>();
-		
+
 		Preprocess();
-		
+
 // Disable this section for now, useful for debugging but otherwise just clutters stdout
 #if DEBUG && false
 		_nfa.Debug();

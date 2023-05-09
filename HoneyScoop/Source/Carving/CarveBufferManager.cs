@@ -1,14 +1,14 @@
 using HoneyScoop.FileHandling;
 using HoneyScoop.Util;
 
-namespace HoneyScoop.Carving; 
+namespace HoneyScoop.Carving;
 
 internal class CarveBufferManager {
 	private readonly byte[] _buffer;
 	private readonly int _chunkSize;
 	private readonly FileHandler _fileHandler;
 	private int _chunkIndex = 0;
-	
+
 	/// <summary>
 	/// Keeps track of the portions of the buffer that contain fresh data
 	/// </summary>
@@ -42,14 +42,16 @@ internal class CarveBufferManager {
 	internal ReadOnlySpan<byte> Fetch(int start, int stop) {
 		int chunkStart = _chunkIndex * _chunkSize;
 		int chunkEnd = (_chunkIndex + 1) * _chunkSize - 1;
-		
+
 		// Ensure arguments are valid - I.e. within the current chunk and start <= stop
 		if(start < chunkStart) {
 			start = chunkStart;
 		}
+
 		if(stop > chunkEnd) {
 			stop = chunkEnd;
 		}
+
 		if(start > stop) {
 			throw new ArgumentException($"Attempting to fetch starting at a position greater than the end position (start: {start}, stop: {stop})");
 		}

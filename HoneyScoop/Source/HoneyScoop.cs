@@ -166,7 +166,13 @@ internal class HoneyScoop {
 		return foundMatches;
 	}
 
-	private List<(Match, Match?)> ProcessSearchResults(List<Match> matches, int chunkSize) { // TODO: Use PairingStrategy
+	/// <summary>
+	/// Process the list of found headers and footers, pairing them up by the pairing strategy defined for the file type
+	/// </summary>
+	/// <param name="matches"></param>
+	/// <param name="chunkSize"></param>
+	/// <returns></returns>
+	private List<(Match, Match?)> ProcessSearchResults(List<Match> matches, int chunkSize) {
 		if(Verbose) {
 			Console.WriteLine("Processing search results...");
 		}
@@ -230,46 +236,6 @@ internal class HoneyScoop {
 			}
 		}
 
-		// // Pair every header with a footer if a suitable one exists, if not then pair it with null
-		// //     A suitable one would be probably the next footer that has the same file type as the header (multiple headers might be paired with the same footer)
-		// // Return those header-footer/null pairs
-		// Stack<Match> matchStack = new Stack<Match>();
-		// List<(Match, Match?)> completeMatches = new List<(Match, Match?)>();
-		//
-		// for(var i = 0; i < matches.Count; i++) {
-		// 	//Removes any footers that precede the first header
-		// 	if(matches[i].MatchType.Part == FilePart.Footer && matchStack.Count == 0) {
-		// 		continue;
-		// 	}
-		//
-		// 	//Once it finds a header it will add it to the stack to be matched with a footer
-		// 	if(matches[i].MatchType.Part == FilePart.Header && matchStack.Count == 0) {
-		// 		matchStack.Push(matches[i]);
-		// 	}
-		// 	//if a new header is found before a footer pair is found for the previous header then it will pair it with a null footer (Main concern is false positive header being found and wiping away the old one, hopefully shouldn't be the case)
-		// 	else if(matches[i].MatchType.Part == FilePart.Header && matchStack.Count != 0) {
-		// 		completeMatches.Add((matchStack.Pop(), null));
-		//
-		// 		matchStack.Push(matches[i]);
-		// 	} else {
-		// 		if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType.Type.Equals(matchStack.Peek().MatchType.Type)) {
-		// 			completeMatches.Add((matchStack.Pop(), matches[i]));
-		// 		}
-		// 		//When a footer is found after a header but doesn't match the header it is skipped because there shouldn't be overlapping headers and footers from different filetypes
-		// 		else if(matches[i].MatchType.Part == FilePart.Footer && matches[i].MatchType != matchStack.Peek().MatchType) {
-		// 			continue;
-		// 		}
-		// 	}
-		// }
-		//
-		// while(matchStack.Count != 0) {
-		// 	if(matchStack.Peek().MatchType.Part.Equals(FilePart.Footer)) {
-		// 		matchStack.Pop();
-		// 	} else if(matchStack.Peek().MatchType.Part.Equals(FilePart.Header)) {
-		// 		completeMatches.Add((matchStack.Pop(), null));
-		// 	}
-		// }
-
 		if(Verbose) {
 			Console.WriteLine($"Done processing search results ({completeMatches.Count} matches)");
 		}
@@ -277,12 +243,13 @@ internal class HoneyScoop {
 		return completeMatches;
 	}
 
+	/// <summary>
+	/// Delegate carving work to a <see cref="CarveHandler"/> instance
+	/// </summary>
+	/// <param name="fileHandler"></param>
+	/// <param name="chunkSize"></param>
+	/// <param name="pairs"></param>
 	private void CarvePhase(FileHandler fileHandler, int chunkSize, List<(Match, Match?)> pairs) {
-		// First, preprocess the match pairs to figure out which ranges need to be read into which files
-		// Probably need to map match pairs to file chunks and then assign "work" to be done in each chunk - basically roughly replicating what scalpel does
-		// Then read out the data from the file into the carved files - try be efficient here and only read what is necessary
-		// Remember to work with the various command-line options (e.g. Timestamp, Quiet, Verbose)
-
 		if(Verbose) {
 			Console.WriteLine("Building carving information...");
 		}
@@ -307,11 +274,8 @@ internal class HoneyScoop {
 
 	/// <summary>
 	/// This function creates and returns RegexMatchers for each supplied <see cref="FileType"/>.
-	/// Each FileType is paired with a uint which is the UID for that file type - Usual process is to assign the UID of the FileType
-	/// to be the index of it in the FileType enum.<br />
-	/// Specifically, the UID supplied with each file type is first multiplied by 2 and then assigned to the matcher that matches the header
-	/// for that file type - the footer is the UID * 2 + 1 (1 more than the header), so that UIDs assigned to headers are always even and those
-	/// assigned to footers are always odd, and doing integer division of the matcher UID by 2 returns the UID of the FileType.
+	/// Each FileType is paired with a <see cref="FileTypePart"/> which indicates the file type a matcher belongs to,
+	/// and whether it's matching a header or footer
 	/// </summary>
 	/// <param name="fileTypes"></param>
 	/// <returns></returns>

@@ -1,7 +1,7 @@
 using System.Text;
 using HoneyScoop.Util;
 
-namespace HoneyScoop.FileHandling.FileTypes; 
+namespace HoneyScoop.FileHandling.FileTypes;
 
 internal class FileTypeMov : IFileType {
 	public string Header => @"\x00\x00\x00\x20\x66\x74\x79\x70";
@@ -12,12 +12,12 @@ internal class FileTypeMov : IFileType {
 	public PairingStrategy PairingMethod => PairingStrategy.PairNext;
 
 	private const int BrandSize = 4;
-		
+
 	private static readonly byte[][] SupportedBrands = {
-		new byte[] {0x71, 0x74, 0x20, 0x20}, // QuickTime Movie File
-		new byte[] {0x61, 0x76, 0x63, 0x31}, // Advanced Video Coding (AVC) file format
-		new byte[] {0x68, 0x65, 0x69, 0x63}, // High Efficiency Image Format (HEIF)
-		new byte[] {0x68, 0x65, 0x69, 0x78}, // High Efficiency Image Format (HEIF) (Raw)
+		new byte[] { 0x71, 0x74, 0x20, 0x20 }, // QuickTime Movie File
+		new byte[] { 0x61, 0x76, 0x63, 0x31 }, // Advanced Video Coding (AVC) file format
+		new byte[] { 0x68, 0x65, 0x69, 0x63 }, // High Efficiency Image Format (HEIF)
+		new byte[] { 0x68, 0x65, 0x69, 0x78 }, // High Efficiency Image Format (HEIF) (Raw)
 	};
 
 	/// <summary>
@@ -34,10 +34,8 @@ internal class FileTypeMov : IFileType {
 
 		// Check if brand is present and supported
 		ReadOnlySpan<byte> brandData = data.Slice(8, BrandSize);
-		for (int i = 0; i < SupportedBrands.Length; i++)
-		{
-			if (brandData.SequenceEqual(SupportedBrands[i]))
-			{
+		for(int i = 0; i < SupportedBrands.Length; i++) {
+			if(brandData.SequenceEqual(SupportedBrands[i])) {
 				return AnalysisResult.Correct.Wrap();
 			}
 		}

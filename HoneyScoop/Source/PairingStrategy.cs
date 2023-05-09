@@ -1,4 +1,4 @@
-namespace HoneyScoop; 
+namespace HoneyScoop;
 
 /// <summary>
 /// The strategy used to pair a header/footer match
@@ -8,9 +8,9 @@ public enum PairingStrategy {
 	/// A header is paired with the next occurrence of a corresponding footer
 	/// </summary>
 	PairNext,
-	
+
 	/// <summary>
-	/// A header is paired with the last occurrence of a corresponding footer within a specific range (TODO)
+	/// A header is paired with the last occurrence of a corresponding footer within a specific range
 	/// </summary>
 	PairLast,
 }

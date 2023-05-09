@@ -35,10 +35,8 @@ internal class FileTypeMp3 : IFileType {
 		}
 
 		// Bitwise checking for FFF or FFE Synchronisation frame.
-		for (int i = 0; i < data.Length - 1; i++)
-		{
-			if (data[i] == 0xFF && (data[i+1] >> 4) == 0x0F || (data[i+1] >> 4) == 0x0E)
-			{
+		for(int i = 0; i < data.Length - 1; i++) {
+			if(data[i] == 0xFF && (data[i + 1] >> 4) == 0x0F || (data[i + 1] >> 4) == 0x0E) {
 				return AnalysisResult.Correct.Wrap();
 			}
 		}

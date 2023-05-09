@@ -44,7 +44,7 @@ internal class CarveHandler {
 			if(pairs[i].Item2 == null && SupportedFileTypes.FileTypeHandlers[pairs[i].Item1.MatchType.Type].RequiresFooter) {
 				continue;
 			}
-			
+
 			(int chunkRangeStart, int chunkRangeEnd) = Helper.MapToChunkRange(
 				(int)pairs[i].Item1.StartOfMatch,
 				(int)(pairs[i].Item2?.EndOfMatch ?? pairs[i].Item1.StartOfMatch + DefaultCarveSize),
@@ -95,7 +95,7 @@ internal class CarveHandler {
 						// Stop at the defined stop point (which, if footer match is null, will be the start + the default carve size)
 						stopCarve = (int)(pairs[i].Item2?.EndOfMatch ?? pairs[i].Item1.StartOfMatch + DefaultCarveSize);
 						break;
-					
+
 					case ChunkCarveType.StartStopCarve:
 						startCarve = (int)pairs[i].Item1.StartOfMatch;
 						stopCarve = (int)(pairs[i].Item2?.EndOfMatch ?? pairs[i].Item1.StartOfMatch + DefaultCarveSize);
@@ -116,6 +116,10 @@ internal class CarveHandler {
 		}
 	}
 
+	/// <summary>
+	/// Performs the carving upon an open disk image file, using the data that was processed upon creation of the class instance
+	/// </summary>
+	/// <param name="fileHandler"></param>
 	internal void PerformCarving(FileHandler fileHandler) {
 		// The buffer manager that will be used for reading and keeping data loaded
 		CarveBufferManager buffer = new CarveBufferManager(fileHandler, _chunkSize);
@@ -132,7 +136,7 @@ internal class CarveHandler {
 			if(!_carveInfo.ContainsKey(chunkI)) {
 				goto post_carve_for_chunk;
 			}
-			
+
 			List<ChunkCarveInfo> carveInfos = _carveInfo[chunkI];
 
 			for(int i = 0; i < carveInfos.Count; i++) {
@@ -147,10 +151,12 @@ internal class CarveHandler {
 						if(analysisResult == AnalysisResult.Unrecognised && !HoneyScoop.Instance().UnrecognisedOutput) {
 							break;
 						}
+
 						string filepath = Helper.OutputPath(analysisResult, fileInfo.FType, fileInfo.Filename);
 						if(!Helper.EnsureExists(filepath)) {
 							return;
 						}
+
 						FileStream oStream = new FileStream(filepath, FileMode.Create);
 						oStream.Write(fileData);
 						oStream.Close();
@@ -181,6 +187,7 @@ internal class CarveHandler {
 						if(!Helper.EnsureExists(filepath)) {
 							return;
 						}
+
 						fileInfo.OutputStream = new FileStream(filepath, FileMode.Create);
 						fileInfo.OutputStream?.Write(fileData);
 						break;
@@ -195,10 +202,12 @@ internal class CarveHandler {
 							if(analysisResult == AnalysisResult.Unrecognised && !HoneyScoop.Instance().UnrecognisedOutput) {
 								break;
 							}
+
 							string filepath = Helper.OutputPath(analysisResult, fileInfo.FType, fileInfo.Filename);
 							if(!Helper.EnsureExists(filepath)) {
 								return;
 							}
+
 							FileStream oStream = new FileStream(filepath, FileMode.Create);
 							oStream.Write(fileData);
 							oStream.Close();
@@ -207,17 +216,18 @@ internal class CarveHandler {
 							fileInfo.OutputStream?.Write(fileData);
 							fileInfo.OutputStream?.Close();
 						}
+
 						break;
 					}
 				}
 			}
-			
+
 			post_carve_for_chunk:
 
 			// Shift everything from analyseFidsNext to analyseFidsNow, and create a new dictionary for analyseFidsNext
 			analyseFidsNow = analyseFidsNext;
 			analyseFidsNext = new Dictionary<int, int>();
-			
+
 			buffer.MoveNext(keepChunkData);
 		}
 	}

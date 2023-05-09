@@ -8,12 +8,12 @@ internal static class RegexParser {
 	/// See <a href="https://www.web4college.com/converters/infix-to-postfix-prefix.php">https://www.web4college.com/converters/infix-to-postfix-prefix.php</a> and <a href="https://blog.cernera.me/converting-regular-expressions-to-postfix-notation-with-the-shunting-yard-algorithm/">https://blog.cernera.me/converting-regular-expressions-to-postfix-notation-with-the-shunting-yard-algorithm/</a>
 	/// </summary>
 	/// <param name="tokens"></param>
-	internal static List<RegexLexer.Token> RearrangeToPostfix(List<RegexLexer.Token> tokens) { // TODO: Comments and perhaps error handling?
+	internal static List<RegexLexer.Token> RearrangeToPostfix(List<RegexLexer.Token> tokens) {
 		// Preprocess the list to insert explicit concatenation operators
 		InsertExplicitConcats(tokens);
 
 		// The following code will correctly turn infix into postfix using the Shunting-Yard algorithm
-		
+
 		List<RegexLexer.Token> postfix = new List<RegexLexer.Token>();
 		Stack<RegexLexer.Token> opStack = new Stack<RegexLexer.Token>();
 

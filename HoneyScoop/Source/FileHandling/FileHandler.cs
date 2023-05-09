@@ -1,6 +1,6 @@
 namespace HoneyScoop.FileHandling;
 
-internal class FileHandler { // TODO: Deprecate this in favour of using FileStream directly?
+internal class FileHandler {
 	private readonly FileStream _fStream;
 	internal long CurrentPosition = 0;
 	private bool _eof;
@@ -32,7 +32,7 @@ internal class FileHandler { // TODO: Deprecate this in favour of using FileStre
 		if(bytesRead == 0) {
 			_eof = true;
 		}
-		
+
 		CurrentPosition += bytesRead; // Update the current position
 	}
 

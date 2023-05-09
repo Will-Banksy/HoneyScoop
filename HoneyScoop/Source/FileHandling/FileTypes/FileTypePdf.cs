@@ -15,7 +15,6 @@ internal class FileTypePdf : IFileType {
 	/// <param name="data"></param>
 	/// <returns></returns>
 	/// <exception cref="NotImplementedException"></exception>
-
 	public (AnalysisResult, AnalysisFileInfo) Analyse(ReadOnlySpan<byte> data) {
 		throw new NotImplementedException();
 	}

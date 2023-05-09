@@ -41,16 +41,19 @@ internal static class Helper {
 				if(res == AnalysisResult.Correct) {
 					res = AnalysisResult.Partial;
 				}
+
 				break;
 			case AnalysisResult.FormatError:
 				if(res == AnalysisResult.Correct || res == AnalysisResult.Partial) {
 					res = AnalysisResult.FormatError;
 				}
+
 				break;
 			case AnalysisResult.Corrupted:
 				if(res == AnalysisResult.Correct || res == AnalysisResult.Partial || res == AnalysisResult.FormatError) {
 					res = AnalysisResult.Corrupted;
 				}
+
 				break;
 		}
 
@@ -114,6 +117,7 @@ internal static class Helper {
 			if(visitedStatesUids.Contains(state.Uid)) {
 				continue;
 			}
+
 			visitedStatesUids.Add(state.Uid);
 			for(int i = 0; i < state.Connections.Count; i++) {
 				if(state.Connections[i].Transparent) {
@@ -137,7 +141,7 @@ internal static class Helper {
 		if(state.Equals(endState)) {
 			return true;
 		}
-		
+
 		HashSet<FiniteStateMachine<byte>.State> visited = new();
 
 		return IsEndStateRecur(state, endState, visited);
@@ -154,7 +158,7 @@ internal static class Helper {
 		if(state.Equals(endState)) {
 			return true;
 		}
-		
+
 		for(int i = 0; i < state.Connections.Count; i++) {
 			if(state.Connections[i].Transparent && !visited.Contains(state.Connections[i].Next)) {
 				visited.Add(state.Connections[i].Next);
@@ -163,7 +167,7 @@ internal static class Helper {
 				}
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -177,6 +181,7 @@ internal static class Helper {
 			if(visitedStatesUids.Contains(state.Uid)) {
 				continue;
 			}
+
 			visitedStatesUids.Add(state.Uid);
 			action(state);
 			for(int i = 0; i < state.Connections.Count; i++) {
@@ -184,13 +189,14 @@ internal static class Helper {
 			}
 		}
 	}
-	
+
 	internal static string ListToString<T>(IList<T> list) {
 		StringBuilder sb = new();
 		sb.Append('[');
 		for(int i = 0; i < list.Count(); i++) {
 			sb.Append($"{list[i]}, ");
 		}
+
 		sb.Append(']');
 
 		return sb.ToString();
@@ -209,6 +215,7 @@ internal static class Helper {
 		if(i < 0) {
 			throw new ArgumentException($"Index {i} is not valid - Must be greater than zero");
 		}
+
 		return i / chunkSize;
 	}
 
@@ -224,7 +231,7 @@ internal static class Helper {
 		_timestampedOutDir = DateTime.Now.ToString("s");
 		return _timestampedOutDir;
 	}
-	
+
 	/// <summary>
 	/// Returns the path to <see cref="filename"/> within the output directory for <see cref="analysisResult"/> and <see cref="fileType"/> (using
 	/// the output directory defined by the <see cref="HoneyScoop"/> instance - usually set through CLI args)
@@ -241,12 +248,14 @@ internal static class Helper {
 			if(HoneyScoop.Instance().NoOrganise) {
 				return Path.Join(HoneyScoop.Instance().OutputDirectory, _timestampedOutDir, aRStr, filename);
 			}
+
 			return Path.Join(HoneyScoop.Instance().OutputDirectory, _timestampedOutDir, aRStr, fTStr, filename);
 		}
 
 		if(HoneyScoop.Instance().NoOrganise) {
 			return Path.Join(HoneyScoop.Instance().OutputDirectory, aRStr, filename);
 		}
+
 		return Path.Join(HoneyScoop.Instance().OutputDirectory, aRStr, fTStr, filename);
 	}
 
@@ -267,7 +276,7 @@ internal static class Helper {
 			} catch(Exception e) {
 				except = e;
 			}
-		
+
 			Console.ForegroundColor = ConsoleColor.Red;
 			Console.Write("Error creating/accessing output directory");
 			if(except != null) {

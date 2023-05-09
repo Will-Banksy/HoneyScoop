@@ -1,4 +1,4 @@
-namespace HoneyScoop.Util; 
+namespace HoneyScoop.Util;
 
 public static class Crc32 {
 	private static readonly uint[] CrcTable = MakeCrc32Table();
@@ -38,6 +38,7 @@ public static class Crc32 {
 		for(int n = 0; n < buffer.Length; n++) {
 			c = CrcTable[(c ^ buffer[n]) & 0xff] ^ (c >> 8);
 		}
+
 		return c;
 	}
 

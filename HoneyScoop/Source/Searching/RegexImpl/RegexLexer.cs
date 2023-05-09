@@ -53,6 +53,7 @@ internal static class RegexLexer {
 		OpenParenthesis,
 		CloseParenthesis,
 		Literal,
+
 		/// <summary>
 		/// For where anything else doesn't make sense
 		/// </summary>
@@ -74,12 +75,12 @@ internal static class RegexLexer {
 		/// Only really has meaning if the Type is TokenType.Literal. Contains the literal value the token represents
 		/// </summary>
 		internal readonly byte LiteralValue = 0;
-		
+
 		/// <summary>
 		/// If true, this token represents a match to any literal value (a wildcard)
 		/// </summary>
 		internal readonly bool LiteralWildcard = false;
-		
+
 		/// <summary>
 		/// Construct a new token with default values
 		/// </summary>
@@ -135,8 +136,8 @@ internal static class RegexLexer {
 			Type = TokenType.Literal;
 			LiteralWildcard = true;
 		}
-		
-		internal string ToDebugString() { // TODO: This might be the sort of thing that should be in ToString so maybe need to rethink this not that it particularly matters
+
+		internal string ToDebugString() {
 			return $"Token(Type={Type},OpType={OpType},LiteralValue={LiteralValue},LiteralWildcard={LiteralWildcard})";
 		}
 
@@ -227,12 +228,13 @@ internal static class RegexLexer {
 							}
 						}
 					}
+
 					break;
-				
+
 				case '.':
 					tokens.Add(new Token(true));
 					break;
-				
+
 				default:
 					byte asciiValue = (byte)src[i];
 					tokens.Add(new Token(asciiValue));

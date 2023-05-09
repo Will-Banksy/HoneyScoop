@@ -25,65 +25,69 @@ internal static class RegexEngine {
 		if(_parseCache.TryGetValue(regex, out var cached)) {
 			return cached;
 		}
-		
+
 		var postfix = ParseToPostfix(regex);
+
+// Disable this section for now, useful for debugging but otherwise just clutters stdout
 #if DEBUG && false
 		Console.WriteLine($"Infix: {regex} --> Postfix: {Helper.ListToStringTight(postfix)}");
 #endif
-		
+
 		Stack<FiniteStateMachine<byte>> finiteStack = new Stack<FiniteStateMachine<byte>>();
 		int uuid = 0;
-		
-		foreach(RegexLexer.Token token in postfix) {//Goes through the list of tokens and does an action based on what operator it is
+
+		foreach(RegexLexer.Token token in postfix) { //Goes through the list of tokens and does an action based on what operator it is
 			switch(token.Type) {
-				case RegexLexer.TokenType.Literal://pushes the literal straight onto the stack
+				case RegexLexer.TokenType.Literal: //pushes the literal straight onto the stack
 					finiteStack.Push(new FiniteStateMachine<byte>(ref uuid, token.LiteralValue, token.LiteralWildcard));
 					break;
-				
-				case RegexLexer.TokenType.UnaryOperator://operator that only takes one input
+
+				case RegexLexer.TokenType.UnaryOperator: //operator that only takes one input
 					switch(token.OpType) {
-						case RegexLexer.OperatorType.AlternateEmpty://pops once then does the AlternateEmpty function and pushes it onto the stack
+						case RegexLexer.OperatorType.AlternateEmpty: //pops once then does the AlternateEmpty function and pushes it onto the stack
 							var nfaAltEmp = finiteStack.Pop();
 							nfaAltEmp = nfaAltEmp.AlternateEmpty();
 							finiteStack.Push(nfaAltEmp);
 							break;
-						
-						case RegexLexer.OperatorType.AlternateLoop://pops once then does the AlternateLoop function and pushes it onto the stack
+
+						case RegexLexer.OperatorType.AlternateLoop: //pops once then does the AlternateLoop function and pushes it onto the stack
 							var nfaAltLoop = finiteStack.Pop();
 							nfaAltLoop = nfaAltLoop.AlternateLoop();
 							finiteStack.Push(nfaAltLoop);
 							break;
-						
-						case RegexLexer.OperatorType.AlternateLoopOnce://pops once then does the AlternateLoopOnce function and pushes it onto the stack
+
+						case RegexLexer.OperatorType.AlternateLoopOnce: //pops once then does the AlternateLoopOnce function and pushes it onto the stack
 							var nfaAltLoopOnce = finiteStack.Pop();
 							nfaAltLoopOnce = nfaAltLoopOnce.AlternateLoopOnce();
 							finiteStack.Push(nfaAltLoopOnce);
 							break;
 					}
+
 					break;
-				
-				case RegexLexer.TokenType.BinaryOperator://Operator that takes two inputs
+
+				case RegexLexer.TokenType.BinaryOperator: //Operator that takes two inputs
 					switch(token.OpType) {
-						case RegexLexer.OperatorType.Alternate://Pops twice and does the Alternate function on the second pop and then pushes the two pops back in order of second then first pop
+						case RegexLexer.OperatorType.Alternate: //Pops twice and does the Alternate function on the second pop and then pushes the two pops back in order of second then first pop
 							var firstPopAlt = finiteStack.Pop();
 							var nfaAlt = finiteStack.Pop();
 							firstPopAlt = firstPopAlt.Alternate(ref uuid, nfaAlt);
 							finiteStack.Push(firstPopAlt);
 							break;
-						
-						case RegexLexer.OperatorType.Concat://Pops twice and does the Concatenate function on the second pop and then pushes the two pops back in order of second then first pop
+
+						case RegexLexer.OperatorType.Concat: //Pops twice and does the Concatenate function on the second pop and then pushes the two pops back in order of second then first pop
 							var nfaCon = finiteStack.Pop();
 							var firstPopCon = finiteStack.Pop();
 							firstPopCon = firstPopCon.Concatenate(nfaCon);
 							finiteStack.Push(firstPopCon);
 							break;
 					}
+
 					break;
 			}
 		}
 
 		_parseCache[regex] = finiteStack.Peek();
-		
+
 		return finiteStack.Peek();
 	}
 

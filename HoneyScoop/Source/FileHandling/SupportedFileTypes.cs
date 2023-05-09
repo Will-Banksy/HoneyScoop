@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using HoneyScoop.FileHandling.FileTypes;
 
-namespace HoneyScoop.FileHandling; 
+namespace HoneyScoop.FileHandling;
 
 /// <summary>
 /// An enum that describes the type of a file
@@ -75,9 +75,6 @@ internal static class SupportedFileTypes {
 			{ FileType.Mp3, new FileTypeMp3() },
 			{ FileType.Mov, new FileTypeMov() },
 			{ FileType.Jpg, new FileTypeJpg() },
-			// { FileType.Docx, new FileTypeDocx() },
-			// { FileType.Xlsx, new FileTypeXlsx() },
-			// { FileType.Pptx, new FileTypePptx() },
 			{ FileType.Zip, new FileTypeZip() },
 			{ FileType.Gif, new FileTypeGif() },
 			{ FileType.Rar, new FileTypeRar() },

@@ -8,7 +8,8 @@ internal class FileTypeRar : IFileType {
 	public string Footer => "";
 	public bool HasFooter => false;
 	public string FileExtension => "rar";
-	public bool RequiresFooter => false;public PairingStrategy PairingMethod => PairingStrategy.PairNext;
+	public bool RequiresFooter => false;
+	public PairingStrategy PairingMethod => PairingStrategy.PairNext;
 
 	private const int HeaderSize = 7; // The RAR header is 7 bytes long, including the signature and version information
 

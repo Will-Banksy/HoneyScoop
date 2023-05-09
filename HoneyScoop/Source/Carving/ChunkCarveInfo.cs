@@ -2,6 +2,9 @@ using HoneyScoop.FileHandling;
 
 namespace HoneyScoop.Carving;
 
+/// <summary>
+/// Specifies the type of carving operation for a chunk
+/// </summary>
 internal enum ChunkCarveType {
 	StartStopCarve,
 	StartNextStopCarve,
@@ -11,6 +14,9 @@ internal enum ChunkCarveType {
 	SkipCarve,
 }
 
+/// <summary>
+/// What scalpel refers to as work queues - Describes a carving operation for a chunk
+/// </summary>
 internal class ChunkCarveInfo {
 	internal int Start;
 	internal int Stop;

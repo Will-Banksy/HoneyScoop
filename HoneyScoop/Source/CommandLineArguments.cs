@@ -14,7 +14,7 @@ internal class CommandLineArguments {
 		FileTypes = string.Join(",", SupportedFormats);
 	}
 
-	// Accepted arguments
+	// Accepted arguments and help text output to console 
 
 	[Option('i', "input_file", Required = true, HelpText = "The input file to conduct file reconstruction on.")]
 	public string InputFile { get; set; } = "";
@@ -40,6 +40,8 @@ internal class CommandLineArguments {
 	[Option('u', "unrecognised_output", Required = false, HelpText = "Set if the output of unrecognised carvings should be made.")]
 	public bool UnrecognisedOutput { get; set; }
 
+	
+	///  Parsing Arguements inputted from user
 
 	internal List<string> ParseArgs(string[] arguments) {
 		List<string> definedFileTypes = new List<string>();

@@ -1,3 +1,5 @@
+*Superseded by [searchlight](https://github.com/Will-Banksy/searchlight)*
+
 # HoneyScoop
 
 # Documentation

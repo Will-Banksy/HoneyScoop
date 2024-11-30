@@ -1,4 +1,4 @@
-*Superseded by [searchlight](https://github.com/Will-Banksy/searchlight)*
+*See [searchlight](https://github.com/Will-Banksy/searchlight) for an advancement on methods implemented here (but for a lesser variety of file types)*
 
 # HoneyScoop
 
